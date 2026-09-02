@@ -23,19 +23,64 @@ from app.schemas.pricing import (
 
 # Standard Ex-Showroom Baseline Registry for popular models when not in DB
 BASELINE_EX_SHOWROOM_PRICES: Dict[str, Dict[str, Any]] = {
+    # Mainstream Compact & Midsize SUVs
     "nexon": {"mfg": "Tata", "model": "Nexon", "variant": "Creative Plus 1.2 MT", "price": 1150000.0, "fuel": "petrol"},
     "creta": {"mfg": "Hyundai", "model": "Creta", "variant": "SX (O) 1.5 IVT", "price": 1860000.0, "fuel": "petrol"},
     "thar": {"mfg": "Mahindra", "model": "Thar", "variant": "LX 4WD Hard Top", "price": 1540000.0, "fuel": "diesel"},
     "curvv": {"mfg": "Tata", "model": "Curvv", "variant": "Accomplished Plus 1.5 DCA", "price": 1749000.0, "fuel": "diesel"},
     "seltos": {"mfg": "Kia", "model": "Seltos", "variant": "GTX Plus 1.5 AT", "price": 1890000.0, "fuel": "petrol"},
     "safari": {"mfg": "Tata", "model": "Safari", "variant": "Accomplished Plus 2.0 AT", "price": 2450000.0, "fuel": "diesel"},
+    "harrier": {"mfg": "Tata", "model": "Harrier", "variant": "Fearless Plus Dark AT", "price": 2350000.0, "fuel": "diesel"},
     "xuv700": {"mfg": "Mahindra", "model": "XUV700", "variant": "AX7 L AWD Diesel AT", "price": 2499000.0, "fuel": "diesel"},
-    "dzire": {"mfg": "Maruti Suzuki", "model": "Dzire", "variant": "ZXi Plus AGS", "price": 1014000.0, "fuel": "petrol"},
-    "fronx": {"mfg": "Maruti Suzuki", "model": "Fronx", "variant": "Alpha 1.0 Turbo AT", "price": 1185000.0, "fuel": "petrol"},
-    "innova": {"mfg": "Toyota", "model": "Innova Hycross", "variant": "ZX (O) Hybrid", "price": 3098000.0, "fuel": "hybrid"},
+    "scorpio": {"mfg": "Mahindra", "model": "Scorpio-N", "variant": "Z8 L 4x4 AT", "price": 2250000.0, "fuel": "diesel"},
     "brezza": {"mfg": "Maruti Suzuki", "model": "Brezza", "variant": "ZXi Plus AT", "price": 1250000.0, "fuel": "petrol"},
     "punch": {"mfg": "Tata", "model": "Punch", "variant": "Creative Flagship", "price": 950000.0, "fuel": "petrol"},
-    "swift": {"mfg": "Maruti Suzuki", "model": "Swift", "variant": "ZXi Plus AMT", "price": 895000.0, "fuel": "petrol"}
+    "exter": {"mfg": "Hyundai", "model": "Exter", "variant": "SX (O) Connect AMT", "price": 980000.0, "fuel": "petrol"},
+    "fronx": {"mfg": "Maruti Suzuki", "model": "Fronx", "variant": "Alpha 1.0 Turbo AT", "price": 1185000.0, "fuel": "petrol"},
+    "jimny": {"mfg": "Maruti Suzuki", "model": "Jimny", "variant": "Alpha 4x4 AT", "price": 1479000.0, "fuel": "petrol"},
+    "kushaq": {"mfg": "Skoda", "model": "Kushaq", "variant": "Monte Carlo 1.5 TSI DSG", "price": 1850000.0, "fuel": "petrol"},
+    "taigun": {"mfg": "Volkswagen", "model": "Taigun", "variant": "GT Plus 1.5 TSI DSG", "price": 1890000.0, "fuel": "petrol"},
+    "elevate": {"mfg": "Honda", "model": "Elevate", "variant": "ZX CVT", "price": 1590000.0, "fuel": "petrol"},
+    "sonet": {"mfg": "Kia", "model": "Sonet", "variant": "GTX Plus 1.5 AT", "price": 1450000.0, "fuel": "diesel"},
+    "xuv3xo": {"mfg": "Mahindra", "model": "XUV 3XO", "variant": "AX7 L Turbo AT", "price": 1399000.0, "fuel": "petrol"},
+    "3xo": {"mfg": "Mahindra", "model": "XUV 3XO", "variant": "AX7 L Turbo AT", "price": 1399000.0, "fuel": "petrol"},
+
+    # Premium MPVs & Full-Size SUVs
+    "innova": {"mfg": "Toyota", "model": "Innova Hycross", "variant": "ZX (O) Hybrid", "price": 3098000.0, "fuel": "hybrid"},
+    "fortuner": {"mfg": "Toyota", "model": "Fortuner", "variant": "4x4 AT GR-S Diesel", "price": 4350000.0, "fuel": "diesel"},
+
+    # Sedans & Hatchbacks
+    "dzire": {"mfg": "Maruti Suzuki", "model": "Dzire", "variant": "ZXi Plus AGS", "price": 1014000.0, "fuel": "petrol"},
+    "swift": {"mfg": "Maruti Suzuki", "model": "Swift", "variant": "ZXi Plus AMT", "price": 895000.0, "fuel": "petrol"},
+    "city": {"mfg": "Honda", "model": "City", "variant": "ZX CVT", "price": 1620000.0, "fuel": "petrol"},
+    "verna": {"mfg": "Hyundai", "model": "Verna", "variant": "SX (O) 1.5 Turbo DCT", "price": 1740000.0, "fuel": "petrol"},
+    "slavia": {"mfg": "Skoda", "model": "Slavia", "variant": "Style 1.5 TSI DSG", "price": 1750000.0, "fuel": "petrol"},
+    "virtus": {"mfg": "Volkswagen", "model": "Virtus", "variant": "GT Plus 1.5 TSI DSG", "price": 1780000.0, "fuel": "petrol"},
+    "baleno": {"mfg": "Maruti Suzuki", "model": "Baleno", "variant": "Alpha AGS", "price": 980000.0, "fuel": "petrol"},
+    "i20": {"mfg": "Hyundai", "model": "i20", "variant": "Asta (O) IVT", "price": 1080000.0, "fuel": "petrol"},
+    "tiago": {"mfg": "Tata", "model": "Tiago", "variant": "XZ Plus Dual Tone", "price": 750000.0, "fuel": "petrol"},
+
+    # Electric Vehicles
+    "nexon ev": {"mfg": "Tata", "model": "Nexon EV", "variant": "Empowered Plus LR", "price": 1699000.0, "fuel": "electric"},
+    "punch ev": {"mfg": "Tata", "model": "Punch EV", "variant": "Empowered Plus S LR", "price": 1429000.0, "fuel": "electric"},
+    "curvv ev": {"mfg": "Tata", "model": "Curvv EV", "variant": "Empowered Plus 55", "price": 2199000.0, "fuel": "electric"},
+    "windsor": {"mfg": "MG", "model": "Windsor EV", "variant": "Essence Pro", "price": 1550000.0, "fuel": "electric"},
+    "windsor ev": {"mfg": "MG", "model": "Windsor EV", "variant": "Essence Pro", "price": 1550000.0, "fuel": "electric"},
+    "zs ev": {"mfg": "MG", "model": "ZS EV", "variant": "Exclusive Plus", "price": 2490000.0, "fuel": "electric"},
+
+    # Luxury & Executive Segment
+    "bmw 3": {"mfg": "BMW", "model": "3 Series Gran Limousine", "variant": "330Li M Sport", "price": 6060000.0, "fuel": "petrol"},
+    "bmw3": {"mfg": "BMW", "model": "3 Series Gran Limousine", "variant": "330Li M Sport", "price": 6060000.0, "fuel": "petrol"},
+    "3 series": {"mfg": "BMW", "model": "3 Series Gran Limousine", "variant": "330Li M Sport", "price": 6060000.0, "fuel": "petrol"},
+    "bmw x1": {"mfg": "BMW", "model": "X1", "variant": "sDrive18d M Sport", "price": 5250000.0, "fuel": "diesel"},
+    "bmw": {"mfg": "BMW", "model": "3 Series Gran Limousine", "variant": "330Li M Sport", "price": 6060000.0, "fuel": "petrol"},
+    "mercedes c class": {"mfg": "Mercedes-Benz", "model": "C-Class", "variant": "C 200", "price": 6185000.0, "fuel": "petrol"},
+    "c class": {"mfg": "Mercedes-Benz", "model": "C-Class", "variant": "C 200", "price": 6185000.0, "fuel": "petrol"},
+    "mercedes": {"mfg": "Mercedes-Benz", "model": "C-Class", "variant": "C 200", "price": 6185000.0, "fuel": "petrol"},
+    "audi a4": {"mfg": "Audi", "model": "A4", "variant": "Technology 40 TFSI", "price": 5185000.0, "fuel": "petrol"},
+    "audi": {"mfg": "Audi", "model": "A4", "variant": "Technology 40 TFSI", "price": 5185000.0, "fuel": "petrol"},
+    "audi q3": {"mfg": "Audi", "model": "Q3", "variant": "Technology 40 TFSI Quattro", "price": 5300000.0, "fuel": "petrol"},
+    "volvo xc60": {"mfg": "Volvo", "model": "XC60", "variant": "B5 Ultimate", "price": 6890000.0, "fuel": "petrol"}
 }
 
 def format_inr(amount: float) -> str:

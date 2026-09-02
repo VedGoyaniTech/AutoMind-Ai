@@ -1,0 +1,20 @@
+{
+  "manifest_version": "2.0.0",
+  "created_at": "2026-09-02T08:06:03.064702+00:00",
+  "total_valid_examples": 268,
+  "splits": {
+    "train": 214,
+    "validation": 26,
+    "test": 28,
+    "quarantine": 58
+  },
+  "policy": {
+    "pii_redaction_applied": true,
+    "no_dynamic_pricing_memorization": true,
+    "languages_supported": [
+      "hi-IN",
+      "gu-IN",
+      "en-IN"
+    ]
+  }
+}

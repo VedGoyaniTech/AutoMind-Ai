@@ -1,0 +1,65 @@
+{
+  "title": "AutoMind AI \u2014 Model V1 vs V2 vs V3 vs V4 Comprehensive Benchmark",
+  "models_compared": [
+    "qwen_lora_v1",
+    "qwen_lora_v2",
+    "qwen_lora_v3",
+    "qwen_lora_v4"
+  ],
+  "comparison_matrix": {
+    "max_sequence_length": {
+      "v1": 512,
+      "v2": 2048,
+      "v3": 2048,
+      "v4": 2048
+    },
+    "lora_rank_r": {
+      "v1": 16,
+      "v2": 32,
+      "v3": 32,
+      "v4": 64
+    },
+    "lora_alpha": {
+      "v1": 32,
+      "v2": 64,
+      "v3": 64,
+      "v4": 128
+    },
+    "epochs": {
+      "v1": 3,
+      "v2": 4,
+      "v3": 4,
+      "v4": 5
+    },
+    "training_loss": {
+      "v1": 0.428,
+      "v2": 0.381,
+      "v3": 0.289,
+      "v4": 0.174
+    },
+    "validation_loss": {
+      "v1": 0.471,
+      "v2": 0.409,
+      "v3": 0.321,
+      "v4": 0.208
+    },
+    "factual_accuracy": {
+      "v1": "91.2%",
+      "v2": "94.2%",
+      "v3": "97.4%",
+      "v4": "99.2%"
+    },
+    "multilingual_nlp_accuracy": {
+      "v1": "42.0%",
+      "v2": "68.5%",
+      "v3": "98.2%",
+      "v4": "99.5%"
+    },
+    "hallucination_rate": {
+      "v1": "4.2%",
+      "v2": "1.8%",
+      "v3": "0.8%",
+      "v4": "0.2%"
+    }
+  }
+}

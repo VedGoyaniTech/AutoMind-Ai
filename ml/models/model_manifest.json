@@ -1,0 +1,18 @@
+{
+  "model_manifest_version": "1.0.0",
+  "base_model": "Qwen/Qwen2.5-7B-Instruct",
+  "adapter_version": "qwen_lora_v4",
+  "expected_files": [
+    "adapter_config.json",
+    "adapter_model.safetensors",
+    "tokenizer.json",
+    "tokenizer_config.json"
+  ],
+  "quantization_formats_supported": [
+    "GGUF_Q4_K_M",
+    "AWQ_4BIT"
+  ],
+  "local_model_path": "./ml/models/qwen_lora_v4",
+  "fallback_provider": "GroundedLocalSynthesizer",
+  "license": "Apache-2.0"
+}

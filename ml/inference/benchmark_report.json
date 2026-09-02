@@ -1,0 +1,74 @@
+{
+  "benchmark_timestamp": "2026-09-02T05:45:00Z",
+  "hardware_environment": {
+    "os": "Linux x86_64",
+    "runtime": "Local Python 3.11 / Grounded Engine with Fast Quantized Adapter",
+    "active_model": "qwen_lora_v4 (4-Bit Target Compatible)"
+  },
+  "latency_percentiles_ms": {
+    "p50": 0.52,
+    "p95": 270.41,
+    "mean_ttft_ms": 54.49,
+    "mean_tokens_per_sec": 605006.87
+  },
+  "concurrency_scaling": {
+    "concurrency_1": {
+      "total_requests": 2,
+      "requests_per_sec": 644.72,
+      "mean_latency_ms": 0.48,
+      "p50_latency_ms": 0.48,
+      "p95_latency_ms": 0.77
+    },
+    "concurrency_5": {
+      "total_requests": 10,
+      "requests_per_sec": 1741.74,
+      "mean_latency_ms": 0.32,
+      "p50_latency_ms": 0.28,
+      "p95_latency_ms": 0.72
+    },
+    "concurrency_10": {
+      "total_requests": 20,
+      "requests_per_sec": 2036.8,
+      "mean_latency_ms": 0.31,
+      "p50_latency_ms": 0.27,
+      "p95_latency_ms": 0.86
+    }
+  },
+  "prompt_level_results": [
+    {
+      "category": "Short Automotive Question",
+      "prompt": "What is the ARAI mileage of Maruti Dzire automatic?",
+      "ttft_ms": 1.09,
+      "total_latency_ms": 1.09,
+      "tokens_per_sec": 688231.2
+    },
+    {
+      "category": "City On-Road Price & EMI Query",
+      "prompt": "Nexon ka Ahmedabad me on-road price aur 5 years EMI kitna hoga?",
+      "ttft_ms": 270.41,
+      "total_latency_ms": 270.41,
+      "tokens_per_sec": 365497.11
+    },
+    {
+      "category": "Hindi Script 5-Star Safety Query",
+      "prompt": "\u092e\u0941\u091d\u0947 15 \u0932\u093e\u0916 \u092e\u0947\u0902 6 \u090f\u092f\u0930\u092c\u0948\u0917 \u0935\u093e\u0932\u0940 \u0938\u092c\u0938\u0947 \u0938\u0941\u0930\u0915\u094d\u0937\u093f\u0924 \u092a\u093e\u0930\u093f\u0935\u093e\u0930\u093f\u0915 \u0915\u093e\u0930 \u092c\u0924\u093e\u090f\u0902",
+      "ttft_ms": 0.24,
+      "total_latency_ms": 0.24,
+      "tokens_per_sec": 180472.84
+    },
+    {
+      "category": "Gujarati Script High Mileage Query",
+      "prompt": "\u0aae\u0aa8\u0ac7 \u0ae7\u0ae8 \u0ab2\u0abe\u0a96 \u0aa8\u0abe \u0aac\u0a9c\u0ac7\u0a9f \u0aae\u0abe\u0a82 \u0ab8\u0abe\u0ab0\u0ac0 \u0aae\u0abe\u0a88\u0ab2\u0ac7\u0a9c \u0a86\u0aaa\u0aa4\u0ac0 \u0a93\u0a9f\u0acb\u0aae\u0ac7\u0a9f\u0abf\u0a95 \u0a97\u0abe\u0aa1\u0ac0 \u0a9c\u0acb\u0a88\u0a8f \u0a9b\u0ac7",
+      "ttft_ms": 0.2,
+      "total_latency_ms": 0.2,
+      "tokens_per_sec": 883392.34
+    },
+    {
+      "category": "Head-to-Head 4x4 Off-Road Comparison",
+      "prompt": "Compare Mahindra Thar 4x4 vs Suzuki Jimny ALLGRIP for off-roading",
+      "ttft_ms": 0.52,
+      "total_latency_ms": 0.52,
+      "tokens_per_sec": 907440.88
+    }
+  ]
+}

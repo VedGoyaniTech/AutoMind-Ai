@@ -1,0 +1,785 @@
+Yes — exactly. You want the answer UI to **automatically choose the best visual format based on the question and the answer**, not always use cards.
+
+For example:
+
+| User asks                  | Best UI                     |
+| -------------------------- | --------------------------- |
+| “Give me luxury cars list” | **Table / list**            |
+| “Safest 7-seater cars”     | **Ranked table + cards**    |
+| “XUV 3XO vs XUV 7XO”       | **Comparison table**        |
+| “XUV 3XO price”            | **Detail card**             |
+| “How to buy a car?”        | **Numbered steps**          |
+| “What is an SUV?”          | **Simple answer card**      |
+| “Best cars under ₹20 lakh” | **Ranked table**            |
+| “Compare 5 cars”           | **Comparison table**        |
+| “Which one should I buy?”  | **Recommendation cards**    |
+| “Car loan calculation”     | **Calculation/result card** |
+| “Give me pros and cons”    | **Two-column pros/cons**    |
+| “Car specifications”       | **Specification table**     |
+| “Top 10 cars”              | **Ranked list/table**       |
+| “Explain this”             | **Text + sections**         |
+| “Show me options”          | **Cards**                   |
+
+So the right architecture is **dynamic answer rendering**.
+
+### Use this Cursor prompt
+
+```text
+DYNAMIC ANSWER UI SYSTEM — AUTOMATICALLY SELECT THE BEST FORMAT
+
+Do not render every AI response as the same card or long text block.
+
+The application must understand the user's question and automatically
+select the most appropriate visual response format.
+
+The UI must support multiple response types.
+
+==================================================
+RESPONSE TYPE DETECTION
+==================================================
+
+The backend/AI should classify the answer into a structured response type.
+
+Supported types:
+
+1. text
+2. bullet_list
+3. numbered_list
+4. table
+5. comparison
+6. ranked_list
+7. vehicle_list
+8. vehicle_detail
+9. specification_table
+10. price_table
+11. recommendation
+12. pros_cons
+13. steps
+14. calculation
+15. code
+16. timeline
+17. faq
+18. sources
+19. mixed
+
+The frontend should render the correct component based on the response type.
+
+==================================================
+1. TABLE
+==================================================
+
+Use a TABLE when the user asks for structured information about multiple
+items.
+
+Examples:
+
+"Give me luxury cars"
+
+"Cars under 20 lakh"
+
+"Electric cars list"
+
+"7-seater cars"
+
+"Car specifications"
+
+Example:
+
+| Car | Type | Seats | Price |
+|---|---|---:|---:|
+| X | SUV | 7 | ₹... |
+| Y | SUV | 5 | ₹... |
+| Z | Sedan | 5 | ₹... |
+
+Use responsive tables.
+
+On mobile, convert rows into compact cards if necessary.
+
+==================================================
+2. COMPARISON TABLE
+==================================================
+
+When the user uses:
+
+vs
+versus
+compare
+difference between
+which is better
+
+use a comparison table.
+
+Example:
+
+"XUV 3XO vs XUV 7XO"
+
+| Feature | XUV 3XO | XUV 7XO |
+|---|---|---|
+| Seats | 5 | 7 |
+| Fuel | ... | ... |
+| Price | ... | ... |
+| Safety | ... | ... |
+
+Then:
+
+### Verdict
+
+[Short recommendation.]
+
+==================================================
+3. RANKED LIST
+==================================================
+
+When the user asks:
+
+best
+top
+safest
+cheapest
+most expensive
+highest mileage
+lowest price
+top 10
+
+use a ranked format.
+
+Example:
+
+## 🛡️ Safest 7-Seater Cars
+
+| Rank | Car | Safety | Seats |
+|---:|---|---|---:|
+| 1 | Car A | 5-Star | 7 |
+| 2 | Car B | 5-Star | 7 |
+| 3 | Car C | 4-Star | 7 |
+
+Do not claim rankings that cannot be supported by the retrieved data.
+
+==================================================
+4. VEHICLE DETAIL CARD
+==================================================
+
+For a single vehicle question:
+
+"XUV 3XO price"
+
+"Tell me about BMW X5"
+
+"XUV 7XO specifications"
+
+use a vehicle detail card.
+
+Example:
+
+┌──────────────────────────────┐
+│ Mahindra XUV 3XO             │
+│                              │
+│ Price     ₹...               │
+│ Seats     5                  │
+│ Fuel      Petrol/Diesel      │
+│ Mileage   ...                │
+│ Safety    ...                │
+└──────────────────────────────┘
+
+==================================================
+5. SPECIFICATION TABLE
+==================================================
+
+For:
+
+"XUV 3XO specifications"
+
+"BMW X5 specs"
+
+use:
+
+## Specifications
+
+| Specification | Details |
+|---|---|
+| Engine | ... |
+| Power | ... |
+| Torque | ... |
+| Fuel | ... |
+| Transmission | ... |
+| Seating | ... |
+| Boot space | ... |
+
+==================================================
+6. PRICE TABLE
+==================================================
+
+For:
+
+"cars price list"
+
+"XUV prices"
+
+"cars under 20 lakh"
+
+use a price-focused table.
+
+| Car | Starting Price | Top Price |
+|---|---:|---:|
+| Car A | ₹... | ₹... |
+| Car B | ₹... | ₹... |
+
+Do not include unrelated technical information unless requested.
+
+==================================================
+7. RECOMMENDATION UI
+==================================================
+
+For:
+
+"Which car should I buy?"
+
+"Best car for family"
+
+"Which SUV is best?"
+
+use recommendation cards.
+
+Example:
+
+### 🥇 Best Overall
+**Car A**
+
+Short reason.
+
+### 🥈 Best Value
+**Car B**
+
+Short reason.
+
+### 🥉 Best Premium
+**Car C**
+
+Short reason.
+
+Do not pretend the recommendation is objective if it depends on user
+preferences.
+
+==================================================
+8. PROS & CONS
+==================================================
+
+For:
+
+"pros and cons"
+
+"advantages and disadvantages"
+
+use two columns:
+
+| ✅ Pros | ⚠️ Cons |
+|---|---|
+| ... | ... |
+| ... | ... |
+
+==================================================
+9. STEPS
+==================================================
+
+For:
+
+"How do I buy a car?"
+
+"How to register a car?"
+
+"How do I compare cars?"
+
+use numbered steps.
+
+Example:
+
+## Steps
+
+1. Choose your budget.
+2. Shortlist vehicles.
+3. Compare specifications.
+4. Take test drives.
+5. Check final on-road price.
+
+==================================================
+10. CALCULATION
+==================================================
+
+For mathematical/calculation questions:
+
+Use a calculation card.
+
+Example:
+
+## Result
+
+**₹12,500/month**
+
+### Calculation
+
+[necessary calculation]
+
+Do not create a table unless it helps.
+
+==================================================
+11. SIMPLE QUESTION
+==================================================
+
+For:
+
+"What is an SUV?"
+
+"What is ADAS?"
+
+"What is NCAP?"
+
+use a simple text answer.
+
+Example:
+
+## What is an SUV?
+
+An SUV is ...
+
+### Example
+
+...
+
+Do not create a table unnecessarily.
+
+==================================================
+12. LIST QUESTIONS
+==================================================
+
+For:
+
+"Give me a list of luxury cars"
+
+"XUV all cars"
+
+"Electric cars list"
+
+use either:
+
+- table
+- clean numbered list
+
+Choose a table when multiple attributes are available/useful.
+
+Choose a simple list when the user only asked for names.
+
+IMPORTANT:
+
+If user asks:
+
+"Give me luxury car names only"
+
+do NOT create a huge table.
+
+Use:
+
+1. Mercedes-Benz S-Class
+2. BMW 7 Series
+3. Audi A8
+...
+
+==================================================
+13. FAQ
+==================================================
+
+For multiple related questions or FAQ-style requests:
+
+Use expandable FAQ sections.
+
+Example:
+
+### What is ADAS?
+Answer...
+
+### Is ADAS safe?
+Answer...
+
+### Which cars have ADAS?
+Answer...
+
+==================================================
+14. TIMELINE
+==================================================
+
+For:
+
+"Car launch timeline"
+
+"History of XUV"
+
+"Evolution of this model"
+
+use a timeline UI.
+
+Example:
+
+2022
+● Model launched
+
+2024
+● Major update
+
+2026
+● New generation
+
+==================================================
+15. MIXED RESPONSES
+==================================================
+
+Some questions require multiple formats.
+
+Example:
+
+"Compare XUV 3XO and XUV 7XO and tell me which one is better."
+
+Render:
+
+1. Short introduction
+2. Comparison table
+3. Verdict/recommendation card
+
+Do NOT force everything into one table.
+
+==================================================
+16. STRUCTURED BACKEND RESPONSE
+==================================================
+
+Do NOT make the frontend guess the response format from arbitrary Markdown.
+
+The backend should preferably return structured data.
+
+Example:
+
+{
+  "type": "comparison",
+  "title": "XUV 3XO vs XUV 7XO",
+  "columns": ["Feature", "XUV 3XO", "XUV 7XO"],
+  "rows": [
+    ["Seats", "5", "7"],
+    ["Fuel", "...", "..."],
+    ["Price", "...", "..."]
+  ],
+  "verdict": "..."
+}
+
+For a table:
+
+{
+  "type": "table",
+  "title": "Luxury Cars",
+  "columns": ["Car", "Type", "Price"],
+  "rows": [...]
+}
+
+For a ranked list:
+
+{
+  "type": "ranked_list",
+  "title": "Safest 7-Seater Cars",
+  "items": [...]
+}
+
+For vehicle detail:
+
+{
+  "type": "vehicle_detail",
+  "vehicle": {
+    "name": "...",
+    "price": "...",
+    "seats": "...",
+    "fuel": "...",
+    "safety": "..."
+  }
+}
+
+==================================================
+17. FRONTEND COMPONENT ARCHITECTURE
+==================================================
+
+Create reusable components:
+
+<AnswerRenderer />
+
+<TextAnswer />
+
+<BulletList />
+
+<NumberedList />
+
+<DataTable />
+
+<ComparisonTable />
+
+<RankedList />
+
+<VehicleList />
+
+<VehicleCard />
+
+<VehicleDetail />
+
+<SpecificationTable />
+
+<PriceTable />
+
+<RecommendationCards />
+
+<ProsCons />
+
+<Steps />
+
+<CalculationCard />
+
+<Timeline />
+
+<FAQ />
+
+<SourceSection />
+
+AnswerRenderer decides which component to render.
+
+Example:
+
+switch (response.type) {
+  case "table":
+    return <DataTable data={response} />;
+
+  case "comparison":
+    return <ComparisonTable data={response} />;
+
+  case "ranked_list":
+    return <RankedList data={response} />;
+
+  case "vehicle_detail":
+    return <VehicleDetail data={response} />;
+
+  case "steps":
+    return <Steps data={response} />;
+
+  case "recommendation":
+    return <RecommendationCards data={response} />;
+
+  case "pros_cons":
+    return <ProsCons data={response} />;
+
+  default:
+    return <TextAnswer data={response} />;
+}
+
+==================================================
+18. AUTOMATIC FORMAT SELECTION
+==================================================
+
+The AI should determine the best format based on user intent.
+
+Examples:
+
+"Luxury cars list"
+→ table or numbered list
+
+"Safest 7-seater cars"
+→ ranked table
+
+"XUV 3XO vs XUV 7XO"
+→ comparison table
+
+"XUV 3XO price"
+→ vehicle detail / price card
+
+"XUV 3XO specifications"
+→ specification table
+
+"Which car should I buy?"
+→ recommendation cards
+
+"How do I buy a car?"
+→ numbered steps
+
+"What is an SUV?"
+→ text answer
+
+"Pros and cons of XUV 7XO"
+→ pros/cons layout
+
+"Best cars under ₹20 lakh"
+→ ranked table
+
+==================================================
+19. DO NOT OVER-FORMAT
+==================================================
+
+Do not use a table just because a table is available.
+
+The goal is:
+
+BEST FORMAT FOR THE QUESTION
+
+not:
+
+ALWAYS USE TABLE
+
+For a one-sentence answer:
+→ simple text.
+
+For 2–4 simple options:
+→ cards/list.
+
+For many comparable items:
+→ table.
+
+For comparison:
+→ comparison table.
+
+For ranking:
+→ ranked table.
+
+For instructions:
+→ steps.
+
+==================================================
+20. MARKDOWN CLEANUP
+==================================================
+
+The frontend must never show raw Markdown syntax such as:
+
+##
+###
+**
+```
+
+If Markdown is supported, parse it correctly.
+
+Otherwise convert AI structured responses to components.
+
+Fix the current issue:
+
+"Safest## 🛡️ Safest 7-Seater Family Cars"
+
+It must render as:
+
+🛡️ Safest 7-Seater Family Cars
+
+==================================================
+21. SOURCES
+===========
+
+Sources should be separate from the main answer.
+
+Do not show:
+
+Live Web Research Findings
+
+as a primary section.
+
+Use:
+
+### Sources
+
+[View sources]
+
+or a small collapsible section.
+
+==================================================
+22. RESPONSIVE UI
+=================
+
+Desktop:
+
+* tables for large datasets
+* cards for recommendations
+* comparison tables for comparisons
+
+Mobile:
+
+* horizontally scrollable tables where necessary
+* or convert table rows into cards
+* no text overflow
+* no giant paragraphs
+
+==================================================
+23. DO NOT HARDCODE VEHICLES
+============================
+
+Do not hardcode:
+
+XUV700
+Safari
+Innova
+etc.
+
+The components must work with dynamically retrieved data.
+
+The web-search/backend layer provides the data.
+
+The UI only determines how to display it.
+
+==================================================
+24. FINAL TESTS
+===============
+
+Test these:
+
+"Luxury cars list"
+→ table/list
+
+"Safest 7-seater family cars"
+→ ranked table
+
+"XUV 3XO vs XUV 7XO"
+→ comparison table
+
+"XUV 3XO price"
+→ detail/price card
+
+"XUV 3XO specifications"
+→ specification table
+
+"Which car should I buy?"
+→ recommendation cards
+
+"How do I buy a car?"
+→ steps
+
+"Pros and cons of XUV 7XO"
+→ pros/cons
+
+"What is an SUV?"
+→ simple answer
+
+"Top 10 SUVs"
+→ ranked table/list
+
+Make the UI automatically adapt.
+
+Do not force every response into the current "AUTOMIND AI ANALYSIS"
+text-card layout.
+
+The goal is a polished dynamic answer interface where the visual format
+matches the user's question.
+
+````
+
+### The key idea
+
+You want **one answer engine, but many renderers**:
+
+```text
+                         User Question
+                              ↓
+                       Intent Detection
+                              ↓
+                    Answer Type / Structure
+                              ↓
+        ┌──────────┬──────────┬──────────┬──────────┐
+        ↓          ↓          ↓          ↓          ↓
+      Table    Comparison    Cards      Steps     Text
+        ↓          ↓          ↓          ↓          ↓
+     <Table>   <Compare>   <Cards>    <Steps>    <Text>
+````
+
+So the AI isn't just deciding **what to say** — it also returns a **structured representation of what it's saying**, and your frontend decides how to visually present it. This will be much more reliable than trying to make one Markdown card handle every type of question.

@@ -1,0 +1,278 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Design Tokens ─────────────────────────────────────────── */
+:root {
+  --bg-main:       #F7F4ED;
+  --bg-surface:    #FFFFFF;
+  --bg-muted:      #EFECE5;
+  --bg-hover:      #E8E4DC;
+  --text-primary:  #0D0D0D;
+  --text-secondary:#6B6560;
+  --text-muted:    #9C9590;
+  --accent:        #C96A2B;
+  --accent-hover:  #B05A22;
+  --accent-blue:   #2563EB;
+  --border:        #E2DDD6;
+  --border-strong: #C8C2BA;
+  --shadow-sm:     0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:     0 4px 12px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+  --shadow-lg:     0 8px 24px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* ── Base ──────────────────────────────────────────────────── */
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    overflow-x: hidden;
+  }
+
+  * {
+    border-color: var(--border);
+  }
+}
+
+/* ── Custom Scrollbar ──────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* ── Surface Cards ─────────────────────────────────────────── */
+.surface-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.surface-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+
+.surface-muted {
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+/* ── Chat Prose Markdown ───────────────────────────────────── */
+.chat-prose {
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--text-primary);
+}
+
+.chat-prose h1,
+.chat-prose h2,
+.chat-prose h3,
+.chat-prose h4 {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.35;
+}
+
+.chat-prose h1 { font-size: 1.15rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
+.chat-prose h2 { font-size: 1rem; }
+.chat-prose h3 { font-size: 0.9rem; }
+
+.chat-prose p {
+  margin-top: 0;
+  margin-bottom: 0.65rem;
+}
+
+.chat-prose ul,
+.chat-prose ol {
+  padding-left: 1.25rem;
+  margin-bottom: 0.65rem;
+}
+
+.chat-prose li {
+  margin-bottom: 0.2rem;
+}
+
+.chat-prose code {
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  font-size: 0.8rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  color: #C96A2B;
+}
+
+.chat-prose pre {
+  background: #1A1A1A;
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+  margin-bottom: 0.75rem;
+}
+
+.chat-prose pre code {
+  background: none;
+  border: none;
+  color: #E8E4DC;
+  padding: 0;
+  font-size: 0.8rem;
+}
+
+.chat-prose strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.chat-prose em {
+  color: var(--text-secondary);
+}
+
+.chat-prose hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1rem 0;
+}
+
+.chat-prose blockquote {
+  border-left: 3px solid var(--accent);
+  padding-left: 0.75rem;
+  color: var(--text-secondary);
+  margin: 0.5rem 0;
+  font-style: italic;
+}
+
+.chat-prose table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.chat-prose th {
+  background: #F7F4ED;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  text-align: left;
+  color: #0D0D0D;
+}
+
+.chat-prose th:last-child {
+  border-right: none;
+}
+
+.chat-prose td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  vertical-align: top;
+  color: #333333;
+}
+
+.chat-prose td:last-child {
+  border-right: none;
+}
+
+.chat-prose tr:last-child td {
+  border-bottom: none;
+}
+
+.chat-prose tr:nth-child(even) td {
+  background: #FAF8F5;
+}
+
+/* ── Thinking Bubble Animation ─────────────────────────────── */
+@keyframes thinking-pulse {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40%            { opacity: 1;   transform: scale(1); }
+}
+
+.thinking-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+  animation: thinking-pulse 1.4s ease-in-out infinite;
+}
+.thinking-dot:nth-child(1) { animation-delay: 0s; }
+.thinking-dot:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    var(--text-muted) 25%,
+    var(--text-secondary) 50%,
+    var(--text-muted) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Slide Down animation for thinking expand ──────────────── */
+@keyframes slideDown {
+  from { opacity: 0; max-height: 0; }
+  to   { opacity: 1; max-height: 200px; }
+}
+
+.thinking-expanded {
+  animation: slideDown 0.25s ease-out forwards;
+  overflow: hidden;
+}
+
+/* ── Accent Button ─────────────────────────────────────────── */
+.btn-accent {
+  background: var(--accent);
+  color: white;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.btn-accent:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.btn-accent:active {
+  transform: translateY(0);
+}

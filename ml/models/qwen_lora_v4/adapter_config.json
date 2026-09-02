@@ -1,0 +1,28 @@
+{
+  "model_version": "qwen_lora_v4",
+  "base_model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "max_seq_length": 2048,
+  "epochs": 5,
+  "learning_rate": 8.5e-05,
+  "lora_r": 64,
+  "lora_alpha": 128,
+  "lora_dropout": 0.05,
+  "target_modules": [
+    "q_proj",
+    "k_proj",
+    "v_proj",
+    "o_proj",
+    "gate_proj",
+    "up_proj",
+    "down_proj"
+  ],
+  "per_device_train_batch_size": 2,
+  "gradient_accumulation_steps": 8,
+  "quantization": "nf4",
+  "warmup_ratio": 0.08,
+  "weight_decay": 0.015,
+  "lr_scheduler": "cosine",
+  "accuracy_target": "99.2%",
+  "output_dir": "/home/ved/PROJECTS/Project-V/ml/models/qwen_lora_v4",
+  "timestamp": "2026-08-27T14:55:29Z"
+}

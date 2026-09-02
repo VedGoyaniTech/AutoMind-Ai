@@ -1,0 +1,31 @@
+{
+  "final_train_loss": 0.289,
+  "final_val_loss": 0.321,
+  "perplexity": 1.38,
+  "epoch_history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.542,
+      "val_loss": 0.518,
+      "learning_rate": 0.00012
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.418,
+      "val_loss": 0.432,
+      "learning_rate": 9.6e-05
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.334,
+      "val_loss": 0.365,
+      "learning_rate": 6e-05
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.289,
+      "val_loss": 0.321,
+      "learning_rate": 2.4e-05
+    }
+  ]
+}

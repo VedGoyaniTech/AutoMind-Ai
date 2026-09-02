@@ -1,0 +1,58 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: automind_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: automind_db
+      MYSQL_USER: automind_user
+      MYSQL_PASSWORD: automind_pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../docker/Dockerfile.backend
+    container_name: automind_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/scripts:/app/scripts
+      - ./backend/tests:/app/tests
+      - ./ml:/app/ml
+    environment:
+      DATABASE_URL: mysql+pymysql://automind_user:automind_pass@mysql:3306/automind_db
+      LLM_PROVIDER: grounded
+      EMBEDDING_MODEL_ID: all-MiniLM-L6-v2
+      VECTOR_STORE_TYPE: local
+      VECTOR_INDEX_PATH: ./vector_index
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.frontend.dev
+    container_name: automind_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_BACKEND_URL=http://backend:8000
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:

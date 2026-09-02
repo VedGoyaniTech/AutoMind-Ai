@@ -1,0 +1,62 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Environment and Secrets
+.env
+.env.local
+.env.*.local
+
+# Local Databases and Vector Indices
+*.db
+*.sqlite
+*.sqlite3
+automind_dev.db
+backend/automind_local.db
+vector_index/
+
+# Data and Raw Crawls
+data/raw/*
+!data/raw/.gitkeep
+data/sample/*
+!data/sample/.gitkeep
+
+# ML Datasets & Generated Partitions
+ml/datasets/quarantine/
+ml/datasets/cleaned/
+ml/datasets/dpo_exported/
+ml/datasets/reports/
+ml/datasets/*.dpo.jsonl
+
+# ML Model Weights & Checkpoints
+ml/models/checkpoints/
+ml/models/quantized/
+*.gguf
+*.bin
+*.safetensors
+*.pt
+*.pth
+
+# Node / Frontend Build Outputs
+node_modules/
+dist/
+dist-ssr/
+*.local
+.pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Models / Cache
+.cache/
+huggingface/
+.venv/
+.venv_linux/

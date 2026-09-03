@@ -44,6 +44,18 @@
 - **Quality Gates (`ml/inference/validate_quantized_quality.py`)**:
   - 100% regression validation across pricing, EMI, Hindi, Gujarati, and English comparisons.
 
+### 5. 🧠 Production-Grade Hybrid RAG Engine
+- **Dual Vector & Relational Store**:
+  - `vehicle_record`: Structured SQL constraints + normalized vehicle vector embeddings.
+  - `knowledge_chunk`: Unstructured knowledge chunks (brochures, manuals, EV charging guides, BH series RTO tax policies, B-NCAP crash standards).
+- **Universal Multi-Format Ingestion**:
+  - Supports `.pdf`, `.txt`, `.md`, `.html`, `.csv`, `.json`, and `.jsonl`.
+  - Recursive semantic chunking (`chunk_size=500`, `chunk_overlap=50`) with SHA-256 deduplication.
+  - CLI: `python scripts/ingest_knowledge_docs.py -p /path/to/docs --source "OEM Manuals"`
+- **Reciprocal Rank Fusion (RRF) & Citation Grounding**:
+  - Combines SQL candidate filtering, vector search, curated dataset records, and live DuckDuckGo web grounding.
+  - Explicit evidence IDs (`[VEH-N]`, `[DOC-N]`, `[WEB-N]`) and strict grounding instructions preventing hallucinations.
+
 ---
 
 ## 🚀 Tech Stack
@@ -61,11 +73,12 @@
 - **Authentication**: JWT access tokens, Bcrypt password hashing
 - **Streaming**: SSE-Starlette
 
-### AI / ML Layer
-- **Embeddings**: `sentence-transformers` (`all-MiniLM-L6-v2`), PyTorch
-- **Vector Store**: `LocalFAISSVectorStore` abstraction (FAISS / NumPy cosine fallback with persistent index)
-- **LLM Provider**: `HuggingFaceLLMProvider` (configurable via `LLM_MODEL_ID`), `MockLLMProvider`
-- **Query Parser**: `QueryAnalyzer` (extracts budget, airbags, body type, fuel type, seating capacity)
+### AI / ML & RAG Layer
+- **Embeddings**: `sentence-transformers` (`all-MiniLM-L6-v2`), 384 dimensions
+- **Vector Store**: `LocalFAISSVectorStore` (FAISS IndexFlatIP + NumPy cosine fallback)
+- **Hybrid Retriever**: `HybridRetriever` (SQL Constraints + RRF Reranker + DDG Web Grounding)
+- **LLM Providers**: `LocalAutoMindProvider` (default curated local engine), `QwenLocalProvider` (fine-tuned Qwen LoRA weights), `ConfigurableAPIProvider` (OpenAI/vLLM/Ollama)
+- **Query Parser**: `QueryAnalyzer` (extracts budget, seats, airbags, body type, fuel type, Indic numerals, Hindi/Gujarati)
 
 ### Database
 - **Primary Database**: MySQL 8.0

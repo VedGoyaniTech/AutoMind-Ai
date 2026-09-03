@@ -1,3 +1,4 @@
+import os
 import time
 import re
 import json
@@ -2687,6 +2688,13 @@ class GroundedLLMProvider(BaseLLMProvider):
                 return "—"
             return f"₹{round(ex_lakh * 1.09, 2):.2f}–{round(ex_lakh * 1.15, 2):.2f} Lakh"
 
+        if not sorted_c and not web_results:
+            return (
+                f"## ℹ️ AutoMind AI — Information Not Available\n\n"
+                f"No verified automotive records or reliable market data are available for *\"{prompt}\"* in the retrieved evidence.\n\n"
+                f"AutoMind AI does not invent vehicle specifications, prices, safety ratings, or features when verified evidence is unavailable. Please check the model name or rephrase your question."
+            )
+
         out = []
         out.append("## 🧠 AutoMind AI — Vehicle Comparison & Recommendation Report\n")
         out.append(f"Evaluated **{len(candidates)} vehicle candidates** for query: *\"{prompt}\"*\n")
@@ -2751,14 +2759,8 @@ class GroundedLLMProvider(BaseLLMProvider):
 
 class LocalAutoMindProvider(BaseLLMProvider):
     """
-    AutoMind Local Provider — connects directly to the local curated knowledge engine
+    AutoMind Local Curated Knowledge Provider — connects directly to the local curated knowledge engine
     (GroundedLLMProvider) without any external API dependency.
-
-    Architecture:
-    - Uses the curated automotive knowledge base (CATEGORY_DATA + FAISS vector index)
-    - DuckDuckGo web grounding for real-time web snippets
-    - Zero external API calls — fully self-contained local model
-    - All responses are structured Markdown (tables, headings, bullet points)
     """
 
     def __init__(self):
@@ -2782,13 +2784,126 @@ class LocalAutoMindProvider(BaseLLMProvider):
             yield "AutoMind AI encountered an error. Please rephrase your query and try again."
 
 
+class QwenLocalProvider(BaseLLMProvider):
+    """
+    Local Transformer / LoRA Provider for fine-tuned Qwen automotive models (e.g. qwen_lora_v4).
+    Falls back gracefully to LocalAutoMindProvider if GPU/PyTorch or model checkpoint is not loaded.
+    """
+
+    STRICT_SYSTEM_PROMPT = (
+        "You are AutoMind AI, a grounded automotive intelligence expert.\n"
+        "You must answer strictly from the provided evidence. Do not invent vehicle specifications, "
+        "prices, safety ratings, launch dates, or features. If the retrieved evidence does not support a claim, "
+        "state clearly that the information is unavailable."
+    )
+
+    def __init__(self, model_path: Optional[str] = None):
+        self.model_path = model_path or os.getenv("LOCAL_MODEL_PATH", "ml/models/qwen_lora_v4")
+        self._pipeline = None
+        self._fallback = LocalAutoMindProvider()
+        self._init_pipeline()
+
+    def _init_pipeline(self):
+        try:
+            import torch
+            from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+            if os.path.exists(self.model_path):
+                logger.info(f"[QwenLocalProvider] Loading model from {self.model_path}...")
+                tokenizer = AutoTokenizer.from_pretrained(self.model_path)
+                model = AutoModelForCausalLM.from_pretrained(
+                    self.model_path,
+                    torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+                    device_map="auto" if torch.cuda.is_available() else None
+                )
+                self._pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer)
+                logger.info("[QwenLocalProvider] Loaded successfully.")
+        except Exception as e:
+            logger.info(f"[QwenLocalProvider] Notice: Running with curated local engine fallback ({e}).")
+            self._pipeline = None
+
+    def generate(self, prompt: str, context: str) -> str:
+        if self._pipeline is None:
+            return self._fallback.generate(prompt, context)
+        try:
+            full_prompt = f"<|im_start|>system\n{self.STRICT_SYSTEM_PROMPT}\n<|im_end|>\n<|im_start|>user\nContext:\n{context}\n\nQuestion: {prompt}\n<|im_end|>\n<|im_start|>assistant\n"
+            res = self._pipeline(full_prompt, max_new_tokens=512, do_sample=False)
+            return res[0]["generated_text"].split("<|im_start|>assistant\n")[-1].strip()
+        except Exception as e:
+            logger.error(f"[QwenLocalProvider] Inference error: {e}. Using fallback.")
+            return self._fallback.generate(prompt, context)
+
+    def stream(self, prompt: str, context: str) -> Generator[str, None, None]:
+        # Yield generated text
+        full = self.generate(prompt, context)
+        yield full
+
+
+class ConfigurableAPIProvider(BaseLLMProvider):
+    """
+    Configurable API-based LLM Provider (e.g. OpenAI compatible, vLLM endpoint, or local Ollama).
+    Uses environment variables (LLM_API_BASE_URL, LLM_API_KEY, LLM_MODEL_NAME) with zero hardcoded keys.
+    """
+
+    STRICT_SYSTEM_PROMPT = (
+        "You are AutoMind AI, a grounded automotive intelligence expert.\n"
+        "You must answer strictly from the provided evidence. Do not invent vehicle specifications, "
+        "prices, safety ratings, launch dates, or features. If the retrieved evidence does not support a claim, "
+        "state clearly that the information is unavailable."
+    )
+
+    def __init__(self):
+        self.api_base = os.getenv("LLM_API_BASE_URL", "http://localhost:11434/v1")
+        self.api_key = os.getenv("LLM_API_KEY", "EMPTY")
+        self.model_name = os.getenv("LLM_MODEL_NAME", settings.LLM_MODEL_ID)
+        self._fallback = LocalAutoMindProvider()
+
+    def generate(self, prompt: str, context: str) -> str:
+        try:
+            import urllib.request
+            import json
+            headers = {"Content-Type": "application/json"}
+            if self.api_key and self.api_key != "EMPTY":
+                headers["Authorization"] = f"Bearer {self.api_key}"
+
+            payload = {
+                "model": self.model_name,
+                "messages": [
+                    {"role": "system", "content": self.STRICT_SYSTEM_PROMPT},
+                    {"role": "user", "content": f"EVIDENCE CONTEXT:\n{context}\n\nUSER QUESTION: {prompt}"}
+                ],
+                "temperature": 0.1
+            }
+
+            req = urllib.request.Request(
+                f"{self.api_base.rstrip('/')}/chat/completions",
+                data=json.dumps(payload).encode("utf-8"),
+                headers=headers
+            )
+            with urllib.request.urlopen(req, timeout=10.0) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return data["choices"][0]["message"]["content"]
+        except Exception as e:
+            logger.warning(f"[ConfigurableAPIProvider] API unavailable ({e}). Using curated local engine fallback.")
+            return self._fallback.generate(prompt, context)
+
+    def stream(self, prompt: str, context: str) -> Generator[str, None, None]:
+        full = self.generate(prompt, context)
+        yield full
+
+
 # ── Provider factory ─────────────────────────────────────────────────────────
 
 def get_llm_provider() -> BaseLLMProvider:
     """
-    Returns the active LLM provider.
-    Uses LocalAutoMindProvider — a fully local, API-free curated knowledge engine.
-    No NVIDIA NIM, HuggingFace, or any external API required.
+    Returns the configured LLM provider according to environment configuration:
+    - 'local' (default): LocalAutoMindProvider (curated deterministic automotive grounding engine)
+    - 'qwen_local': QwenLocalProvider (local PyTorch/HuggingFace weights)
+    - 'api': ConfigurableAPIProvider (OpenAI / vLLM / Ollama endpoint)
     """
+    provider_type = os.getenv("LLM_PROVIDER", settings.LLM_PROVIDER).lower().strip()
+    if provider_type == "qwen_local":
+        return QwenLocalProvider()
+    elif provider_type in ["api", "openai", "vllm", "ollama"]:
+        return ConfigurableAPIProvider()
     return LocalAutoMindProvider()
 

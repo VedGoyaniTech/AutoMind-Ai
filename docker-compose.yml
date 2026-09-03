@@ -28,6 +28,7 @@ services:
       - ./backend/app:/app/app
       - ./backend/scripts:/app/scripts
       - ./backend/tests:/app/tests
+      - ./backend/data:/app/data
       - ./ml:/app/ml
     environment:
       DATABASE_URL: mysql+pymysql://automind_user:automind_pass@mysql:3306/automind_db

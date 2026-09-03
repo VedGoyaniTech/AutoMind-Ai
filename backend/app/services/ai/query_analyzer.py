@@ -12,54 +12,63 @@ class QueryAnalyzer:
     
     BODY_TYPES = ["SUV", "Sedan", "Hatchback", "MUV", "Coupe", "EV", "Cross-over"]
     FUEL_TYPES = ["Petrol", "Diesel", "EV", "Electric", "Hybrid", "CNG"]
-    TRANSMISSIONS = ["Automatic", "Manual", "DCT", "CVT", "AMT"]
+    INDIC_DIGITS = {
+        '૦': '0', '૧': '1', '૨': '2', '૩': '3', '૪': '4', '૫': '5', '૬': '6', '૭': '7', '૮': '8', '૯': '9',
+        '०': '0', '१': '1', '२': '2', '३': '3', '४': '4', '५': '5', '६': '6', '७': '7', '८': '8', '९': '9'
+    }
 
     def analyze(self, prompt: str) -> Dict[str, Any]:
         text = prompt.strip()
-        lower = text.lower()
+        # Normalize Indic numerals
+        norm_text = text
+        for indic_d, arabic_d in self.INDIC_DIGITS.items():
+            norm_text = norm_text.replace(indic_d, arabic_d)
+        lower = norm_text.lower()
 
         # 1. Price constraint parsing
         price_max: Optional[float] = None
         price_min: Optional[float] = None
 
-        lakh_match = re.search(r'(?:under|below|less than|within|upto|up to)\s*(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*(?:lakh|lakhs|l)', lower)
+        lakh_match = re.search(r'(?:under|below|less than|within|upto|up to|अंदर|नीचे|सुधी|કિંમત|બજેટ|नी अंदर)\s*(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*(?:lakh|lakhs|l|लाख|લાખ)', lower)
+        if not lakh_match:
+            lakh_match = re.search(r'(\d+(?:\.\d+)?)\s*(?:lakh|lakhs|l|लाख|લાખ)\s*(?:under|below|less than|within|upto|up to|के अंदर|माँ|સુધી|ની અંદર|अंदर)', lower)
         if lakh_match:
             price_max = float(lakh_match.group(1)) * 100000.0
 
-        num_price_match = re.search(r'(?:under|below)\s*(?:₹|rs\.?|inr)?\s*(\d{6,8})', lower)
+        num_price_match = re.search(r'(?:under|below|अंदर|ની અંદર)\s*(?:₹|rs\.?|inr)?\s*(\d{6,8})', lower)
         if num_price_match:
             price_max = float(num_price_match.group(1))
 
         # 2. Airbags parsing
         airbags_min: Optional[int] = None
-        airbag_match = re.search(r'(\d+)\s*airbags', lower)
+        airbag_match = re.search(r'(\d+)\s*(?:airbags|airbag|एयरबैग|એરબેગ)', lower)
         if airbag_match:
             airbags_min = int(airbag_match.group(1))
 
         # 3. Mileage parsing
         min_mileage: Optional[float] = None
-        mileage_match = re.search(r'(?:mileage|fuel efficiency)\s*(?:above|greater than|>|more than)\s*(\d+(?:\.\d+)?)', lower)
+        mileage_match = re.search(r'(?:mileage|fuel efficiency|माइलेज|માઇલેજ)\s*(?:above|greater than|>|more than|से ज्यादा|થી વધુ)\s*(\d+(?:\.\d+)?)', lower)
         if not mileage_match:
-            mileage_match = re.search(r'(\d+(?:\.\d+)?)\s*(?:km/l|kmpl|kmpl)', lower)
+            mileage_match = re.search(r'(\d+(?:\.\d+)?)\s*(?:km/l|kmpl|किमी/लीटर|કિમી/લીટર)', lower)
         if mileage_match:
             min_mileage = float(mileage_match.group(1))
 
         # 4. Seating capacity
         seating_min: Optional[int] = None
-        seater_match = re.search(r'(\d+)\s*seat', lower)
+        seater_match = re.search(r'(\d+)\s*[-]?\s*(?:seat|seater|seats|सीटर|સીટર|સીટ|सीट)', lower)
         if seater_match:
             seating_min = int(seater_match.group(1))
-        elif "family of 5" in lower or "5 people" in lower:
+        elif "family of 5" in lower or "5 people" in lower or "5 लोग" in lower:
             seating_min = 5
-        elif "family of 7" in lower or "7 people" in lower:
+        elif "family of 7" in lower or "7 people" in lower or "7 लोग" in lower:
             seating_min = 7
 
         # 5. Safety rating
         min_safety_rating: Optional[float] = None
-        safety_match = re.search(r'(\d+)\s*star', lower)
+        safety_match = re.search(r'(\d+)\s*(?:star|स्टार|સ્ટાર)', lower)
         if safety_match:
             min_safety_rating = float(safety_match.group(1))
-        elif "safest" in lower:
+        elif any(w in lower for w in ["safest", "सुरक्षित", "સુરક્ષિત"]):
             min_safety_rating = 4.5
 
         # 6. Extract Manufacturer
@@ -71,23 +80,33 @@ class QueryAnalyzer:
 
         # 7. Extract Body Type
         detected_body_type: Optional[str] = None
-        for b in self.BODY_TYPES:
-            if b.lower() in lower:
-                detected_body_type = b
-                break
+        if any(w in lower for w in ["suv", "एसयूवी", "એસયુવી"]):
+            detected_body_type = "SUV"
+        elif any(w in lower for w in ["sedan", "सेडान", "સેડાન"]):
+            detected_body_type = "Sedan"
+        elif any(w in lower for w in ["hatchback", "हैचबैक", "હેચબેક"]):
+            detected_body_type = "Hatchback"
+        else:
+            for b in self.BODY_TYPES:
+                if b.lower() in lower:
+                    detected_body_type = b
+                    break
 
         # 8. Extract Fuel Type
         detected_fuel: Optional[str] = None
-        for f in self.FUEL_TYPES:
-            if f.lower() in lower:
-                if f.lower() in ["electric", "ev"]:
-                    detected_fuel = "EV"
-                else:
-                    detected_fuel = f
-                break
+        if any(w in lower for w in ["diesel", "डीजल", "ડીઝલ"]):
+            detected_fuel = "Diesel"
+        elif any(w in lower for w in ["petrol", "पेट्रोल", "પેટ્રોલ"]):
+            detected_fuel = "Petrol"
+        elif any(w in lower for w in ["electric", "ev", "इलेक्ट्रिक", "ઇલેક્ટ્રિક", "ईवी", "ઈવી"]):
+            detected_fuel = "EV"
+        elif any(w in lower for w in ["cng", "सीएनजी", "સીએનજી"]):
+            detected_fuel = "CNG"
+        elif any(w in lower for w in ["hybrid", "हाइब्रिड", "હાઇબ્રિડ"]):
+            detected_fuel = "Hybrid"
 
         # 9. Luxury & Supercar detection
-        is_luxury = any(w in lower for w in ["luxury", "luxry", "luxurious", "premium", "exotic", "supercar", "expensive", "sports car"])
+        is_luxury = any(w in lower for w in ["luxury", "luxry", "luxurious", "premium", "exotic", "supercar", "expensive", "sports car", "लग्जरी", "લક્ઝરી"])
         if is_luxury and not price_min:
             price_min = 2500000.0
 
@@ -96,14 +115,14 @@ class QueryAnalyzer:
         year_match = re.search(r'\b(19[89][0-9]|20[0-3][0-9])\b', lower)
         if year_match:
             requested_year = int(year_match.group(1))
-        elif any(phrase in lower for phrase in ["is saal", "this year", "abhi", "now", "recent"]):
+        elif any(phrase in lower for phrase in ["is saal", "this year", "abhi", "now", "recent", "આ વર્ષ"]):
             requested_year = 2024
 
         # 11. Launch Status (launched vs upcoming)
         launch_status = "any"
-        if any(w in lower for w in ["upcoming", "announced", "future", "aane wali", "aage"]):
+        if any(w in lower for w in ["upcoming", "announced", "future", "aane wali", "aage", "આવનારી"]):
             launch_status = "upcoming"
-        elif any(w in lower for w in ["launched", "lounch", "lunched", "release", "released", "aayi", "aagayi"]):
+        elif any(w in lower for w in ["launched", "lounch", "lunched", "release", "released", "aayi", "aagayi", "લૉન્ચ"]):
             launch_status = "launched"
 
         # 12. Market Extraction (default India)
@@ -124,8 +143,8 @@ class QueryAnalyzer:
         elif detected_fuel == "EV":
             category_name = "EV"
 
-        is_launch = any(w in lower for w in ["launch", "lounch", "launched", "lunched", "upcoming", "release", "releases", "new car", "new cars"]) or requested_year is not None
-        is_compare = any(word in lower for word in ["compare", "vs", "versus", "difference", "better than", "or"])
+        is_launch = any(w in lower for w in ["launch", "lounch", "launched", "lunched", "upcoming", "release", "releases", "new car", "new cars", "लॉन्च", "લૉન્ચ"]) or requested_year is not None
+        is_compare = any(word in lower for word in ["compare", "vs", "versus", "difference", "better than", "or", "तुलना", "સરખામણી"])
         is_websites_request = any(word in lower for word in ["websites", "sources", "check before buying", "links", "where to read"])
 
         intent_type = "vehicle_search"
@@ -145,7 +164,8 @@ class QueryAnalyzer:
             price_min=price_min,
             min_mileage=min_mileage,
             min_airbags=airbags_min,
-            min_safety_rating=min_safety_rating
+            min_safety_rating=min_safety_rating,
+            seating_capacity=seating_min
         )
 
         return {

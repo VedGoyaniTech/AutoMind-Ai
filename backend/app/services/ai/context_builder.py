@@ -1,26 +1,45 @@
 import json
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+from app.core.config import settings
 
 class ContextBuilder:
-    """Formats retrieved database documents, validated structured vehicle JSON, and trusted source metadata into prompt context."""
+    """
+    Constructs a concise, citation-indexed prompt context for the LLM.
+    Separates:
+    1. STRUCTURED VEHICLE FACTS ([VEH-N])
+    2. RETRIEVED KNOWLEDGE ([DOC-N])
+    3. TRUSTED LIVE SOURCES ([WEB-N])
+    """
 
     def build_context(
         self,
         docs: List[Dict[str, Any]],
         parsed_constraints: Dict[str, Any],
         web_results: List[Dict[str, Any]] = None,
-        merged_result: Dict[str, Any] = None
+        merged_result: Dict[str, Any] = None,
+        max_docs: int = settings.MAX_CONTEXT_DOCUMENTS
     ) -> str:
-        lines = []
+        sections = []
 
+        # 1. Merged structured vehicle record (if direct single-car search matched)
         if merged_result:
-            lines.append("--- VALIDATED STRUCTURED VEHICLE DATA (JSON) ---")
-            lines.append(json.dumps(merged_result, indent=2))
-            lines.append("--- END VALIDATED STRUCTURED VEHICLE DATA ---\n")
+            sections.append("STRUCTURED VEHICLE SPECIFICATION (EXACT MATCH):\n" + json.dumps(merged_result, indent=2))
 
-        if docs:
-            lines.append("--- RETRIEVED CAR DATABASE CANDIDATES ---")
-            for idx, doc in enumerate(docs, 1):
+        # 2. Separate vehicle records from knowledge chunks
+        veh_records = []
+        knowledge_chunks = []
+
+        for d in docs:
+            d_type = d.get("doc_type", "vehicle_record")
+            if d_type == "knowledge_chunk" or ("text" in d and "chunk_id" in d):
+                knowledge_chunks.append(d)
+            else:
+                veh_records.append(d)
+
+        # 3. Format STRUCTURED VEHICLE FACTS
+        if veh_records:
+            veh_lines = ["STRUCTURED VEHICLE FACTS:"]
+            for idx, doc in enumerate(veh_records[:max_docs], 1):
                 m_name = doc.get("manufacturer", "")
                 model = doc.get("model", "")
                 variant = doc.get("variant", "")
@@ -30,32 +49,33 @@ class ContextBuilder:
                 range_ev = doc.get("electric_range")
                 airbags = doc.get("airbags", 6)
                 safety = doc.get("safety_rating")
+                seats = doc.get("seating_capacity")
                 src_domain = doc.get("source_info", {}).get("domain", "AutoMind DB") if doc.get("source_info") else "AutoMind DB"
 
                 spec_parts = []
-                # price can be a string like "₹12.50 Lakh" or numeric in paisa — handle both
                 raw_price = doc.get("ex_showroom_price", "")
                 if raw_price and str(raw_price).strip():
                     try:
-                        price_numeric = float(str(raw_price).replace(",", "").replace("₹", "").strip())
-                        if price_numeric > 1000:
-                            # looks like it's in rupees/paisa, convert to lakh
-                            price_lakh = round(price_numeric / 100000.0, 2)
-                            spec_parts.append(f"Price: ₹{price_lakh} Lakh")
+                        price_num = float(str(raw_price).replace(",", "").replace("₹", "").strip())
+                        if price_num > 1000:
+                            spec_parts.append(f"Price: ₹{round(price_num / 100000.0, 2)} Lakh")
                         else:
-                            spec_parts.append(f"Price: ₹{price_numeric} Lakh")
+                            spec_parts.append(f"Price: ₹{price_num} Lakh")
                     except (ValueError, TypeError):
-                        # Already a readable string like "₹12.50 Lakh" or "Market Pricing"
                         spec_parts.append(f"Price: {raw_price}")
 
-                spec_parts.append(f"Fuel: {fuel} ({trans})")
+                if fuel:
+                    spec_parts.append(f"Fuel: {fuel} ({trans or 'Standard'})")
+                if seats:
+                    spec_parts.append(f"Seats: {seats}")
+                if airbags:
+                    spec_parts.append(f"Airbags: {airbags}")
+                if safety:
+                    spec_parts.append(f"Safety: {safety}")
                 if mileage:
-                    spec_parts.append(f"Mileage: {mileage} km/l")
+                    spec_parts.append(f"Mileage: {mileage}")
                 if range_ev:
                     spec_parts.append(f"EV Range: {range_ev} km")
-                spec_parts.append(f"Airbags: {airbags}")
-                if safety:
-                    spec_parts.append(f"Safety: {safety} Stars")
 
                 spec_summary = " | ".join(spec_parts)
                 var_clean = (variant or "").strip()
@@ -65,23 +85,38 @@ class ContextBuilder:
                 else:
                     full_car_name = f"{m_name} {mod_clean}".strip()
 
-                lines.append(f"[{idx}] {full_car_name} | {spec_summary} | Source: {src_domain}")
+                veh_lines.append(f"[VEH-{idx}] {full_car_name} | {spec_summary} | Source: {src_domain}")
+            sections.append("\n".join(veh_lines))
 
+        # 4. Format RETRIEVED KNOWLEDGE
+        if knowledge_chunks:
+            chunk_lines = ["RETRIEVED KNOWLEDGE:"]
+            for idx, chunk in enumerate(knowledge_chunks[:max_docs], 1):
+                title = chunk.get("title", "Automotive Document")
+                text = chunk.get("text", "").replace("\n", " ").strip()
+                src_name = chunk.get("source_name", "AutoMind Knowledge Base")
+                src_url = chunk.get("source_url", "")
+                chunk_lines.append(f"[DOC-{idx}] {title} | {text[:350]}... | Source: {src_name} ({src_url})")
+            sections.append("\n".join(chunk_lines))
+
+        # 5. Format TRUSTED LIVE SOURCES (DuckDuckGo)
         if web_results:
-            lines.append("\n--- TRUSTED WEB SEARCH RESULTS ---")
-            for idx, res in enumerate(web_results, 1):
-                title = res.get("title", "Web Search Result")
-                snippet = res.get("snippet", "")
+            web_lines = ["TRUSTED LIVE SOURCES:"]
+            for idx, res in enumerate(web_results[:5], 1):
+                title = res.get("title", "Live Search Result")
+                snippet = res.get("snippet", "").replace("\n", " ").strip()
                 url = res.get("url", "")
                 src = res.get("source", "DuckDuckGo")
-                lines.append(f"[Web {idx}] {title} | {snippet} | Source: {src} ({url})")
+                web_lines.append(f"[WEB-{idx}] {title} | {snippet} | Source: {src} ({url})")
+            sections.append("\n".join(web_lines))
 
+        # 6. Extracted Query Constraints Summary
         if parsed_constraints:
             active_c = [f"{k}: {v}" for k, v in parsed_constraints.items() if v is not None]
             if active_c:
-                lines.append(f"\nUser Query Constraints Extracted: {', '.join(active_c)}")
+                sections.append(f"EXTRACTED USER CONSTRAINTS: {', '.join(active_c)}")
 
-        if not lines:
-            return "No validated vehicle information or web search results could be found for the given query."
+        if not sections:
+            return "No verified automotive records, knowledge documents, or web sources found."
 
-        return "\n".join(lines)
+        return "\n\n".join(sections)

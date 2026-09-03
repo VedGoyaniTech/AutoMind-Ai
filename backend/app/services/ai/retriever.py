@@ -1,4 +1,6 @@
-from typing import List, Dict, Any, Tuple
+import re
+import logging
+from typing import List, Dict, Any, Tuple, Optional
 from sqlalchemy.orm import Session
 from app.repositories.car_repo import CarRepository
 from app.services.ai.vector_store import LocalFAISSVectorStore
@@ -8,8 +10,18 @@ from app.schemas.car import CarSearchFilter
 from app.schemas.chat import SourceCard
 from app.core.config import settings
 
+logger = logging.getLogger(__name__)
+
 class HybridRetriever:
-    """Hybrid Retriever combining structured SQL database filtering, semantic vector search, and DuckDuckGo live web search."""
+    """
+    Production-grade Hybrid Retriever combining:
+    1. Exact SQL constraints on structured vehicle catalog (price, seats, airbags, fuel, body type).
+    2. Semantic vector search across structured vehicle embeddings.
+    3. Semantic vector search across unstructured knowledge chunks (brochures, manuals, EV guides, FAQs).
+    4. Curated historical dataset lookup (2018–2025 launches & specs).
+    5. Targeted DuckDuckGo automotive web research fallback.
+    6. Reciprocal Rank Fusion (RRF) reranking with exact-constraint boosting.
+    """
 
     def __init__(self, db: Session, vector_store: LocalFAISSVectorStore):
         self.db = db
@@ -22,31 +34,35 @@ class HybridRetriever:
         filter_schema: CarSearchFilter,
         top_k: int = settings.RETRIEVAL_TOP_K
     ) -> Tuple[List[Dict[str, Any]], List[SourceCard], List[Dict[str, Any]]]:
-        """Perform hybrid retrieval and return reranked car documents, source cards, and DuckDuckGo search results."""
-
-        # 0. Query verified dataset store first for strict intent matches
-        from app.services.ai.dataset_store import CarDatasetStore
+        """Perform hybrid retrieval and return reranked documents, source cards, and web results."""
+        p_lower = prompt.lower().strip()
         
-        # Extract constraints from filter_schema or prompt
-        p_lower = prompt.lower()
-        import re
+        # 1. Extract intent & temporal signals
         year_match = re.search(r'\b(19[89][0-9]|20[0-3][0-9])\b', p_lower)
         req_year = int(year_match.group(1)) if year_match else None
         
-        is_luxury = (filter_schema.price_min is not None and filter_schema.price_min >= 2000000.0) or any(w in p_lower for w in ["luxury", "luxry", "luxurious", "premium", "exotic", "supercar"])
+        is_luxury = (filter_schema.price_min is not None and filter_schema.price_min >= 2000000.0) or any(
+            w in p_lower for w in ["luxury", "luxry", "luxurious", "premium", "exotic", "supercar"]
+        )
         req_category = "luxury" if is_luxury else (filter_schema.body_type or (filter_schema.fuel_type if filter_schema.fuel_type == "EV" else None))
         req_fuel = filter_schema.fuel_type
 
-        ds_records = CarDatasetStore.query(
-            launch_year=req_year,
-            category=req_category,
-            fuel_type=req_fuel,
-            market="India"
-        )
+        # 2. Query Curated Historical & Dataset Store (only if year/category/fuel specified)
+        from app.services.ai.dataset_store import CarDatasetStore
+        if req_year or req_category or req_fuel:
+            ds_records = CarDatasetStore.query(
+                launch_year=req_year,
+                category=req_category,
+                fuel_type=req_fuel,
+                market="India"
+            )
+        else:
+            ds_records = []
 
-        dataset_docs = []
+        dataset_docs: List[Dict[str, Any]] = []
         for idx, ds in enumerate(ds_records, 1):
             dataset_docs.append({
+                "doc_type": "vehicle_record",
                 "car_variant_id": 9000 + idx,
                 "car_name": ds["car_name"],
                 "brand": ds["brand"],
@@ -73,74 +89,103 @@ class HybridRetriever:
                 }
             })
 
-        # 1. Structured SQL candidate retrieval with original filter
-        sql_candidates, _ = self.car_repo.search_variants(filter_schema)
+        # 3. Structured SQL candidate retrieval with exact filter constraints
+        has_sql_constraints = bool(
+            filter_schema.manufacturer or filter_schema.body_type or filter_schema.fuel_type or
+            filter_schema.price_max or filter_schema.price_min or filter_schema.min_airbags or
+            filter_schema.min_safety_rating or filter_schema.seating_capacity or filter_schema.transmission
+        )
+        if has_sql_constraints:
+            sql_candidates, _ = self.car_repo.search_variants(filter_schema)
+        else:
+            sql_candidates = []
 
-        # Apply strict year filter on SQL candidates if year requested
+        # Apply strict year filter on SQL candidates if requested
         if req_year and sql_candidates:
             sql_candidates = [c for c in sql_candidates if c.model_year == req_year]
 
-        # Filter out budget cars if luxury query is requested
+        # Apply luxury filter if requested
         if is_luxury and sql_candidates:
             luxury_mfrs = ["BMW", "Mercedes-Benz", "Audi", "Porsche", "Jaguar", "Land Rover", "Volvo", "Lexus", "Rolls-Royce", "Bentley", "Lamborghini", "Ferrari", "BYD"]
             sql_candidates = [c for c in sql_candidates if c.ex_showroom_price >= 2500000.0 or any(lm.lower() in c.car_model.manufacturer.name.lower() for lm in luxury_mfrs)]
 
         sql_variant_ids = {c.id for c in sql_candidates}
 
-        # 2. Semantic vector retrieval
+        # 4. Semantic Vector Retrieval (Embed query)
         query_vector = embedding_service.encode(prompt)[0]
+        # Search all documents in the vector store (both vehicle records and knowledge chunks)
         semantic_docs = self.vector_store.search(query_vector, top_k=top_k)
 
-        # 3. Reciprocal Rank Fusion (RRF) Reranking
-        rrf_scores: Dict[int, float] = {}
-        doc_map: Dict[int, Dict[str, Any]] = {}
+        # 5. Reciprocal Rank Fusion (RRF) Reranking
+        rrf_scores: Dict[str, float] = {}
+        doc_map: Dict[str, Dict[str, Any]] = {}
 
-        # Prioritize dataset store matched docs
+        # A. Prioritize dataset store matched docs
         for rank, ddoc in enumerate(dataset_docs):
-            v_id = ddoc["car_variant_id"]
-            rrf_scores[v_id] = 10.0 + (1.0 / (rank + 1))
-            doc_map[v_id] = ddoc
+            key = f"ds_{ddoc['car_variant_id']}"
+            rrf_scores[key] = 10.0 + (1.0 / (rank + 1))
+            doc_map[key] = ddoc
 
+        # B. Exact SQL candidate matches
         for rank, variant in enumerate(sql_candidates):
-            v_id = variant.id
-            rrf_scores[v_id] = rrf_scores.get(v_id, 0.0) + (1.0 / (60 + rank + 1))
-            doc_map[v_id] = self._variant_to_doc_dict(variant)
+            key = f"veh_{variant.id}"
+            rrf_scores[key] = rrf_scores.get(key, 0.0) + (1.0 / (60 + rank + 1)) * 1.5
+            doc_map[key] = self._variant_to_doc_dict(variant)
 
+        # C. Semantic documents (both vehicle records and knowledge chunks)
         for rank, sdoc in enumerate(semantic_docs):
-            v_id = sdoc.get("car_variant_id")
-            if not v_id:
-                continue
+            doc_type = sdoc.get("doc_type", "vehicle_record")
             
-            boost = 1.2 if v_id in sql_variant_ids else 1.0
-            score = (1.0 / (60 + rank + 1)) * boost
-            rrf_scores[v_id] = rrf_scores.get(v_id, 0.0) + score
-            
-            if v_id not in doc_map:
-                v_obj = self.car_repo.get_variant_by_id(v_id)
-                if v_obj:
-                    # Enforce strict year and luxury filters
-                    if req_year and v_obj.model_year != req_year:
-                        continue
-                    if is_luxury and (v_obj.ex_showroom_price < 2500000.0 and not any(lm.lower() in v_obj.car_model.manufacturer.name.lower() for lm in ["BMW", "Mercedes-Benz", "Audi", "Porsche", "Jaguar", "Land Rover", "Volvo", "Lexus", "Rolls-Royce", "Bentley", "Lamborghini", "Ferrari", "BYD"])):
-                        continue
-                    doc_map[v_id] = self._variant_to_doc_dict(v_obj)
+            if doc_type == "knowledge_chunk" or "text" in sdoc and "chunk_id" in sdoc:
+                # Generic unstructured knowledge chunk (Never skipped!)
+                c_id = sdoc.get("chunk_id", f"chunk_{rank}")
+                key = f"chunk_{c_id}"
+                score = (1.0 / (60 + rank + 1)) * 1.2
+                rrf_scores[key] = rrf_scores.get(key, 0.0) + score
+                sdoc["doc_type"] = "knowledge_chunk"
+                doc_map[key] = sdoc
+            else:
+                # Structured vehicle record from vector store
+                v_id = sdoc.get("car_variant_id")
+                if not v_id:
+                    # Still keep as generic document
+                    key = f"generic_{rank}"
+                    rrf_scores[key] = rrf_scores.get(key, 0.0) + (1.0 / (60 + rank + 1))
+                    doc_map[key] = sdoc
+                    continue
 
-        sorted_variant_ids = sorted(rrf_scores.keys(), key=lambda k: rrf_scores[k], reverse=True)[:settings.RERANK_TOP_K]
-        top_docs = [doc_map[v_id] for v_id in sorted_variant_ids if v_id in doc_map]
+                key = f"veh_{v_id}"
+                boost = 1.3 if v_id in sql_variant_ids else 1.0
+                score = (1.0 / (60 + rank + 1)) * boost
+                rrf_scores[key] = rrf_scores.get(key, 0.0) + score
 
-        # 4. DuckDuckGo Live Web Search Retrieval
+                if key not in doc_map:
+                    v_obj = self.car_repo.get_variant_by_id(v_id)
+                    if v_obj:
+                        if req_year and v_obj.model_year != req_year:
+                            continue
+                        if is_luxury and (v_obj.ex_showroom_price < 2500000.0 and not any(lm.lower() in v_obj.car_model.manufacturer.name.lower() for lm in ["BMW", "Mercedes-Benz", "Audi", "Porsche", "Jaguar", "Land Rover", "Volvo", "Lexus", "Rolls-Royce", "Bentley", "Lamborghini", "Ferrari", "BYD"])):
+                            continue
+                        doc_map[key] = self._variant_to_doc_dict(v_obj)
+                    else:
+                        doc_map[key] = sdoc
+
+        sorted_keys = sorted(rrf_scores.keys(), key=lambda k: rrf_scores[k], reverse=True)[:settings.RERANK_TOP_K]
+        top_docs = [doc_map[k] for k in sorted_keys if k in doc_map]
+
+        # 6. DuckDuckGo Live Web Search Retrieval (Only when enabled and relevant)
         web_results: List[Dict[str, Any]] = []
         if getattr(settings, "ENABLE_DUCKDUCKGO_SEARCH", True):
             try:
                 search_prompt = prompt
-                p_low = prompt.lower()
-                if any(w in p_low for w in ["rr", "rolls royce", "rolls-royce", "rolls royal", "rolls royals"]):
+                if any(w in p_lower for w in ["rr", "rolls royce", "rolls-royce", "rolls royal", "rolls royals"]):
                     search_prompt = "Rolls-Royce Motor Cars models pricing specification"
                 web_results = duckduckgo_search_service.search(search_prompt)
-            except Exception:
+            except Exception as e:
+                logger.warning(f"[HybridRetriever] Web search fallback notice: {e}")
                 web_results = []
 
-        # 5. Gather verified source cards
+        # 7. Gather verified source cards
         sources = self._collect_top_sources(top_docs, web_results, prompt)
 
         return top_docs, sources, web_results
@@ -153,7 +198,7 @@ class HybridRetriever:
                 "name": v.source.name,
                 "domain": v.source.domain,
                 "base_url": v.source.base_url,
-                "reliability_score": getattr(v.source, 'reliability_score', 0.9)
+                "reliability_score": getattr(v.source, 'reliability_score', 0.95)
             }
 
         m_name = v.car_model.manufacturer.name if (getattr(v, 'car_model', None) and getattr(v.car_model, 'manufacturer', None)) else "Automotive Manufacturer"
@@ -161,6 +206,7 @@ class HybridRetriever:
         b_type = v.car_model.body_type if getattr(v, 'car_model', None) else "SUV"
 
         return {
+            "doc_type": "vehicle_record",
             "car_variant_id": v.id,
             "manufacturer": m_name,
             "model": mod_name,
@@ -184,40 +230,68 @@ class HybridRetriever:
             "source_info": source_info
         }
 
-    def _collect_top_sources(self, docs: List[Dict[str, Any]], web_results: List[Dict[str, Any]] = None, prompt: str = "") -> List[SourceCard]:
+    def _collect_top_sources(
+        self,
+        docs: List[Dict[str, Any]],
+        web_results: List[Dict[str, Any]] = None,
+        prompt: str = ""
+    ) -> List[SourceCard]:
         cards: List[SourceCard] = []
         seen_domains = set()
 
         for doc in docs:
-            src = doc.get("source_info")
-            if not src:
-                continue
+            doc_type = doc.get("doc_type", "vehicle_record")
+            
+            if doc_type == "knowledge_chunk":
+                title = doc.get("title", "Verified Automotive Document")
+                src_name = doc.get("source_name", "AutoMind Knowledge Base")
+                url = doc.get("source_url") or "https://automind.ai/docs"
+                domain = doc.get("domain") or (url.split("//")[1].split("/")[0] if "//" in url else "automind.ai")
+                
+                if domain in seen_domains:
+                    continue
+                seen_domains.add(domain)
 
-            domain = src.get("domain", "automotive.org")
-            if domain in seen_domains:
-                continue
-
-            seen_domains.add(domain)
-
-            m_name = doc.get("manufacturer", "")
-            mod_name = doc.get("model", "")
-            var_name = doc.get("variant", "")
-            title = f"{m_name} {mod_name} {var_name} Official Specs & Pricing"
-
-            url = doc.get("source_url") or f"https://{domain}/specs/{m_name.lower()}-{mod_name.lower()}"
-            reason = f"Verified automotive specs, pricing, and safety ratings for {m_name} {mod_name}."
-
-            cards.append(
-                SourceCard(
-                    id=src.get("id", 1),
-                    title=title,
-                    website=src.get("name", "AutoMind Direct"),
-                    url=url,
-                    domain=domain,
-                    reason=reason,
-                    reliability_score=src.get("reliability_score", 0.95)
+                cards.append(
+                    SourceCard(
+                        id=len(cards) + 1,
+                        title=title,
+                        website=src_name,
+                        url=url,
+                        domain=domain,
+                        reason=f"Verified knowledge document: {title[:40]}",
+                        reliability_score=doc.get("reliability_score", 0.92)
+                    )
                 )
-            )
+            else:
+                src = doc.get("source_info")
+                if not src:
+                    continue
+
+                domain = src.get("domain", "automotive.org")
+                if domain in seen_domains:
+                    continue
+                seen_domains.add(domain)
+
+                m_name = doc.get("manufacturer", "")
+                mod_name = doc.get("model", "")
+                var_name = doc.get("variant", "")
+                title = f"{m_name} {mod_name} {var_name} Official Specs & Pricing"
+
+                url = doc.get("source_url") or f"https://{domain}/specs/{m_name.lower()}-{mod_name.lower()}"
+                reason = f"Verified automotive specs, pricing, and safety ratings for {m_name} {mod_name}."
+
+                cards.append(
+                    SourceCard(
+                        id=src.get("id", len(cards) + 1),
+                        title=title,
+                        website=src.get("name", "AutoMind Direct"),
+                        url=url,
+                        domain=domain,
+                        reason=reason,
+                        reliability_score=src.get("reliability_score", 0.95)
+                    )
+                )
 
             if len(cards) >= 4:
                 break

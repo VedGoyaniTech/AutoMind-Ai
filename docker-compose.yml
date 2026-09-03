@@ -2,6 +2,7 @@ services:
   mysql:
     image: mysql:8.0
     container_name: automind_mysql
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: automind_db
@@ -22,6 +23,7 @@ services:
       context: ./backend
       dockerfile: ../docker/Dockerfile.backend
     container_name: automind_backend
+    restart: unless-stopped
     ports:
       - "8000:8000"
     volumes:
@@ -45,6 +47,7 @@ services:
       context: .
       dockerfile: ./docker/Dockerfile.frontend.dev
     container_name: automind_frontend
+    restart: unless-stopped
     ports:
       - "5173:5173"
     volumes:

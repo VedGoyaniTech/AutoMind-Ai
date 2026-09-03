@@ -181,6 +181,32 @@ class GroundedLLMProvider(BaseLLMProvider):
                 {"name": "BMW M4 Competition Coupe", "engine": "3.0L Inline-6 Twin-Turbo (503 HP)", "price_inr": "₹1.53 Crore"}
             ]
         },
+        "bmw 5": {
+            "brand": "BMW 5 Series (Long Wheelbase / LWB)",
+            "country": "Germany (Munich / Chennai Assembly)",
+            "key_specs": {
+                "Model Year": "2024–2026 G68 Long Wheelbase",
+                "Engine": "2.0L TwinPower Turbo 4-Cylinder Petrol (258 HP / 400 Nm) with 48V Mild Hybrid",
+                "Transmission": "8-Speed Steptronic Sport Automatic with Shift Paddles",
+                "Acceleration (0–100 km/h)": "6.5 Seconds",
+                "Dimensions": "5,175 mm Length, 3,105 mm Wheelbase (Longest in executive segment)",
+                "Ex-Showroom Price": "₹72.90 – ₹74.50 Lakh",
+                "Safety & ADAS": "5-Star Euro NCAP, Level 2 Driving Assistant Professional",
+                "Key Luxury Features": "BMW Curved Display (14.9\" + 12.3\"), BMW Interaction Bar, Bowers & Wilkins Surround Sound, Panoramic Skyroof"
+            },
+            "models": [
+                {"name": "BMW 5 Series 530Li M Sport (LWB)", "engine": "2.0L Turbo Petrol Mild-Hybrid (258 HP / 400 Nm)", "price_inr": "₹72.90 Lakh"},
+                {"name": "BMW 5 Series 520d Luxury Line", "engine": "2.0L TwinPower Diesel (197 HP / 400 Nm)", "price_inr": "₹74.50 Lakh"}
+            ]
+        },
+        "5 series": {
+            "brand": "BMW 5 Series (Long Wheelbase / LWB)",
+            "country": "Germany (Munich / Chennai Assembly)",
+            "models": [
+                {"name": "BMW 5 Series 530Li M Sport (LWB)", "engine": "2.0L Turbo Petrol Mild-Hybrid (258 HP / 400 Nm)", "price_inr": "₹72.90 Lakh"},
+                {"name": "BMW 5 Series 520d Luxury Line", "engine": "2.0L TwinPower Diesel (197 HP / 400 Nm)", "price_inr": "₹74.50 Lakh"}
+            ]
+        },
         "bmw": {
             "brand": "BMW (Bayerische Motoren Werke)",
             "country": "Germany (Munich)",

@@ -56,29 +56,39 @@ class UniversalMessageRouter:
         clean_nopunct = clean.rstrip("!?.").strip()
         words = clean_nopunct.split()
 
-        # 0. User Self-Introduction & Name Capture (e.g. "my name is Ved", "mera naam rahul hai", "call me X")
-        name_patterns = [
-            r"(?:my name is|i am|i'm|this is|call me|name's)\s+([A-Za-z]+)",
-            r"(?:mera naam|mera name|mujhko|mujhe)\s+([A-Za-z\u0900-\u097F]+)",
-            r"(?:maru naam|maru name|hu)\s+([A-Za-z\u0A80-\u0AFF]+)",
-            r"(?:you call me|call me a|call me)\s+([A-Za-z]+)"
+        # 0. Check if query is an automotive query first
+        auto_keywords = [
+            "bmw", "audi", "mercedes", "benz", "tata", "mahindra", "hyundai", "kia", "maruti", "suzuki",
+            "toyota", "skoda", "volkswagen", "honda", "mg", "nexon", "creta", "thar", "curvv", "xuv700",
+            "xuv400", "seltos", "dzire", "swift", "punch", "harrier", "safari", "innova", "brezza", "car",
+            "cars", "suv", "sedan", "ev", "information", "price", "emi", "batao", "chahie", "chahiye",
+            "details", "mileage", "specs", "specifications", "range", "compare", "vs"
         ]
-        detected_name = None
-        for pat in name_patterns:
-            m = re.search(pat, message, re.IGNORECASE)
-            if m:
-                cand = m.group(1).strip().capitalize()
-                if cand.lower() not in ["a", "an", "the", "car", "suv", "ev", "here", "ready", "asking", "interested", "looking", "conversation"]:
-                    detected_name = cand
-                    break
+        is_car_inquiry = any(ak in clean for ak in auto_keywords)
 
-        if detected_name:
-            reply = f"Hello {detected_name}! 👋 Great to meet you! Main aage se humari har conversation mein aapko {detected_name} kehkar hi address karunga.\n\nAaj main aapki automotive research, car prices, comparisons, ya specifications me kya help kar sakta hoon?"
-            return {
-                "type": "CASUAL",
-                "reply": reply,
-                "user_name": detected_name
-            }
+        # 0.1 User Self-Introduction & Name Capture (ONLY when NOT a car inquiry)
+        if not is_car_inquiry:
+            name_patterns = [
+                r"(?:my name is|i am called|call me|you can call me|you call me)\s+([A-Za-z]+)",
+                r"(?:mera naam|mera name|maru naam|maru name)\s+(?:hai\s+|che\s+)?([A-Za-z\u0900-\u097F\u0A80-\u0AFF]+)",
+                r"(?:mujhko|mujhe|mane)\s+([A-Za-z\u0900-\u097F\u0A80-\u0AFF]+)\s+(?:bulao|bula sakte ho|kehna|bolo)"
+            ]
+            detected_name = None
+            for pat in name_patterns:
+                m = re.search(pat, message, re.IGNORECASE)
+                if m:
+                    cand = m.group(1).strip().capitalize()
+                    if cand.lower() not in ["a", "an", "the", "car", "suv", "ev", "here", "ready", "asking", "interested", "looking", "conversation", "any"]:
+                        detected_name = cand
+                        break
+
+            if detected_name:
+                reply = f"Hello {detected_name}! 👋 Great to meet you! Main aage se humari har conversation mein aapko {detected_name} kehkar hi address karunga.\n\nAaj main aapki automotive research, car prices, comparisons, ya specifications me kya help kar sakta hoon?"
+                return {
+                    "type": "CASUAL",
+                    "reply": reply,
+                    "user_name": detected_name
+                }
 
         # 0.5. Identity & Bot Capability Questions
         if any(w in clean for w in ["who are you", "what is your name", "tum kaun ho", "aap kaun ho", "tam kaun cho", "who made you", "who created you"]):
@@ -257,18 +267,41 @@ async def chat_stream(
                 raise
 
             # Prepend recent user queries for follow-up context continuity
+            # Prepend recent user queries for follow-up context continuity & extract user name
+            known_user_name = None
             try:
                 recent_msgs = gen_chat_repo.get_messages(conv_id)
                 user_history = [m.content for m in recent_msgs[-4:] if m.role == "user" and m.content != msg_text]
                 if user_history:
                     context_text = f"PREVIOUS_USER_QUERIES: {' | '.join(user_history)}\n\n" + context_text
-                logger.info(f"[STAGE:history] OK history_msgs={len(user_history)} req_id={req_id}")
+                
+                for rm in recent_msgs:
+                    if rm.role == "user":
+                        intro_m = re.search(r"(?:my name is|i am called|call me|you can call me|you call me|mera naam|maru naam)\s+([A-Za-z]+)", rm.content, re.IGNORECASE)
+                        if intro_m:
+                            cand_n = intro_m.group(1).strip().capitalize()
+                            if cand_n.lower() not in ["a", "an", "the", "car", "suv", "ev", "here", "ready", "asking", "interested", "looking", "conversation", "any", "bmw", "audi", "mercedes", "tata", "mahindra", "hyundai"]:
+                                known_user_name = cand_n
+                                break
+                    elif rm.role == "assistant" and "Hello " in rm.content:
+                        asst_m = re.search(r"Hello\s+([A-Za-z]+)!", rm.content)
+                        if asst_m:
+                            cand_n = asst_m.group(1).strip().capitalize()
+                            if cand_n.lower() not in ["bmw", "audi", "mercedes", "tata", "mahindra", "hyundai", "car", "user"]:
+                                known_user_name = cand_n
+                                break
+                logger.info(f"[STAGE:history] OK history_msgs={len(user_history)} known_user={known_user_name} req_id={req_id}")
             except Exception as e:
                 logger.warning(f"[STAGE:history] SKIPPED req_id={req_id}: {e}")
 
             yield format_event("progress", {"stage": "generating", "message": "Generating AI response..."})
 
             accumulated_text = ""
+            if known_user_name:
+                greeting_prefix = f"Hello {known_user_name}! 👋\n\n"
+                accumulated_text += greeting_prefix
+                yield format_event("token", {"token": greeting_prefix})
+
             t_first_token = None
             try:
                 for token in llm.stream(msg_text, context_text):

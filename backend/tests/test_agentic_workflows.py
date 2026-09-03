@@ -214,6 +214,10 @@ def test_26_name_introduction_and_conversational_greeting():
     assert r3["type"] == "CASUAL"
     assert "Priya" in r3["reply"]
 
+    # Car inquiries starting with 'mujhe BMW...' must NOT be treated as a name introduction
+    r4 = router.route("han mujhe BMW 5 ka pura information chahie kya aur Sabhi information")
+    assert r4["type"] == "REAL_REQUEST"
+
 # 27. Tata Nexon EV vs Mahindra XUV400 comparison
 def test_27_nexon_ev_vs_xuv400_comparison_no_fuel_hijack():
     from app.services.ai.llm_provider import get_llm_provider
@@ -221,3 +225,11 @@ def test_27_nexon_ev_vs_xuv400_comparison_no_fuel_hijack():
     resp = llm._engine._generate_versus_comparison_response("Compare Tata Nexon EV vs Mahindra XUV400", [])
     assert "Tata Nexon EV vs Mahindra XUV400 EV" in resp
     assert "Electric Vehicle (EV) vs Diesel" not in resp
+
+# 28. BMW 5 Series Full Information Request
+def test_28_bmw_5_series_full_info_request():
+    from app.services.ai.llm_provider import get_llm_provider
+    llm = get_llm_provider()
+    resp = llm._engine._generate_single_model_web_response("BMW 5 ka pura information", "bmw 5", [])
+    assert "BMW 5 Series" in resp
+    assert "72.90" in resp or "₹" in resp

@@ -197,3 +197,27 @@ def test_24_max_tool_call_limit():
 def test_25_unauthorized_safety():
     res = execute_pricing_quote(db=None, city="Ahmedabad", model="")
     assert res.success is False
+
+# 26. Name introduction & memory check
+def test_26_name_introduction_and_conversational_greeting():
+    from app.api.v1.chat import UniversalMessageRouter
+    router = UniversalMessageRouter()
+    r1 = router.route("hey hey my name is Ved and you call me any conversation in call me a Ved")
+    assert r1["type"] == "CASUAL"
+    assert "Ved" in r1["reply"]
+
+    r2 = router.route("mera naam Rahul hai")
+    assert r2["type"] == "CASUAL"
+    assert "Rahul" in r2["reply"]
+
+    r3 = router.route("maru naam Priya che")
+    assert r3["type"] == "CASUAL"
+    assert "Priya" in r3["reply"]
+
+# 27. Tata Nexon EV vs Mahindra XUV400 comparison
+def test_27_nexon_ev_vs_xuv400_comparison_no_fuel_hijack():
+    from app.services.ai.llm_provider import get_llm_provider
+    llm = get_llm_provider()
+    resp = llm._engine._generate_versus_comparison_response("Compare Tata Nexon EV vs Mahindra XUV400", [])
+    assert "Tata Nexon EV vs Mahindra XUV400 EV" in resp
+    assert "Electric Vehicle (EV) vs Diesel" not in resp

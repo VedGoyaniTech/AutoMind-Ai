@@ -1,4 +1,5 @@
 import json
+import re
 import asyncio
 import logging
 from typing import AsyncGenerator
@@ -54,6 +55,35 @@ class UniversalMessageRouter:
         clean = message.strip().lower()
         clean_nopunct = clean.rstrip("!?.").strip()
         words = clean_nopunct.split()
+
+        # 0. User Self-Introduction & Name Capture (e.g. "my name is Ved", "mera naam rahul hai", "call me X")
+        name_patterns = [
+            r"(?:my name is|i am|i'm|this is|call me|name's)\s+([A-Za-z]+)",
+            r"(?:mera naam|mera name|mujhko|mujhe)\s+([A-Za-z\u0900-\u097F]+)",
+            r"(?:maru naam|maru name|hu)\s+([A-Za-z\u0A80-\u0AFF]+)",
+            r"(?:you call me|call me a|call me)\s+([A-Za-z]+)"
+        ]
+        detected_name = None
+        for pat in name_patterns:
+            m = re.search(pat, message, re.IGNORECASE)
+            if m:
+                cand = m.group(1).strip().capitalize()
+                if cand.lower() not in ["a", "an", "the", "car", "suv", "ev", "here", "ready", "asking", "interested", "looking", "conversation"]:
+                    detected_name = cand
+                    break
+
+        if detected_name:
+            reply = f"Hello {detected_name}! 👋 Great to meet you! Main aage se humari har conversation mein aapko {detected_name} kehkar hi address karunga.\n\nAaj main aapki automotive research, car prices, comparisons, ya specifications me kya help kar sakta hoon?"
+            return {
+                "type": "CASUAL",
+                "reply": reply,
+                "user_name": detected_name
+            }
+
+        # 0.5. Identity & Bot Capability Questions
+        if any(w in clean for w in ["who are you", "what is your name", "tum kaun ho", "aap kaun ho", "tam kaun cho", "who made you", "who created you"]):
+            reply = "Main AutoMind AI hoon — aapka intelligent automotive AI research assistant! 🚗 Main aapko car prices, on-road RTO breakdown, EMI calculation, EV vs Petrol comparisons aur detailed specifications me help kar sakta hoon. Aap kisi bhi car ke baare me pooch sakte hain!"
+            return {"type": "CASUAL", "reply": reply}
 
         # 1. Pure Greeting / Thanks / Farewell / Casual Conversation (< 80ms)
         if len(words) <= 5:

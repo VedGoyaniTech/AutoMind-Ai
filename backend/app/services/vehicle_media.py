@@ -1,8 +1,6 @@
 """
 AutoMind AI — Structured Vehicle Media & Image Gallery Service
-Provides curated high-resolution, web-safe automotive imagery categorized by:
-- Exterior (Front three-quarter, Rear, Side profile)
-- Interior (Dashboard, Infotainment, Seating layout)
+Provides curated high-resolution automotive imagery categorized by Exterior and Interior.
 """
 
 from typing import Dict, Any, List, Optional
@@ -26,14 +24,7 @@ VEHICLE_IMAGE_REGISTRY: Dict[str, Dict[str, Any]] = {
                 "url": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1000&auto=format&fit=crop&q=80",
                 "alt": "Mahindra Thar High Ground Clearance Profile",
                 "category": "exterior",
-                "caption": "226mm Ground Clearance & Chunky 18-inch Alloys"
-            },
-            {
-                "id": "thar-int-dash",
-                "url": "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=1000&auto=format&fit=crop&q=80",
-                "alt": "Mahindra Thar Rugged Cockpit & Drivetrain Controls",
-                "category": "interior",
-                "caption": "IP54 Drizzle-Resistant Dashboard with 4x4 Shift Lever"
+                "caption": "226mm Ground Clearance & 18-inch Alloys"
             }
         ]
     },
@@ -45,58 +36,51 @@ VEHICLE_IMAGE_REGISTRY: Dict[str, Dict[str, Any]] = {
             {
                 "id": "creta-ext-front",
                 "url": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=1000&auto=format&fit=crop&q=80",
-                "alt": "Hyundai Creta Connected LED DRLs",
+                "alt": "Hyundai Creta Connected Horizon LED DRLs",
                 "category": "exterior",
                 "caption": "Parametric Black Chrome Grille & Horizon LED DRLs"
             },
             {
                 "id": "creta-int-cabin",
                 "url": "https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=1000&auto=format&fit=crop&q=80",
-                "alt": "Hyundai Creta Dual 10.25-inch Cockpit Screens",
+                "alt": "Hyundai Creta Panoramic Cockpit",
                 "category": "interior",
-                "caption": "Dual Integrated Panoramic Screens & Ventilated Leather Seats"
+                "caption": "Dual 10.25-inch Screens & Ventilated Seats"
             }
         ]
     },
     "nexon": {
         "manufacturer": "Tata",
         "model": "Nexon",
-        "tagline": "5-Star BNCAP Compact SUV",
+        "tagline": "5-Star Bharat NCAP Smart Compact SUV",
         "images": [
             {
                 "id": "nexon-ext-front",
                 "url": "https://images.unsplash.com/photo-1502877338535-766e1452684a?w=1000&auto=format&fit=crop&q=80",
                 "alt": "Tata Nexon Bi-LED Headlights & Stance",
                 "category": "exterior",
-                "caption": "Sequential Dynamic LED DRLs & Coupe-SUV Stance"
+                "caption": "Sequential Dynamic LED DRLs & Aerodynamic Stance"
             },
             {
-                "id": "nexon-int-dash",
-                "url": "https://images.unsplash.com/photo-1563720223185-11003d516935?w=1000&auto=format&fit=crop&q=80",
-                "alt": "Tata Nexon 10.25-inch Harman Infotainment",
+                "id": "nexon-int-cabin",
+                "url": "https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?w=1000&auto=format&fit=crop&q=80",
+                "alt": "Tata Nexon Digital Cockpit & Steering",
                 "category": "interior",
-                "caption": "Two-Spoke Illuminated Steering Wheel & Touch Climate Console"
+                "caption": "10.25-inch Digital Cockpit & Touch Climate Panel"
             }
         ]
     },
     "curvv": {
         "manufacturer": "Tata",
         "model": "Curvv",
-        "tagline": "Futuristic Coupe SUV",
+        "tagline": "Futuristic Aerodynamic Coupe SUV",
         "images": [
             {
                 "id": "curvv-ext-front",
                 "url": "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=1000&auto=format&fit=crop&q=80",
                 "alt": "Tata Curvv Aerodynamic Coupe Roofline",
                 "category": "exterior",
-                "caption": "Sloping Fastback Silhouette & 208mm Ground Clearance"
-            },
-            {
-                "id": "curvv-int-cockpit",
-                "url": "https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?w=1000&auto=format&fit=crop&q=80",
-                "alt": "Tata Curvv Digital Cockpit & Mood Lighting",
-                "category": "interior",
-                "caption": "Voice-Controlled Panoramic Glass Roof with Ambient Lighting"
+                "caption": "Sloping Fastback Silhouette & Flush Door Handles"
             }
         ]
     },
@@ -111,13 +95,6 @@ VEHICLE_IMAGE_REGISTRY: Dict[str, Dict[str, Any]] = {
                 "alt": "Mahindra XUV700 Smart Flush Door Handles",
                 "category": "exterior",
                 "caption": "Arrowhead LED Headlamps & High-Speed Highway Stance"
-            },
-            {
-                "id": "xuv700-int-screens",
-                "url": "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1000&auto=format&fit=crop&q=80",
-                "alt": "Mahindra XUV700 Dual HD Superscreen & Sony Audio",
-                "category": "interior",
-                "caption": "Dual 10.25-inch Superscreen & 12-Speaker Sony 3D Sound"
             }
         ]
     },
@@ -142,6 +119,10 @@ def get_vehicle_gallery_for_query(prompt: str) -> Optional[Dict[str, Any]]:
     Scans a user query or vehicle model for matching media assets.
     """
     p_lower = prompt.lower()
+    # If it's a comparison query, do not return single vehicle gallery
+    if any(w in p_lower for w in [" vs ", " versus ", "compare ", "comparison ", "તુલના", "સરખામણી"]):
+        return None
+
     for key, data in VEHICLE_IMAGE_REGISTRY.items():
         if re.search(r'\b' + re.escape(key) + r'\b', p_lower):
             return {

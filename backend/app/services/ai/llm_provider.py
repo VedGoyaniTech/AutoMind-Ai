@@ -1937,7 +1937,7 @@ class GroundedLLMProvider(BaseLLMProvider):
                 logger.debug(f"[DDG Fallback] notice: {ddg_err}")
 
         # ── 4. Fallback Step 3: Honest "Information not confirmed" if no evidence exists ──
-        if not matched_candidates and not web_results:
+        if not matched_candidates:
             out = []
             out.append("## Information not confirmed\n")
             out.append(f"AutoMind AI could not find enough reliable India-market sources for this exact **{target_year or ''}** query.\n")

@@ -1,205 +1,302 @@
-# AutoMind AI — Intelligent Automobile Intelligence & Research Platform
+# 🏎️ AutoMind AI — Enterprise Automotive Intelligence & Research Platform
 
-**AutoMind AI** is an enterprise-grade full-stack automotive research and intelligence platform. It features a fine-tuned multilingual LLM (Qwen2.5-1.5B with LoRA adapters and 4-bit edge quantization), a high-performance Hybrid RAG engine (dense FAISS embeddings + SQL filters), a deterministic City-Wise RTO & Reducing-Balance Loan EMI calculation engine, Web Speech voice input, rich vehicle media galleries, and an offline DPO (Direct Preference Optimization) feedback collection pipeline.
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React 18](https://img.shields.io/badge/React-18-61DAFB.svg?style=flat&logo=react&logoColor=black)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6.svg?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED.svg?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
+[![MySQL 8.0](https://img.shields.io/badge/MySQL-8.0-4479A1.svg?style=flat&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![Tests](https://img.shields.io/badge/Tests-105%2F105%20Passing%20(100%25)-brightgreen.svg?style=flat&logo=pytest&logoColor=white)](https://pytest.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat)](LICENSE)
+
+**AutoMind AI** is an enterprise-grade, agentic automotive intelligence and conversational research platform designed for the Indian and global automobile ecosystems. Combining a fine-tuned multilingual LLM layer, a deterministic Hybrid RAG engine, an autonomous Agentic Planner-Verifier architecture, and statutory on-road pricing & loan EMI calculation engines, AutoMind AI provides verifiable, hallucination-free automotive consultation in **English, Hindi, Hinglish, and Gujarati**.
+
+---
+
+## 📑 Table of Contents
+
+- [Core Value Proposition](#-core-value-proposition)
+- [System Architecture](#-system-architecture)
+- [Key Platform Capabilities](#-key-platform-capabilities)
+  - [1. Autonomous Agentic AI Workflow Layer](#1--autonomous-agentic-ai-workflow-layer)
+  - [2. Factual Vehicle Comparison Engine](#2--factual-vehicle-comparison-engine)
+  - [3. Production-Grade Hybrid Indic RAG Engine](#3--production-grade-hybrid-indic-rag-engine)
+  - [4. Statutory On-Road Price & Reducing-Balance Loan EMI Engine](#4--statutory-on-road-price--reducing-balance-loan-emi-engine)
+  - [5. Multilingual Web Speech & Personalized Memory](#5--multilingual-web-speech--personalized-memory)
+  - [6. Offline DPO Dataset Exporter & Quantization](#6--offline-dpo-dataset-exporter--quantization)
+- [Tech Stack](#-tech-stack)
+- [Directory Structure](#-directory-structure)
+- [Quick Start Guide](#-quick-start-guide)
+  - [Docker Desktop Deployment (Recommended)](#1-docker-desktop-deployment-recommended)
+  - [Local Development Setup](#2-local-development-setup)
+- [REST API Reference](#-rest-api-reference)
+- [Testing & Quality Assurance](#-testing--quality-assurance)
+- [License & Contributions](#-license--contributions)
+
+---
+
+## 💎 Core Value Proposition
+
+Traditional automotive LLMs frequently suffer from three critical shortcomings:
+1. **Hallucination of Specifications:** Inventing non-existent car models, placeholder engineering terms, or fake pricing.
+2. **Context-Free Comparisons:** Treating conversational filler words (e.g., *"mujhe"*, *"ki comparison kro"*) as vehicle names, yielding fabricated comparisons like *"Muje Rolls Royals"*.
+3. **Statutory Calculation Inaccuracy:** Miscalculating state-specific RTO taxes (cess, EV waivers, luxury slabs) and reducing-balance loan EMIs.
+
+**AutoMind AI solves this with four interlocking architectural pillars:**
+- **Zero-Hallucination Comparison Flow:** Extracts clean vehicle entities, validates them against canonical automotive catalogs, clarifies brand-only requests with model menus (e.g., Rolls-Royce ➔ Ghost, Cullinan, Phantom, Spectre), and rejects unverified models.
+- **Deterministic Mathematical Pricing:** Eliminates LLM math hallucination by delegating RTO, TCS, insurance, and EMI computation to a dedicated Python statutory pricing engine.
+- **Hybrid Indic RAG:** Integrates dense FAISS vector embeddings, structured SQL filtering, and live web grounding with reciprocal rank fusion (RRF) and cited sources.
+- **Autonomous Multi-Step Agentic Layer:** Employs a planner-execution-verifier loop to dynamically decompose complex user queries into discrete tool calls.
+
+---
+
+## 🏛️ System Architecture
+
+```mermaid
+flowchart TD
+    User([User Voice / Text Query]) --> API[FastAPI Gateway / Chat API]
+    API --> Analyzer[Query Analyzer & Multilingual Intent Detector]
+    
+    subgraph "Agentic Decision & Routing Layer"
+        Analyzer --> IntentCheck{Intent Classification}
+        IntentCheck -->|Comparison Query| CompSvc[Vehicle Comparison Service]
+        IntentCheck -->|Pricing / EMI| PricingEng[On-Road Pricing & EMI Engine]
+        IntentCheck -->|Complex Multistep| AgentOrch[Agentic Orchestrator & Planner]
+        IntentCheck -->|General / RAG| HybridRAG[Hybrid Indic RAG Engine]
+    end
+
+    subgraph "Verification & Data Ground Truth"
+        CompSvc --> SpecDB[(Verified Master Vehicle DB)]
+        CompSvc --> BrandCat[(Brand & Model Aliases)]
+        PricingEng --> RTORules[State RTO & Statutory Tax Registry]
+        HybridRAG --> FAISS[(FAISS Vector Store 384-d)]
+        HybridRAG --> SQLDB[(MySQL 8.0 Relational Catalog)]
+        HybridRAG --> WebGround[DuckDuckGo Trusted Web Grounding]
+        AgentOrch --> Tools[Agent Tools: Compare / Quote / Search]
+        Tools --> Verifier[Result Grounding & Safety Verifier]
+    end
+
+    subgraph "Response Generation & Client"
+        CompSvc --> Formatter[Hinglish / Multi-Lingual Formatter]
+        PricingEng --> Formatter
+        Verifier --> Formatter
+        HybridRAG --> Formatter
+        Formatter --> Stream[SSE Streaming Response]
+        Stream --> ClientApp[React 18 / Tailwind Frontend]
+    end
+```
 
 ---
 
 ## 🌟 Key Platform Capabilities
 
-### 1. 🚗 City-Wise RTO, On-Road Price & Reducing-Balance Loan EMI Engine
-- **Deterministic Pricing Calculation**:
-  $$\text{On-Road Price} = \text{Ex-Showroom} + \text{State RTO Tax} + \text{Insurance (1+3 Yr)} + \text{1\% TCS} + \text{FASTag} + \text{HSRP/Cess}$$
-- **State Tax Slabs Supported**:
-  - **Gujarat (`GJ`)**: 6% Road Tax across price bands, 0% EV exemption.
+### 1. 🤖 Autonomous Agentic AI Workflow Layer
+- **Agent Orchestrator & Multi-Step Planner:** Recursively decomposes multi-part automotive research requests (e.g., *"Compare Nexon EV vs XUV400 and give me on-road price in Ahmedabad with 5-year loan EMI"*).
+- **Typed Tool Interfaces:**
+  - `CompareVehiclesTool`: Side-by-side technical, dimensional, and pricing verification.
+  - `CalculatePricingAndEMITool`: City-specific RTO, insurance, statutory cess, and multi-tenure EMI calculation.
+  - `SearchAutomotiveKnowledgeTool`: Hybrid semantic document chunk lookup.
+- **Autonomous Verifier:** Validates tool output against real-world constraints before streaming to the client.
+
+### 2. ⚖️ Factual Vehicle Comparison Engine
+- **Multi-Lingual Intent Detection:** Identifies comparison queries across **English**, **Hindi**, **Hinglish**, and **Gujarati** (*"Creta aur Seltos me se konsi achi hai"*, *"Fortuner ane Endeavour ni tulna"*, *"X vs Y"*).
+- **Conversational Filler Cleansing:** Strips filler words (*"mujhe"*, *"please"*, *"ki comparison kro"*, *"kar do"*, *"ke against"*), preventing dirty entity extraction.
+- **Brand-Only Model Disambiguation:** When a user queries only a brand (e.g., *"Rolls Royce"* or *"Rolls Royals"*), AutoMind AI politely halts table generation and presents verified model options (*Ghost, Cullinan, Phantom, Spectre*).
+- **Zero-Fabrication Rejection:** Queries containing unknown cars (e.g., *"Tata Nexon vs unknowncar"*) identify the valid model, flag the missing model honestly, and refuse to invent specs.
+- **Side-by-Side Markdown Tables:** Generates complete comparisons strictly using verified dataset attributes (Engine, Transmission, Price, ARAI Mileage, Safety Rating, Key Features, Verdict).
+
+### 3. 🧠 Production-Grade Hybrid Indic RAG Engine
+- **Dual Vector & Relational Namespaces:**
+  - `vehicle_record`: Structured SQL constraints + normalized vehicle vector embeddings.
+  - `knowledge_chunk`: Unstructured knowledge chunks (OEM brochures, owner manuals, EV guides, Bharat NCAP crash reports).
+- **Universal Multi-Format Ingestion:** Supports `.pdf`, `.txt`, `.md`, `.html`, `.csv`, `.json`, and `.jsonl` with recursive semantic chunking (`chunk_size=500`, `chunk_overlap=50`) and SHA-256 deduplication.
+- **Reciprocal Rank Fusion (RRF):** Merges dense semantic embeddings (`all-MiniLM-L6-v2`, 384-d) with keyword filters and trusted domain web search.
+- **Grounded Citations:** Appends verified source links (`[CarWale]`, `[Autocar India]`, `[CarDekho]`) with full attribution.
+
+### 4. 💰 Statutory On-Road Price & Reducing-Balance Loan EMI Engine
+- **Deterministic Pricing Pipeline:**
+  $$\text{On-Road Price} = \text{Ex-Showroom} + \text{State RTO Tax} + \text{Insurance (1+3 Yr)} + \text{1\% TCS} + \text{FASTag} + \text{HSRP / Cess}$$
+- **Supported State Tax Regimes:**
+  - **Gujarat (`GJ`)**: 6% Road Tax across price bands, 0% EV waiver.
   - **Maharashtra (`MH`)**: Progressive 11%–13% Petrol, 13%–15% Diesel, 0.5% Road Safety Cess.
   - **Delhi (`DL`)**: Tiered 4%–10% Petrol, 5%–12.5% Diesel, 0% EV waiver.
   - **Karnataka (`KA`)**: 13%–18% Road Tax + 11% Infrastructure Cess.
-- **Reducing-Balance EMI Equation**:
-  $$EMI = P \times r \times \frac{(1+r)^n}{(1+r)^n - 1}$$
-  Supports multi-tenure (3, 5, 7 years) comparison, zero-interest safety, and down-payment validations.
-- **Dedicated APIs**:
-  - `POST /api/v1/pricing/quote`: Comprehensive on-road breakdown + 3/5/7-yr EMI matrix.
-  - `POST /api/v1/pricing/on-road`: Itemized on-road tax breakdown.
-  - `POST /api/v1/pricing/emi`: Standalone multi-tenure loan calculator.
+- **Reducing-Balance Loan EMI Equation:**
+  $$\text{EMI} = P \times r \times \frac{(1+r)^n}{(1+r)^n - 1}$$
+  Supports multi-tenure (3, 5, 7 years) comparison matrices, zero-interest safety, and down-payment validations.
 
-### 2. 🎙️ Web Speech Voice Input & Multi-Modal Vehicle Media Gallery
-- **Web Speech API**: Browser-based speech recognition with fallback to `webkitSpeechRecognition`.
-- **Languages**: Hindi (`hi-IN`), Gujarati (`gu-IN`), English India (`en-IN`) with language toggle and `localStorage` persistence.
-- **Rich Vehicle Media Cards**: Responsive 16:9 carousel with exterior, interior, category filtering, captions, lazy loading, and touch swipe.
+### 5. 🎙️ Multilingual Web Speech & Personalized Memory
+- **Browser-Native Web Speech API:** Speech-to-text with automatic fallback to `webkitSpeechRecognition`.
+- **Locale Toggles:** Hindi (`hi-IN`), Gujarati (`gu-IN`), and English (`en-IN`) with `localStorage` persistence.
+- **Universal Name Memory:** Remembers the user's name across session turns without mistaking car names or queries as personal names.
 
-### 3. 👍 User Feedback API & Offline DPO Dataset Exporter
-- **User Feedback Controls**: Thumbs Up / Thumbs Down below completed assistant messages.
-- **Reason Code Dialog**: Reports incorrect price/RTO, not relevant, incomplete, or language issues.
-- **APIs**: `POST /api/v1/chat/feedback`, `PATCH`, `DELETE`, `GET /status`.
-- **Offline DPO Exporter (`ml/datasets/export_dpo_dataset.py`)**:
-  - Strict ML correctness: Only creates DPO pairs when matching prompts have both a chosen (`up`) and rejected (`down`) response.
-  - Redacts PII (emails, phone numbers).
-  - Exports validated JSONL to `ml/datasets/dpo_preference_dataset.jsonl`.
-
-### 4. ⚡ 4-Bit Model Quantization & Low-Latency Inference
-- **Target Formats**: GGUF (Q4_K_M) via `llama.cpp` and BitsAndBytes NF4.
-- **Memory Optimization**: VRAM footprint reduced from 3.8 GB to 1.25 GB (67.1% memory saving).
-- **Benchmark Harness (`ml/inference/benchmark_inference.py`)**:
-  - Measures TTFT (Time to First Token), Tokens/sec, p50/p95/p99 latency, and concurrency (1, 5, 10 workers).
-- **Quality Gates (`ml/inference/validate_quantized_quality.py`)**:
-  - 100% regression validation across pricing, EMI, Hindi, Gujarati, and English comparisons.
-
-### 5. 🧠 Production-Grade Hybrid RAG Engine
-- **Dual Vector & Relational Store**:
-  - `vehicle_record`: Structured SQL constraints + normalized vehicle vector embeddings.
-  - `knowledge_chunk`: Unstructured knowledge chunks (brochures, manuals, EV charging guides, BH series RTO tax policies, B-NCAP crash standards).
-- **Universal Multi-Format Ingestion**:
-  - Supports `.pdf`, `.txt`, `.md`, `.html`, `.csv`, `.json`, and `.jsonl`.
-  - Recursive semantic chunking (`chunk_size=500`, `chunk_overlap=50`) with SHA-256 deduplication.
-  - CLI: `python scripts/ingest_knowledge_docs.py -p /path/to/docs --source "OEM Manuals"`
-- **Reciprocal Rank Fusion (RRF) & Citation Grounding**:
-  - Combines SQL candidate filtering, vector search, curated dataset records, and live DuckDuckGo web grounding.
-  - Explicit evidence IDs (`[VEH-N]`, `[DOC-N]`, `[WEB-N]`) and strict grounding instructions preventing hallucinations.
+### 6. ⚡ Offline DPO Dataset Exporter & Quantization
+- **Preference Optimization:** User Thumbs Up / Down ratings with reason codes (incorrect price, irrelevant, incomplete, language error) logged to MySQL.
+- **Strict ML Pairing (`ml/datasets/export_dpo_dataset.py`):** Automatically pairs chosen and rejected responses for identical prompts, redacting PII (emails, phone numbers) into standard DPO JSONL format.
+- **4-Bit Quantization Ready:** Benchmarked for GGUF (Q4_K_M) via `llama.cpp` and BitsAndBytes NF4, reducing VRAM usage from 3.8 GB to 1.25 GB (67.1% saving).
 
 ---
 
-## 🚀 Tech Stack
+## 🛠️ Tech Stack
 
-### Frontend
-- **Framework**: React 18, Vite, TypeScript, TSX
-- **Styling**: Tailwind CSS (Dark theme variables, glassmorphic panels, keyframe glows)
-- **State & Router**: React Router v6, React Context
-- **Animation**: Framer Motion
-- **Markdown & Icons**: `react-markdown`, `remark-gfm`, Lucide React
-
-### Backend
-- **Core Framework**: Python 3.11+, FastAPI, Pydantic v2
-- **Database ORM**: SQLAlchemy 2.0, Alembic, PyMySQL
-- **Authentication**: JWT access tokens, Bcrypt password hashing
-- **Streaming**: SSE-Starlette
-
-### AI / ML & RAG Layer
-- **Embeddings**: `sentence-transformers` (`all-MiniLM-L6-v2`), 384 dimensions
-- **Vector Store**: `LocalFAISSVectorStore` (FAISS IndexFlatIP + NumPy cosine fallback)
-- **Hybrid Retriever**: `HybridRetriever` (SQL Constraints + RRF Reranker + DDG Web Grounding)
-- **LLM Providers**: `LocalAutoMindProvider` (default curated local engine), `QwenLocalProvider` (fine-tuned Qwen LoRA weights), `ConfigurableAPIProvider` (OpenAI/vLLM/Ollama)
-- **Query Parser**: `QueryAnalyzer` (extracts budget, seats, airbags, body type, fuel type, Indic numerals, Hindi/Gujarati)
-
-### Database
-- **Primary Database**: MySQL 8.0
+| Layer | Technologies |
+| :--- | :--- |
+| **Frontend UI** | React 18, TypeScript, Vite, Tailwind CSS, Framer Motion, Lucide Icons, React Router v6 |
+| **Backend API** | Python 3.11+, FastAPI, Pydantic v2, SSE-Starlette (Streaming) |
+| **Database & ORM** | MySQL 8.0, SQLAlchemy 2.0, Alembic, PyMySQL |
+| **Vector Search & ML** | FAISS (`IndexFlatIP`), Sentence-Transformers (`all-MiniLM-L6-v2`), NumPy |
+| **Agentic Framework** | In-house Deterministic Multi-Step Orchestrator, Typed Tools, Grounding Verifier |
+| **Containerization** | Docker, Docker Compose (Multi-container networked setup) |
+| **Testing** | Pytest, FastAPI TestClient, AnyIO, Unittest Mock (105 Tests Passing) |
 
 ---
 
-## 📂 Project Architecture
+## 📂 Directory Structure
 
 ```text
-c:\Project-V\
+Project-V/
 ├── backend/
 │   ├── app/
-│   │   ├── api/v1/          # Fast API versioned routes (auth, cars, chat, saved, admin, health)
-│   │   ├── core/            # Config, security, JWT helpers
-│   │   ├── db/              # SQLAlchemy session & base
-│   │   ├── models/          # User, Source, CarModel, CarVariant, SavedCar, Conversation, Message, IngestionJob
-│   │   ├── schemas/         # Pydantic schemas
-│   │   ├── repositories/    # User, Car, Chat, Ingestion repos
-│   │   └── services/
-│   │       ├── ai/          # VectorStore, EmbeddingService, QueryAnalyzer, HybridRetriever, LLMProvider
-│   │       └── ingestion/   # DataLoader, DataValidator, DataNormalizer, IngestionPipeline
-│   ├── scripts/             # seed_db.py, generate_car_data.py, import_csv.py, import_jsonl.py, build_embeddings.py
-│   ├── tests/               # pytest test suite
-│   ├── requirements.txt
-│   └── main.py
+│   │   ├── api/v1/                   # FastAPI routes (auth, cars, chat, voice, pricing, feedback)
+│   │   ├── core/                     # JWT security, settings, logging configuration
+│   │   ├── db/                       # SQLAlchemy database session & model metadata
+│   │   ├── models/                   # Relational models (User, Car, Conversation, IngestionJob)
+│   │   ├── schemas/                  # Pydantic request/response schemas
+│   │   ├── services/
+│   │   │   ├── agentic/              # Multi-step orchestrator, planner, verifier & tools
+│   │   │   ├── ai/                   # Comparison service, hybrid RAG, vector store, embeddings
+│   │   │   ├── pricing/              # State RTO tax rules, insurance, fees, reducing-balance EMI
+│   │   │   └── vehicle_search/       # Entity validators, domain whitelists, filters
+│   ├── scripts/                      # DB seeding, CSV import, document ingestion scripts
+│   ├── tests/                        # 105 automated unit and end-to-end pytest cases
+│   └── requirements.txt              # Python production dependencies
 ├── frontend/
 │   ├── src/
-│   │   ├── api/             # Axios client & endpoints
-│   │   ├── components/      # UI, AI progress, Source cards, Car cards, Sidebar, Navbar
-│   │   ├── context/         # AuthContext
-│   │   ├── pages/           # Landing, Login, Register, Dashboard, Chat, CarDetail, Compare, Saved, Admin, Settings
-│   │   ├── routes/          # AppRoutes
-│   │   └── types/           # TypeScript interfaces
+│   │   ├── api/                      # Axios client and API integration hooks
+│   │   ├── components/               # UI components, chat interfaces, vehicle media cards
+│   │   ├── context/                  # AuthContext and state providers
+│   │   ├── pages/                    # Chat, Compare, Dashboard, Login, SavedCars pages
+│   │   └── types/                    # TypeScript data definitions
 │   ├── package.json
-│   ├── tailwind.config.js
-│   └── vite.config.ts
-├── ml/                      # Optional fine-tuning datasets and training scripts
-├── docker/                  # Dockerfile.backend, Dockerfile.frontend
-├── docker-compose.yml
-├── .env.example
+│   ├── vite.config.ts
+│   └── tailwind.config.js
+├── docker-compose.yml                # Orchestrates backend, frontend, and MySQL containers
+├── Dockerfile.backend                # Container specification for FastAPI service
+├── Dockerfile.frontend               # Container specification for React/Vite service
 └── README.md
 ```
 
 ---
 
-## ⚡ Quick Start Guide
+## 🚀 Quick Start Guide
 
-### 1. Prerequisites
-- Python 3.11+
-- Node.js 18+ & npm
-- MySQL 8.0 server (or Docker)
+### 1. Docker Desktop Deployment (Recommended)
 
-### 2. Environment Configuration
-Copy `.env.example` to `.env`:
+Run the full stack with a single command:
+
 ```bash
-cp .env.example .env
+# 1. Clone repository
+git clone https://github.com/VedGoyaniTech/AutoMind-Ai.git
+cd AutoMind-Ai
+
+# 2. Configure environment variables
+cp backend/.env.example backend/.env
+
+# 3. Build and launch all multi-container services
+docker compose up -d --build
 ```
 
-### 3. Backend Setup
+**Service Endpoints:**
+- 🌐 **Frontend Application:** [http://localhost:5173](http://localhost:5173)
+- ⚙️ **Backend REST API:** [http://localhost:8000](http://localhost:8000)
+- 📖 **Interactive Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
+- 🗄️ **MySQL Database:** `localhost:3307` (user: `root`, password: `automind_password`)
+
+---
+
+### 2. Local Development Setup
+
+#### Backend Setup:
 ```bash
 cd backend
 python -m venv venv
-# On Windows:
-venv\Scripts\activate
-# On Linux/macOS:
-source venv/bin/activate
+
+# Activate virtual environment
+source venv/bin/activate       # Linux / macOS
+# or: venv\Scripts\activate    # Windows
 
 pip install -r requirements.txt
 
-# Seed realistic vehicles, sources, and demo user (demo@automind.ai / password123)
+# Seed vehicle database and demo user
 python scripts/seed_db.py
 
-# Start FastAPI server
-uvicorn app.main:app --reload --port 8000
+# Start FastAPI development server
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
-*Swagger API Documentation will be available at `http://localhost:8000/docs`.*
 
-### 4. Frontend Setup
+#### Frontend Setup:
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-*Frontend dev server will be live at `http://localhost:5173`.*
 
 ---
 
-## 📊 Million-Record Benchmark & Data Ingestion
+## 📡 REST API Reference
 
-To test ingestion scalability for 10,000 or 1,000,000 car records:
+### 1. Conversational Chat & Streaming
+- `POST /api/v1/chat/message`: Send automotive query, returns assistant response.
+- `POST /api/v1/chat/stream`: Realtime Server-Sent Events (SSE) streaming endpoint.
+- `POST /api/v1/chat/voice/transcribe`: Audio transcription with automotive intent extraction.
 
-```bash
-# Generate and ingest 10,000 synthetic vehicle records into MySQL & Vector Store
-python backend/scripts/generate_car_data.py --rows 10000
+### 2. Statutory Pricing & EMI
+- `POST /api/v1/pricing/quote`: Comprehensive on-road quote + multi-tenure (3/5/7 yr) EMI breakdown.
+  ```json
+  {
+    "city": "Ahmedabad",
+    "stateCode": "GJ",
+    "model": "Creta",
+    "exShowroomPrice": 1860000.0,
+    "loanTenureYears": 5,
+    "interestRate": 9.5
+  }
+  ```
+- `POST /api/v1/pricing/on-road`: Itemized state RTO, road safety cess, FASTag, and insurance breakdown.
+- `POST /api/v1/pricing/emi`: Standalone reducing-balance loan calculator.
 
-# Import external CSV dataset
-python backend/scripts/import_csv.py --file data/sample_cars.csv --source "Kaggle Auto 2026"
-
-# Re-build vector embeddings index
-python backend/scripts/build_embeddings.py
-```
+### 3. User Feedback & Preference Learning
+- `POST /api/v1/chat/feedback`: Submit Thumbs Up / Down with granular reason codes.
+- `GET /api/v1/chat/feedback/status`: Check feedback submission state for a message.
 
 ---
 
-## 🐳 Docker Deployment
+## 🧪 Testing & Quality Assurance
 
-To launch the full stack (MySQL 8 + FastAPI + React Frontend) using Docker Compose:
-
-```bash
-docker-compose up --build
-```
-
----
-
-## 🧪 Running Automated Tests
+AutoMind AI enforces strict test-driven quality assurance. Every commit is validated with **105 automated unit and end-to-end test cases**:
 
 ```bash
-pytest backend/tests
+# Run entire backend test suite inside Docker
+docker exec automind_backend pytest /app/tests/ -v
+
+# Run vehicle comparison flow test suite
+docker exec automind_backend pytest /app/tests/test_comparison_flow.py -v
+
+# Run agentic workflow test suite
+docker exec automind_backend pytest /app/tests/test_agentic_workflows.py -v
 ```
+
+### Verified Test Matrix:
+- ✅ **Comparison Flow (12 Tests):** Case A–F validation, multi-lingual intent (English, Hindi, Hinglish, Gujarati), clean candidate extraction, developer trace logging.
+- ✅ **Agentic Workflows (29 Tests):** Multi-step planning, tool invocations, TCO calculations, verification safety gates.
+- ✅ **Pricing & RTO Calculations (18 Tests):** State RTO slabs (GJ, MH, DL, KA), EV exemptions, zero-interest safety, reducing-balance math.
+- ✅ **Hybrid RAG & Vector Search (8 Tests):** Exact filter retrieval, semantic chunking, deduplication, citation grounding.
+- ✅ **Historical Automotive Knowledge (20 Tests):** Multi-era car queries (2000–2026), classic Indian launches, honest no-data disclosures.
 
 ---
 
 ## 🛡️ License & Security
-Built with secure JWT token authentication, Bcrypt password hashing, and parameterized SQL queries. Grounded in structured automotive truth.
+
+- **Authentication:** Industry-standard JWT tokens with secure HTTP-only cookies / authorization headers and Bcrypt password hashing.
+- **Data Protection:** Parameterized SQL queries via SQLAlchemy ORM; automated PII redaction on DPO exports.
+- **License:** Released under the [MIT License](LICENSE). Built for developers, researchers, and automobile enthusiasts.

@@ -100,6 +100,7 @@ class CarSearchFilter(BaseModel):
     min_mileage: Optional[float] = None
     min_airbags: Optional[int] = None
     min_safety_rating: Optional[float] = None
+    seating_capacity: Optional[int] = None
     page: int = 1
     page_size: int = 12
 

@@ -49,10 +49,12 @@ dist-ssr/
 yarn-debug.log*
 yarn-error.log*
 
-# IDE / OS
+# Local Logs & IDE
+*.log
 .vscode/
 .idea/
 .DS_Store
+Screenshot*.png
 Thumbs.db
 
 # Models / Cache

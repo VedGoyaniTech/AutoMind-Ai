@@ -47,6 +47,12 @@ export interface ChatMessage {
     cars?: CarVariantSummary[];
     gallery?: VehicleGallery;
     pricing_quote?: any;
+    comparison?: any;
+    follow_up?: {
+      fields?: string[];
+      question?: string;
+    };
+    agent_plan?: any;
     feedback?: {
       id?: number;
       rating: 'up' | 'down';

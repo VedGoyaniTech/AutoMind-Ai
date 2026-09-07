@@ -1,3 +1,4 @@
+import os
 import time
 import re
 import json
@@ -5,6 +6,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Generator, List, Dict, Any, Optional
 from app.core.config import settings
+from app.services.ai.vehicle_comparison_service import comparison_service
 
 logger = logging.getLogger(__name__)
 
@@ -69,17 +71,20 @@ class BaseLLMProvider(ABC):
     def _is_automotive_query(self, prompt: str) -> bool:
         p = prompt.lower()
         signals = [
-            "car", "cars", "vehicle", "vehicles", "suv", "sedan", "hatchback", "ev", "electric", "petrol", "diesel",
+            "car", "cars", "kar", "kars", "vehicle", "vehicles", "gadi", "gaadi", "gadiyo", "gadiyon", "gadiya", "gaadiya", "vahan", "vahano",
+            "suv", "sedan", "hatchback", "ev", "electric", "petrol", "diesel",
             "hybrid", "price", "prices", "cost", "lakh", "crore", "mileage", "kmpl", "range", "airbag", "airbags", "safety",
             "ncap", "gncap", "bncap", "engine", "torque", "power", "transmission", "automatic", "manual",
-            "compare", "recommend", "buy", "booking", "test drive", "variant", "model", "brand",
+            "compare", "recommend", "buy", "booking", "test drive", "variant", "model", "brand", "list", "launches", "launched", "launch",
             "tata", "nano", "hyundai", "kia", "maruti", "honda", "toyota", "mahindra", "volkswagen", "bmw", "bwm",
             "audi", "mercedes", "porsche", "ferrari", "farari", "ferari", "lamborghini", "bugatti", "nexon", "creta",
             "seltos", "brezza", "fortuner", "xuv", "swift", "city", "on-road", "ex-showroom", "fuel",
             "charging", "battery", "spec", "feature", "adas", "dct", "m5", "m3", "amg", "7-seater", "7 seater",
             "rr", "rolls", "royce", "image", "images", "photo", "photos", "pic", "pics", "famous", "iconic", "supercar", "super car"
         ]
-        return any(sig in p for sig in signals)
+        has_signal = any(sig in p for sig in signals)
+        has_year = bool(re.search(r'\b(19\d\d|20\d\d)\b', p))
+        return has_signal or has_year
 
     def _validate_response_entities(self, prompt: str, text: str) -> str:
         """Section 25 & 26: Entity Safety Check. Rejects foreign models or invalid entity tokens."""
@@ -178,6 +183,32 @@ class GroundedLLMProvider(BaseLLMProvider):
                 {"name": "BMW M5 Competition (G90 PHEV)", "engine": "4.4L Twin-Turbo V8 + Electric Motor (717 HP / 1,000 Nm)", "price_inr": "₹1.99 – ₹2.10 Crore"},
                 {"name": "BMW M3 Competition M xDrive", "engine": "3.0L Inline-6 Twin-Turbo (503 HP)", "price_inr": "₹1.47 Crore"},
                 {"name": "BMW M4 Competition Coupe", "engine": "3.0L Inline-6 Twin-Turbo (503 HP)", "price_inr": "₹1.53 Crore"}
+            ]
+        },
+        "bmw 5": {
+            "brand": "BMW 5 Series (Long Wheelbase / LWB)",
+            "country": "Germany (Munich / Chennai Assembly)",
+            "key_specs": {
+                "Model Year": "2024–2026 G68 Long Wheelbase",
+                "Engine": "2.0L TwinPower Turbo 4-Cylinder Petrol (258 HP / 400 Nm) with 48V Mild Hybrid",
+                "Transmission": "8-Speed Steptronic Sport Automatic with Shift Paddles",
+                "Acceleration (0–100 km/h)": "6.5 Seconds",
+                "Dimensions": "5,175 mm Length, 3,105 mm Wheelbase (Longest in executive segment)",
+                "Ex-Showroom Price": "₹72.90 – ₹74.50 Lakh",
+                "Safety & ADAS": "5-Star Euro NCAP, Level 2 Driving Assistant Professional",
+                "Key Luxury Features": "BMW Curved Display (14.9\" + 12.3\"), BMW Interaction Bar, Bowers & Wilkins Surround Sound, Panoramic Skyroof"
+            },
+            "models": [
+                {"name": "BMW 5 Series 530Li M Sport (LWB)", "engine": "2.0L Turbo Petrol Mild-Hybrid (258 HP / 400 Nm)", "price_inr": "₹72.90 Lakh"},
+                {"name": "BMW 5 Series 520d Luxury Line", "engine": "2.0L TwinPower Diesel (197 HP / 400 Nm)", "price_inr": "₹74.50 Lakh"}
+            ]
+        },
+        "5 series": {
+            "brand": "BMW 5 Series (Long Wheelbase / LWB)",
+            "country": "Germany (Munich / Chennai Assembly)",
+            "models": [
+                {"name": "BMW 5 Series 530Li M Sport (LWB)", "engine": "2.0L Turbo Petrol Mild-Hybrid (258 HP / 400 Nm)", "price_inr": "₹72.90 Lakh"},
+                {"name": "BMW 5 Series 520d Luxury Line", "engine": "2.0L TwinPower Diesel (197 HP / 400 Nm)", "price_inr": "₹74.50 Lakh"}
             ]
         },
         "bmw": {
@@ -310,10 +341,11 @@ class GroundedLLMProvider(BaseLLMProvider):
     ]
 
     AUTOMOTIVE_SIGNALS = [
-        "car", "vehicle", "suv", "sedan", "hatchback", "ev", "electric", "petrol", "diesel",
+        "car", "cars", "kar", "kars", "vehicle", "vehicles", "gadi", "gaadi", "gadiyo", "gadiyon", "gadiya", "gaadiya", "vahan", "vahano",
+        "suv", "sedan", "hatchback", "ev", "electric", "petrol", "diesel",
         "hybrid", "price", "cost", "lakh", "crore", "mileage", "kmpl", "range", "airbag", "safety",
         "ncap", "gncap", "bncap", "engine", "torque", "power", "transmission", "automatic", "manual",
-        "compare", "recommend", "buy", "booking", "test drive", "variant", "model", "brand",
+        "compare", "recommend", "buy", "booking", "test drive", "variant", "model", "brand", "list",
         "tata", "nano", "hyundai", "kia", "maruti", "honda", "toyota", "mahindra", "volkswagen", "bmw", "bwm",
         "audi", "mercedes", "porsche", "ferrari", "farari", "ferari", "lamborghini", "bugatti", "buggti", "nexon", "creta",
         "seltos", "brezza", "fortuner", "xuv", "swift", "city", "on-road", "ex-showroom", "fuel",
@@ -414,10 +446,11 @@ class GroundedLLMProvider(BaseLLMProvider):
 
     def _is_automotive_query(self, prompt: str) -> bool:
         p = prompt.lower()
-        # Check explicit automotive signals or known brand/model names
+        # Check explicit automotive signals, known brands/models, or 4-digit years
         has_signal = any(sig in p for sig in self.AUTOMOTIVE_SIGNALS)
         has_brand_or_model = any(bm in p for bm in self.KNOWN_BRANDS_AND_MODELS)
-        return has_signal or has_brand_or_model
+        has_year = bool(re.search(r'\b(19\d\d|20\d\d)\b', p))
+        return has_signal or has_brand_or_model or has_year
 
     def _extract_query_model_term(self, prompt: str) -> Optional[str]:
         p = prompt.lower().strip()
@@ -1593,9 +1626,13 @@ class GroundedLLMProvider(BaseLLMProvider):
         p_lower = prompt.lower()
         out = []
 
-        # 1. Check for Fuel / Energy / TCO Cost Comparison
-        fuel_keywords = ["ev", "electric", "diesel", "petrol", "cng", "hybrid", "ice"]
-        if any(f in p_lower for f in fuel_keywords) and any(w in p_lower for w in ["cost", "running cost", "mileage", "kharcha", "saving", "tco", "maintenance", "per km", "analysis", "vs", "versus"]):
+        # 1. Check for Fuel / Energy / TCO Cost Comparison (ONLY when comparing fuels, NOT specific vehicle models)
+        fuel_pairs = ["ev vs diesel", "diesel vs ev", "ev vs petrol", "petrol vs ev", "cng vs petrol", "petrol vs cng", "diesel vs petrol", "petrol vs diesel", "hybrid vs ev", "ev vs hybrid"]
+        is_fuel_vs_fuel = any(fp in p_lower for fp in fuel_pairs)
+        has_tco_keyword = any(w in p_lower for w in ["running cost", "tco", "per km cost", "cost per km", "savings per km", "kharcha per km"])
+        is_model_vs_model = any(m in p_lower for m in ["nexon", "xuv400", "curvv", "creta", "zs ev", "punch ev", "tiago ev", "windsor", "seltos", "thar", "jimny", "xuv700", "safari", "harrier", "dzire", "swift"])
+
+        if (is_fuel_vs_fuel or has_tco_keyword) and not is_model_vs_model:
             return self._generate_fuel_cost_comparison_response(prompt, web_results)
 
         # 2. Check for Transmission Comparison
@@ -1606,12 +1643,39 @@ class GroundedLLMProvider(BaseLLMProvider):
         if any(w in p_lower for w in ["fwd vs rwd", "rwd vs fwd", "awd vs 4x4", "4x4 vs awd", "4wd vs awd", "fwd", "rwd", "awd", "4x4"]):
             return self._generate_drivetrain_comparison_response(prompt, web_results)
 
-        # 4. Extract target vehicle names
+        # 4. Master Automotive Comparison Flow via Unified VehicleComparisonService
+        comp_res = comparison_service.process_comparison(prompt)
+        if comp_res.intent_detected and comp_res.response_markdown:
+            refs = self._format_references_section(web_results)
+            if refs and comp_res.clarification_status == "ready":
+                return f"{comp_res.response_markdown}\n\n---\n{refs}"
+            return comp_res.response_markdown
+
+        # 5. Fallback vehicle name extraction if service did not resolve
         vs_split = re.split(r'\s+(?:vs|versus|compared to|and)\s+', prompt, flags=re.IGNORECASE)
         m_a = vs_split[0].replace("Compare", "").replace("compare", "").replace("Show", "").replace("show", "").strip(" :,-") if len(vs_split) >= 1 else "Model A"
         m_b = vs_split[1].split("expected")[0].split("launch")[0].split("engine")[0].split("top speed")[0].split("cost")[0].strip(" :,-") if len(vs_split) >= 2 else "Model B"
 
-        if any(k in p_lower for k in ["jesko", "koenigsegg", "hennessey", "venom", "f5", "hypercar", "top speed"]):
+        if ("nexon" in p_lower and "xuv400" in p_lower) or ("nexon ev" in p_lower and "xuv" in p_lower):
+            out.append("## ⚡ Tata Nexon EV vs Mahindra XUV400 EV — Electric SUV Comparison\n")
+            out.append("| Specification / Feature | **Tata Nexon EV (Long Range / LR)** | **Mahindra XUV400 (EL Pro)** |")
+            out.append("| :--- | :--- | :--- |")
+            out.append("| **Price Range (Ex-Showroom)** | **₹14.49 – ₹19.49 Lakh** | **₹15.49 – ₹19.39 Lakh** |")
+            out.append("| **Battery Pack Capacity** | 40.5 kWh (LR) / 30 kWh (Medium Range) | 39.4 kWh / 34.5 kWh LFP Prismatic Cells |")
+            out.append("| **ARAI Claimed Range** | **465 km (LR)** / 325 km (MR) | **456 km (39.4 kWh)** / 359 km (34.5 kWh) |")
+            out.append("| **Real-World City Range** | **310 – 330 km** | **290 – 310 km** |")
+            out.append("| **Electric Motor Output** | 145 PS Power / 215 Nm Torque | **150 PS Power / 310 Nm Torque (Instant Pull)** |")
+            out.append("| **0–100 km/h Acceleration** | 8.9 Seconds | **8.3 Seconds (Faster Sprint)** |")
+            out.append("| **DC Fast Charging (50 kW)** | 10% to 80% in ~56 mins | 0% to 80% in ~50 mins |")
+            out.append("| **V2V & V2L Power Output** | **Yes (Charge other EVs & appliances)** | No |")
+            out.append("| **Infotainment & Cockpit** | 12.3-inch Ultra HD Touchscreen + Arcade.ev | Dual 10.25-inch Screens + Wireless Android Auto/CarPlay |")
+            out.append("| **Boot Space** | 350 Liters | **378 Liters (Slightly longer 4.2m body)** |")
+            out.append("| **Safety Rating** | **5-Star Bharat NCAP (Highest Ever Score)** | 5-Star NCAP Derived High-Strength Steel |")
+            out.append("| **Paddle Shifters (Regen)** | **Multi-Mode Regen via Paddle Shifters** | Single Pedal 'L' Driving Mode |\n")
+            out.append("### 🏆 Final Buyer Recommendation")
+            out.append("- ⚡ **Choose Tata Nexon EV:** If you want best-in-class 5-Star Bharat NCAP safety, modern futuristic cabin with 12.3-inch screen, V2L appliance charging, paddle regen controls, and extensive Tata fast-charging network.")
+            out.append("- 🚀 **Choose Mahindra XUV400:** If you want stronger 310 Nm acceleration punch, longer 4.2m cabin with larger boot (378L), and physical comfort-oriented suspension.")
+        elif any(k in p_lower for k in ["jesko", "koenigsegg", "hennessey", "venom", "f5", "hypercar", "top speed"]):
             out.append(f"## 🏎️ Koenigsegg Jesko Absolut vs Hennessey Venom F5 — Hypercar Engineering Comparison\n")
             out.append(f"| Engineering Metric | **Koenigsegg Jesko Absolut** | **Hennessey Venom F5** |")
             out.append("| :--- | :--- | :--- |")
@@ -1750,7 +1814,11 @@ class GroundedLLMProvider(BaseLLMProvider):
             return self._generate_tailored_recommendation_response(prompt, web_results)
 
         # 2. Comparison / vs query (Prioritized over generic year/launch searches)
-        is_comparison = bool(re.search(r'\b(?:vs|versus|compare|comparison|compared\s+to)\b', p_lower)) or any(w in p_lower for w in ["अंतर", "तुलना", "તફાવત", "સરખામણી", "માંથી કઈ", "से कौन"])
+        is_comparison = (
+            comparison_service.detect_comparison_intent(prompt)
+            or bool(re.search(r'\b(?:vs|versus|compare|comparison|compared\s+to)\b', p_lower))
+            or any(w in p_lower for w in ["अंतर", "तुलना", "તફાવત", "સરખામણી", "માંથી કઈ", "से कौन"])
+        )
         if is_comparison:
             return self._generate_versus_comparison_response(prompt, web_results)
 
@@ -1824,9 +1892,23 @@ class GroundedLLMProvider(BaseLLMProvider):
         return self._generate_comparison_recommendation_response(prompt, candidates, web_results)
 
     def _extract_target_year(self, prompt: str) -> Optional[int]:
-        """Extracts any 4-digit target year (e.g. 1990, 2005, 2024, 2026) from the user prompt."""
-        m = re.search(r'\b(19[89][0-9]|20[0-3][0-9])\b', prompt)
-        return int(m.group(1)) if m else None
+        """Extracts primary 4-digit target year from the user prompt."""
+        years = self._extract_all_target_years(prompt)
+        return years[0] if years else None
+
+    def _extract_all_target_years(self, prompt: str) -> List[int]:
+        """Extracts all target years (e.g. 2006, 2024, or '2006 24') from the prompt."""
+        years: List[int] = []
+        for m in re.finditer(r'\b(19[89][0-9]|20[0-3][0-9])\b', prompt):
+            y = int(m.group(1))
+            if y not in years:
+                years.append(y)
+        # Check for 2-digit year numbers like '24' when alongside years or car keywords
+        for m in re.finditer(r'\b(2[0-9])\b', prompt):
+            candidate = 2000 + int(m.group(1))
+            if candidate not in years and (years or any(w in prompt.lower() for w in ["kar", "car", "launch", "list", "mein", "gadi"])):
+                years.append(candidate)
+        return years
 
     def _generate_dynamic_car_launches_response(
         self,
@@ -1838,6 +1920,26 @@ class GroundedLLMProvider(BaseLLMProvider):
     ) -> str:
         """Fully Grounded Year-Wise Vehicle Research Synthesizer — combines local catalog & cited DuckDuckGo evidence."""
         p_lower = prompt.lower()
+        all_years = self._extract_all_target_years(prompt)
+        if len(all_years) > 1:
+            from app.services.pricing.historical_cars import query_historical_cars
+            out = []
+            out.append(f"## 🚗 Bharat Me Car Launches Report ({' & '.join(str(y) for y in all_years)})\n")
+            out.append("Aapke anurodh ke mutabiq AutoMind AI catalog se car launches list prastut hai:\n")
+            for yr in all_years:
+                out.append(f"### 📅 {yr} India Car Launches\n")
+                yr_cars = query_historical_cars(year=yr)
+                if yr_cars:
+                    out.append("| Car Model | Brand | Segment | Fuel Type | Price Era (Ex-Showroom) | Status |")
+                    out.append("|---|---|---|---|---|---|")
+                    for c in yr_cars:
+                        c_status = c.get("status", "Launched").capitalize()
+                        out.append(f"| **{c['name']}** | {c['brand']} | {c['segment']} | {c['fuel_type'].title()} | {c['price_era']} | {c_status} |")
+                    out.append("")
+            out.append("### 🔗 References & Verification")
+            out.append("1. [CarWale Verified Indian Automotive Historical Database](https://www.carwale.com) — CarWale")
+            out.append("2. [Autocar India Launch Archive & Reviews](https://www.autocarindia.com) — Autocar India")
+            return "\n".join(out)
         is_ev = "ev" in p_lower or "electric" in p_lower
         is_suv = "suv" in p_lower
         is_sedan = "sedan" in p_lower
@@ -1936,7 +2038,7 @@ class GroundedLLMProvider(BaseLLMProvider):
                 logger.debug(f"[DDG Fallback] notice: {ddg_err}")
 
         # ── 4. Fallback Step 3: Honest "Information not confirmed" if no evidence exists ──
-        if not matched_candidates and not web_results:
+        if not matched_candidates:
             out = []
             out.append("## Information not confirmed\n")
             out.append(f"AutoMind AI could not find enough reliable India-market sources for this exact **{target_year or ''}** query.\n")
@@ -2041,9 +2143,13 @@ class GroundedLLMProvider(BaseLLMProvider):
                     label = f"**{t}:** " if t and t.lower() not in ["duckduckgo web search"] else ""
                     out.append(f"- {label}{s}")
         else:
-            out.append(f"AutoMind AI specializes in automotive research. For: **\"{prompt}\"**,")
-            out.append("please check a general knowledge source for detailed information.\n")
-            out.append("> 💡 **Tip:** Ask me about any car — pricing, specs, comparisons, EV range, NCAP ratings, and more!")
+            # Check if this prompt had automotive keywords, car words, or years
+            if any(w in p_lower for w in ["kar", "car", "gadi", "gaadi", "suv", "sedan", "ev", "list", "batao", "chahiye", "chahie", "do", "btao"]) or bool(re.search(r'\b(19\d\d|20\d\d)\b', p_lower)):
+                return self._generate_dynamic_llm_response(prompt, [], web_results)
+            
+            out.append(f"AutoMind AI aapki automotive research, car prices, comparisons aur specifications me help karne ke liye taiyaar hai!\n")
+            out.append(f"Aap **\"{clean_title}\"** ya kisi bhi car model ke baare me pooch sakte hain.\n")
+            out.append("> 💡 **Suggested Queries:** *\"2024 car launches list\"*, *\"Tata Nexon on-road price Ahmedabad\"*, *\"Compare Creta vs Seltos\"*, *\"Best EV under 15 lakh\"*")
 
         if web_results:
             out.append("\n### 🌐 Sources & References")
@@ -2687,6 +2793,13 @@ class GroundedLLMProvider(BaseLLMProvider):
                 return "—"
             return f"₹{round(ex_lakh * 1.09, 2):.2f}–{round(ex_lakh * 1.15, 2):.2f} Lakh"
 
+        if not sorted_c and not web_results:
+            return (
+                f"## ℹ️ AutoMind AI — Information Not Available\n\n"
+                f"No verified automotive records or reliable market data are available for *\"{prompt}\"* in the retrieved evidence.\n\n"
+                f"AutoMind AI does not invent vehicle specifications, prices, safety ratings, or features when verified evidence is unavailable. Please check the model name or rephrase your question."
+            )
+
         out = []
         out.append("## 🧠 AutoMind AI — Vehicle Comparison & Recommendation Report\n")
         out.append(f"Evaluated **{len(candidates)} vehicle candidates** for query: *\"{prompt}\"*\n")
@@ -2751,14 +2864,8 @@ class GroundedLLMProvider(BaseLLMProvider):
 
 class LocalAutoMindProvider(BaseLLMProvider):
     """
-    AutoMind Local Provider — connects directly to the local curated knowledge engine
+    AutoMind Local Curated Knowledge Provider — connects directly to the local curated knowledge engine
     (GroundedLLMProvider) without any external API dependency.
-
-    Architecture:
-    - Uses the curated automotive knowledge base (CATEGORY_DATA + FAISS vector index)
-    - DuckDuckGo web grounding for real-time web snippets
-    - Zero external API calls — fully self-contained local model
-    - All responses are structured Markdown (tables, headings, bullet points)
     """
 
     def __init__(self):
@@ -2782,13 +2889,126 @@ class LocalAutoMindProvider(BaseLLMProvider):
             yield "AutoMind AI encountered an error. Please rephrase your query and try again."
 
 
+class QwenLocalProvider(BaseLLMProvider):
+    """
+    Local Transformer / LoRA Provider for fine-tuned Qwen automotive models (e.g. qwen_lora_v4).
+    Falls back gracefully to LocalAutoMindProvider if GPU/PyTorch or model checkpoint is not loaded.
+    """
+
+    STRICT_SYSTEM_PROMPT = (
+        "You are AutoMind AI, a grounded automotive intelligence expert.\n"
+        "You must answer strictly from the provided evidence. Do not invent vehicle specifications, "
+        "prices, safety ratings, launch dates, or features. If the retrieved evidence does not support a claim, "
+        "state clearly that the information is unavailable."
+    )
+
+    def __init__(self, model_path: Optional[str] = None):
+        self.model_path = model_path or os.getenv("LOCAL_MODEL_PATH", "ml/models/qwen_lora_v4")
+        self._pipeline = None
+        self._fallback = LocalAutoMindProvider()
+        self._init_pipeline()
+
+    def _init_pipeline(self):
+        try:
+            import torch
+            from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
+            if os.path.exists(self.model_path):
+                logger.info(f"[QwenLocalProvider] Loading model from {self.model_path}...")
+                tokenizer = AutoTokenizer.from_pretrained(self.model_path)
+                model = AutoModelForCausalLM.from_pretrained(
+                    self.model_path,
+                    torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
+                    device_map="auto" if torch.cuda.is_available() else None
+                )
+                self._pipeline = pipeline("text-generation", model=model, tokenizer=tokenizer)
+                logger.info("[QwenLocalProvider] Loaded successfully.")
+        except Exception as e:
+            logger.info(f"[QwenLocalProvider] Notice: Running with curated local engine fallback ({e}).")
+            self._pipeline = None
+
+    def generate(self, prompt: str, context: str) -> str:
+        if self._pipeline is None:
+            return self._fallback.generate(prompt, context)
+        try:
+            full_prompt = f"<|im_start|>system\n{self.STRICT_SYSTEM_PROMPT}\n<|im_end|>\n<|im_start|>user\nContext:\n{context}\n\nQuestion: {prompt}\n<|im_end|>\n<|im_start|>assistant\n"
+            res = self._pipeline(full_prompt, max_new_tokens=512, do_sample=False)
+            return res[0]["generated_text"].split("<|im_start|>assistant\n")[-1].strip()
+        except Exception as e:
+            logger.error(f"[QwenLocalProvider] Inference error: {e}. Using fallback.")
+            return self._fallback.generate(prompt, context)
+
+    def stream(self, prompt: str, context: str) -> Generator[str, None, None]:
+        # Yield generated text
+        full = self.generate(prompt, context)
+        yield full
+
+
+class ConfigurableAPIProvider(BaseLLMProvider):
+    """
+    Configurable API-based LLM Provider (e.g. OpenAI compatible, vLLM endpoint, or local Ollama).
+    Uses environment variables (LLM_API_BASE_URL, LLM_API_KEY, LLM_MODEL_NAME) with zero hardcoded keys.
+    """
+
+    STRICT_SYSTEM_PROMPT = (
+        "You are AutoMind AI, a grounded automotive intelligence expert.\n"
+        "You must answer strictly from the provided evidence. Do not invent vehicle specifications, "
+        "prices, safety ratings, launch dates, or features. If the retrieved evidence does not support a claim, "
+        "state clearly that the information is unavailable."
+    )
+
+    def __init__(self):
+        self.api_base = os.getenv("LLM_API_BASE_URL", "http://localhost:11434/v1")
+        self.api_key = os.getenv("LLM_API_KEY", "EMPTY")
+        self.model_name = os.getenv("LLM_MODEL_NAME", settings.LLM_MODEL_ID)
+        self._fallback = LocalAutoMindProvider()
+
+    def generate(self, prompt: str, context: str) -> str:
+        try:
+            import urllib.request
+            import json
+            headers = {"Content-Type": "application/json"}
+            if self.api_key and self.api_key != "EMPTY":
+                headers["Authorization"] = f"Bearer {self.api_key}"
+
+            payload = {
+                "model": self.model_name,
+                "messages": [
+                    {"role": "system", "content": self.STRICT_SYSTEM_PROMPT},
+                    {"role": "user", "content": f"EVIDENCE CONTEXT:\n{context}\n\nUSER QUESTION: {prompt}"}
+                ],
+                "temperature": 0.1
+            }
+
+            req = urllib.request.Request(
+                f"{self.api_base.rstrip('/')}/chat/completions",
+                data=json.dumps(payload).encode("utf-8"),
+                headers=headers
+            )
+            with urllib.request.urlopen(req, timeout=10.0) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                return data["choices"][0]["message"]["content"]
+        except Exception as e:
+            logger.warning(f"[ConfigurableAPIProvider] API unavailable ({e}). Using curated local engine fallback.")
+            return self._fallback.generate(prompt, context)
+
+    def stream(self, prompt: str, context: str) -> Generator[str, None, None]:
+        full = self.generate(prompt, context)
+        yield full
+
+
 # ── Provider factory ─────────────────────────────────────────────────────────
 
 def get_llm_provider() -> BaseLLMProvider:
     """
-    Returns the active LLM provider.
-    Uses LocalAutoMindProvider — a fully local, API-free curated knowledge engine.
-    No NVIDIA NIM, HuggingFace, or any external API required.
+    Returns the configured LLM provider according to environment configuration:
+    - 'local' (default): LocalAutoMindProvider (curated deterministic automotive grounding engine)
+    - 'qwen_local': QwenLocalProvider (local PyTorch/HuggingFace weights)
+    - 'api': ConfigurableAPIProvider (OpenAI / vLLM / Ollama endpoint)
     """
+    provider_type = os.getenv("LLM_PROVIDER", settings.LLM_PROVIDER).lower().strip()
+    if provider_type == "qwen_local":
+        return QwenLocalProvider()
+    elif provider_type in ["api", "openai", "vllm", "ollama"]:
+        return ConfigurableAPIProvider()
     return LocalAutoMindProvider()
 

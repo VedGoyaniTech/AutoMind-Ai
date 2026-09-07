@@ -1,785 +1,1803 @@
-Yes — exactly. You want the answer UI to **automatically choose the best visual format based on the question and the answer**, not always use cards.
+============ Agetic AI ===================
 
-For example:
+You are implementing a production-safe, controlled Agentic AI layer in the existing AutoMind AI / Project-V application.
 
-| User asks                  | Best UI                     |
-| -------------------------- | --------------------------- |
-| “Give me luxury cars list” | **Table / list**            |
-| “Safest 7-seater cars”     | **Ranked table + cards**    |
-| “XUV 3XO vs XUV 7XO”       | **Comparison table**        |
-| “XUV 3XO price”            | **Detail card**             |
-| “How to buy a car?”        | **Numbered steps**          |
-| “What is an SUV?”          | **Simple answer card**      |
-| “Best cars under ₹20 lakh” | **Ranked table**            |
-| “Compare 5 cars”           | **Comparison table**        |
-| “Which one should I buy?”  | **Recommendation cards**    |
-| “Car loan calculation”     | **Calculation/result card** |
-| “Give me pros and cons”    | **Two-column pros/cons**    |
-| “Car specifications”       | **Specification table**     |
-| “Top 10 cars”              | **Ranked list/table**       |
-| “Explain this”             | **Text + sections**         |
-| “Show me options”          | **Cards**                   |
+Do not replace the current RAG, pricing, EMI, vehicle search, voice, gallery, feedback, authentication, database, or frontend modules. Reuse them as typed tools behind one central Agent Orchestrator.
 
-So the right architecture is **dynamic answer rendering**.
-
-### Use this Cursor prompt
+The target architecture is:
 
 ```text
-DYNAMIC ANSWER UI SYSTEM — AUTOMATICALLY SELECT THE BEST FORMAT
-
-Do not render every AI response as the same card or long text block.
-
-The application must understand the user's question and automatically
-select the most appropriate visual response format.
-
-The UI must support multiple response types.
-
-==================================================
-RESPONSE TYPE DETECTION
-==================================================
-
-The backend/AI should classify the answer into a structured response type.
-
-Supported types:
-
-1. text
-2. bullet_list
-3. numbered_list
-4. table
-5. comparison
-6. ranked_list
-7. vehicle_list
-8. vehicle_detail
-9. specification_table
-10. price_table
-11. recommendation
-12. pros_cons
-13. steps
-14. calculation
-15. code
-16. timeline
-17. faq
-18. sources
-19. mixed
-
-The frontend should render the correct component based on the response type.
-
-==================================================
-1. TABLE
-==================================================
-
-Use a TABLE when the user asks for structured information about multiple
-items.
-
-Examples:
-
-"Give me luxury cars"
-
-"Cars under 20 lakh"
-
-"Electric cars list"
-
-"7-seater cars"
-
-"Car specifications"
-
-Example:
-
-| Car | Type | Seats | Price |
-|---|---|---:|---:|
-| X | SUV | 7 | ₹... |
-| Y | SUV | 5 | ₹... |
-| Z | Sedan | 5 | ₹... |
-
-Use responsive tables.
-
-On mobile, convert rows into compact cards if necessary.
-
-==================================================
-2. COMPARISON TABLE
-==================================================
-
-When the user uses:
-
-vs
-versus
-compare
-difference between
-which is better
-
-use a comparison table.
-
-Example:
-
-"XUV 3XO vs XUV 7XO"
-
-| Feature | XUV 3XO | XUV 7XO |
-|---|---|---|
-| Seats | 5 | 7 |
-| Fuel | ... | ... |
-| Price | ... | ... |
-| Safety | ... | ... |
-
-Then:
-
-### Verdict
-
-[Short recommendation.]
-
-==================================================
-3. RANKED LIST
-==================================================
-
-When the user asks:
-
-best
-top
-safest
-cheapest
-most expensive
-highest mileage
-lowest price
-top 10
-
-use a ranked format.
-
-Example:
-
-## 🛡️ Safest 7-Seater Cars
-
-| Rank | Car | Safety | Seats |
-|---:|---|---|---:|
-| 1 | Car A | 5-Star | 7 |
-| 2 | Car B | 5-Star | 7 |
-| 3 | Car C | 4-Star | 7 |
-
-Do not claim rankings that cannot be supported by the retrieved data.
-
-==================================================
-4. VEHICLE DETAIL CARD
-==================================================
-
-For a single vehicle question:
-
-"XUV 3XO price"
-
-"Tell me about BMW X5"
-
-"XUV 7XO specifications"
-
-use a vehicle detail card.
-
-Example:
-
-┌──────────────────────────────┐
-│ Mahindra XUV 3XO             │
-│                              │
-│ Price     ₹...               │
-│ Seats     5                  │
-│ Fuel      Petrol/Diesel      │
-│ Mileage   ...                │
-│ Safety    ...                │
-└──────────────────────────────┘
-
-==================================================
-5. SPECIFICATION TABLE
-==================================================
-
-For:
-
-"XUV 3XO specifications"
-
-"BMW X5 specs"
-
-use:
-
-## Specifications
-
-| Specification | Details |
-|---|---|
-| Engine | ... |
-| Power | ... |
-| Torque | ... |
-| Fuel | ... |
-| Transmission | ... |
-| Seating | ... |
-| Boot space | ... |
-
-==================================================
-6. PRICE TABLE
-==================================================
-
-For:
-
-"cars price list"
-
-"XUV prices"
-
-"cars under 20 lakh"
-
-use a price-focused table.
-
-| Car | Starting Price | Top Price |
-|---|---:|---:|
-| Car A | ₹... | ₹... |
-| Car B | ₹... | ₹... |
-
-Do not include unrelated technical information unless requested.
-
-==================================================
-7. RECOMMENDATION UI
-==================================================
-
-For:
-
-"Which car should I buy?"
-
-"Best car for family"
-
-"Which SUV is best?"
-
-use recommendation cards.
-
-Example:
-
-### 🥇 Best Overall
-**Car A**
-
-Short reason.
-
-### 🥈 Best Value
-**Car B**
-
-Short reason.
-
-### 🥉 Best Premium
-**Car C**
-
-Short reason.
-
-Do not pretend the recommendation is objective if it depends on user
-preferences.
-
-==================================================
-8. PROS & CONS
-==================================================
-
-For:
-
-"pros and cons"
-
-"advantages and disadvantages"
-
-use two columns:
-
-| ✅ Pros | ⚠️ Cons |
-|---|---|
-| ... | ... |
-| ... | ... |
-
-==================================================
-9. STEPS
-==================================================
-
-For:
-
-"How do I buy a car?"
-
-"How to register a car?"
-
-"How do I compare cars?"
-
-use numbered steps.
-
-Example:
-
-## Steps
-
-1. Choose your budget.
-2. Shortlist vehicles.
-3. Compare specifications.
-4. Take test drives.
-5. Check final on-road price.
-
-==================================================
-10. CALCULATION
-==================================================
-
-For mathematical/calculation questions:
-
-Use a calculation card.
-
-Example:
-
-## Result
-
-**₹12,500/month**
-
-### Calculation
-
-[necessary calculation]
-
-Do not create a table unless it helps.
-
-==================================================
-11. SIMPLE QUESTION
-==================================================
-
-For:
-
-"What is an SUV?"
-
-"What is ADAS?"
-
-"What is NCAP?"
-
-use a simple text answer.
-
-Example:
-
-## What is an SUV?
-
-An SUV is ...
-
-### Example
-
-...
-
-Do not create a table unnecessarily.
-
-==================================================
-12. LIST QUESTIONS
-==================================================
-
-For:
-
-"Give me a list of luxury cars"
-
-"XUV all cars"
-
-"Electric cars list"
-
-use either:
-
-- table
-- clean numbered list
-
-Choose a table when multiple attributes are available/useful.
-
-Choose a simple list when the user only asked for names.
-
-IMPORTANT:
-
-If user asks:
-
-"Give me luxury car names only"
-
-do NOT create a huge table.
-
-Use:
-
-1. Mercedes-Benz S-Class
-2. BMW 7 Series
-3. Audi A8
-...
-
-==================================================
-13. FAQ
-==================================================
-
-For multiple related questions or FAQ-style requests:
-
-Use expandable FAQ sections.
-
-Example:
-
-### What is ADAS?
-Answer...
-
-### Is ADAS safe?
-Answer...
-
-### Which cars have ADAS?
-Answer...
-
-==================================================
-14. TIMELINE
-==================================================
-
-For:
-
-"Car launch timeline"
-
-"History of XUV"
-
-"Evolution of this model"
-
-use a timeline UI.
-
-Example:
-
-2022
-● Model launched
-
-2024
-● Major update
-
-2026
-● New generation
-
-==================================================
-15. MIXED RESPONSES
-==================================================
-
-Some questions require multiple formats.
-
-Example:
-
-"Compare XUV 3XO and XUV 7XO and tell me which one is better."
-
-Render:
-
-1. Short introduction
-2. Comparison table
-3. Verdict/recommendation card
-
-Do NOT force everything into one table.
-
-==================================================
-16. STRUCTURED BACKEND RESPONSE
-==================================================
-
-Do NOT make the frontend guess the response format from arbitrary Markdown.
-
-The backend should preferably return structured data.
-
-Example:
-
-{
-  "type": "comparison",
-  "title": "XUV 3XO vs XUV 7XO",
-  "columns": ["Feature", "XUV 3XO", "XUV 7XO"],
-  "rows": [
-    ["Seats", "5", "7"],
-    ["Fuel", "...", "..."],
-    ["Price", "...", "..."]
-  ],
-  "verdict": "..."
-}
-
-For a table:
-
-{
-  "type": "table",
-  "title": "Luxury Cars",
-  "columns": ["Car", "Type", "Price"],
-  "rows": [...]
-}
-
-For a ranked list:
-
-{
-  "type": "ranked_list",
-  "title": "Safest 7-Seater Cars",
-  "items": [...]
-}
-
-For vehicle detail:
-
-{
-  "type": "vehicle_detail",
-  "vehicle": {
-    "name": "...",
-    "price": "...",
-    "seats": "...",
-    "fuel": "...",
-    "safety": "..."
-  }
-}
-
-==================================================
-17. FRONTEND COMPONENT ARCHITECTURE
-==================================================
-
-Create reusable components:
-
-<AnswerRenderer />
-
-<TextAnswer />
-
-<BulletList />
-
-<NumberedList />
-
-<DataTable />
-
-<ComparisonTable />
-
-<RankedList />
-
-<VehicleList />
-
-<VehicleCard />
-
-<VehicleDetail />
-
-<SpecificationTable />
-
-<PriceTable />
-
-<RecommendationCards />
-
-<ProsCons />
-
-<Steps />
-
-<CalculationCard />
-
-<Timeline />
-
-<FAQ />
-
-<SourceSection />
-
-AnswerRenderer decides which component to render.
-
-Example:
-
-switch (response.type) {
-  case "table":
-    return <DataTable data={response} />;
-
-  case "comparison":
-    return <ComparisonTable data={response} />;
-
-  case "ranked_list":
-    return <RankedList data={response} />;
-
-  case "vehicle_detail":
-    return <VehicleDetail data={response} />;
-
-  case "steps":
-    return <Steps data={response} />;
-
-  case "recommendation":
-    return <RecommendationCards data={response} />;
-
-  case "pros_cons":
-    return <ProsCons data={response} />;
-
-  default:
-    return <TextAnswer data={response} />;
-}
-
-==================================================
-18. AUTOMATIC FORMAT SELECTION
-==================================================
-
-The AI should determine the best format based on user intent.
-
-Examples:
-
-"Luxury cars list"
-→ table or numbered list
-
-"Safest 7-seater cars"
-→ ranked table
-
-"XUV 3XO vs XUV 7XO"
-→ comparison table
-
-"XUV 3XO price"
-→ vehicle detail / price card
-
-"XUV 3XO specifications"
-→ specification table
-
-"Which car should I buy?"
-→ recommendation cards
-
-"How do I buy a car?"
-→ numbered steps
-
-"What is an SUV?"
-→ text answer
-
-"Pros and cons of XUV 7XO"
-→ pros/cons layout
-
-"Best cars under ₹20 lakh"
-→ ranked table
-
-==================================================
-19. DO NOT OVER-FORMAT
-==================================================
-
-Do not use a table just because a table is available.
-
-The goal is:
-
-BEST FORMAT FOR THE QUESTION
-
-not:
-
-ALWAYS USE TABLE
-
-For a one-sentence answer:
-→ simple text.
-
-For 2–4 simple options:
-→ cards/list.
-
-For many comparable items:
-→ table.
-
-For comparison:
-→ comparison table.
-
-For ranking:
-→ ranked table.
-
-For instructions:
-→ steps.
-
-==================================================
-20. MARKDOWN CLEANUP
-==================================================
-
-The frontend must never show raw Markdown syntax such as:
-
-##
-###
-**
+React Chat and Voice UI
+        ↓
+FastAPI Chat Route
+        ↓
+AgentOrchestrator
+        ↓
+Planner
+        ↓
+Typed Tools
+        ↓
+Verifier
+        ↓
+Structured Agent Result
+        ↓
+LLM Explanation using verified facts only
+        ↓
+SSE Streaming Events
+        ↓
+Chat Cards, Gallery, Reference Cards, Follow-up Chips
 ```
 
-If Markdown is supported, parse it correctly.
+The existing project may contain files that were not listed in this prompt. First scan the entire current repository. Treat listed paths as known integration points only, not a complete file list.
 
-Otherwise convert AI structured responses to components.
+Important product constraints:
 
-Fix the current issue:
+- Do not add paid third-party APIs.
+- Keep local pricing, RTO, insurance, fees, and EMI calculations deterministic.
+- DuckDuckGo may be used only for research/reference discovery through existing project functionality.
+- Do not trust DuckDuckGo search-result snippets as facts without validating actual destination URLs/content.
+- Do not let the LLM invent prices, tax, launch dates, vehicle names, specifications, or references.
+- Do not expose chain-of-thought or internal planner reasoning to users.
+- Show short user-safe status messages only, such as “Checking local pricing rules” or “Comparing shortlisted cars.”
+- Do not delete existing modules or break existing endpoints.
+- Preserve all existing chat, authentication, database, gallery, feedback, voice, and RAG behavior.
 
-"Safest## 🛡️ Safest 7-Seater Family Cars"
+# PART 1 — Repository Audit Before Changes
 
-It must render as:
-
-🛡️ Safest 7-Seater Family Cars
-
-==================================================
-21. SOURCES
-===========
-
-Sources should be separate from the main answer.
-
-Do not show:
-
-Live Web Research Findings
-
-as a primary section.
-
-Use:
-
-### Sources
-
-[View sources]
-
-or a small collapsible section.
-
-==================================================
-22. RESPONSIVE UI
-=================
-
-Desktop:
-
-* tables for large datasets
-* cards for recommendations
-* comparison tables for comparisons
-
-Mobile:
-
-* horizontally scrollable tables where necessary
-* or convert table rows into cards
-* no text overflow
-* no giant paragraphs
-
-==================================================
-23. DO NOT HARDCODE VEHICLES
-============================
-
-Do not hardcode:
-
-XUV700
-Safari
-Innova
-etc.
-
-The components must work with dynamically retrieved data.
-
-The web-search/backend layer provides the data.
-
-The UI only determines how to display it.
-
-==================================================
-24. FINAL TESTS
-===============
-
-Test these:
-
-"Luxury cars list"
-→ table/list
-
-"Safest 7-seater family cars"
-→ ranked table
-
-"XUV 3XO vs XUV 7XO"
-→ comparison table
-
-"XUV 3XO price"
-→ detail/price card
-
-"XUV 3XO specifications"
-→ specification table
-
-"Which car should I buy?"
-→ recommendation cards
-
-"How do I buy a car?"
-→ steps
-
-"Pros and cons of XUV 7XO"
-→ pros/cons
-
-"What is an SUV?"
-→ simple answer
-
-"Top 10 SUVs"
-→ ranked table/list
-
-Make the UI automatically adapt.
-
-Do not force every response into the current "AUTOMIND AI ANALYSIS"
-text-card layout.
-
-The goal is a polished dynamic answer interface where the visual format
-matches the user's question.
-
-````
-
-### The key idea
-
-You want **one answer engine, but many renderers**:
+Inspect the current repository and especially:
 
 ```text
-                         User Question
-                              ↓
-                       Intent Detection
-                              ↓
-                    Answer Type / Structure
-                              ↓
-        ┌──────────┬──────────┬──────────┬──────────┐
-        ↓          ↓          ↓          ↓          ↓
-      Table    Comparison    Cards      Steps     Text
-        ↓          ↓          ↓          ↓          ↓
-     <Table>   <Compare>   <Cards>    <Steps>    <Text>
-````
+backend/app/api/v1/chat.py
+backend/app/api/v1/pricing.py
+backend/app/api/v1/voice.py
+backend/app/api/v1/feedback.py
+backend/app/services/pricing/
+backend/app/services/ai/
+backend/app/services/vehicle_search/
+backend/app/services/vehicle_media.py
+backend/app/models/
+backend/app/schemas/
+backend/app/repositories/
+backend/app/core/
+backend/tests/
+frontend/src/pages/ChatPage.tsx
+frontend/src/types/chat.ts
+frontend/src/api/chat.ts
+frontend/src/components/ai/
+frontend/src/components/chat/
+frontend/src/components/elements/
+```
 
-So the AI isn't just deciding **what to say** — it also returns a **structured representation of what it's saying**, and your frontend decides how to visually present it. This will be much more reliable than trying to make one Markdown card handle every type of question.
+Before modifications, report:
+
+1. Current chat request and SSE response flow.
+2. Existing message metadata structure.
+3. Existing pricing/EMI input/output structures.
+4. Existing vehicle-search capabilities.
+5. Existing DuckDuckGo/reference flow.
+6. Existing vehicle-media/gallery flow.
+7. Existing comparison capabilities.
+8. Existing frontend card components.
+9. Existing tests that need updates.
+10. Any newer relevant files found that are not explicitly listed here.
+
+Do not begin major refactoring until this architecture map is complete.
+
+# PART 2 — Create Agentic Module Structure
+
+Create a new modular package. Adapt names only if the project already has equivalent architecture.
+
+```text
+backend/app/services/agentic/
+  __init__.py
+  orchestrator.py
+  planner.py
+  schemas.py
+  state.py
+  verifier.py
+  response_builder.py
+  errors.py
+  tools/
+    __init__.py
+    base.py
+    vehicle_search_tool.py
+    vehicle_details_tool.py
+    pricing_quote_tool.py
+    emi_tool.py
+    comparison_tool.py
+    vehicle_media_tool.py
+    web_research_tool.py
+```
+
+Requirements:
+
+- Keep each tool independent and testable.
+- Do not move or duplicate current business logic unnecessarily.
+- Tool wrappers must call existing services.
+- Use Pydantic schemas for all tool input/output.
+- Do not pass unvalidated dictionaries between tools.
+- Every tool must return a safe result object, never raw unstructured exceptions.
+
+# PART 3 — Agent State and Typed Schemas
+
+Create typed schemas for:
+
+## 3.1 Agent request
+
+```python
+AgentRequest:
+  conversation_id: optional integer/string
+  user_id: required authenticated user identifier
+  message_id: optional
+  message: string
+  locale: optional string
+  conversation_context: list of safe previous messages
+```
+
+## 3.2 Extracted entities
+
+```python
+ExtractedEntities:
+  manufacturer: optional string
+  model: optional string
+  variant: optional string
+  city: optional string
+  state_code: optional string
+  fuel_type: optional string
+  body_type: optional string
+  launch_year: optional integer
+  requested_year: optional integer
+  request_type: optional enum
+  down_payment: optional decimal
+  down_payment_percent: optional decimal
+  loan_amount: optional decimal
+  annual_interest_rate: optional decimal
+  tenures_years: list of integers
+  budget: optional decimal
+  comparison_targets: list of vehicle references
+  language: optional enum
+```
+
+## 3.3 Intent enum
+
+Support at least:
+
+```text
+casual
+vehicle_search
+vehicle_details
+yearwise_launches
+vehicle_category
+vehicle_comparison
+on_road_price
+emi
+price_and_emi
+upcoming_vehicles
+historical_vehicle_lookup
+gallery_request
+sources_inquiry
+unsupported_or_unclear
+```
+
+## 3.4 Planner output
+
+```python
+AgentPlan:
+  intent: AgentIntent
+  extracted_entities: ExtractedEntities
+  steps: list[PlannedStep]
+  needs_follow_up: bool
+  follow_up_question: optional string
+  follow_up_fields: list[string]
+  confidence: float
+```
+
+A planned step must contain:
+
+```python
+PlannedStep:
+  step_id: string
+  tool_name: enum
+  input: typed schema
+  depends_on: list[string]
+  purpose: safe short text
+```
+
+## 3.5 Tool result
+
+Every tool returns:
+
+```python
+ToolResult:
+  tool_name: string
+  success: bool
+  data: typed data or null
+  warnings: list[string]
+  sources: list[SourceReference]
+  error_code: optional string
+  user_safe_error: optional string
+  executed_at: ISO datetime
+```
+
+## 3.6 Source reference
+
+```python
+SourceReference:
+  title: string
+  url: valid HTTP/HTTPS URL
+  domain: string
+  source_type: enum:
+    local_database
+    local_rule
+    official_manufacturer
+    trusted_automotive_publication
+    web_research
+  retrieved_at: ISO datetime
+  published_at: optional ISO date
+  confidence: enum high/medium/low
+```
+
+Never create fake citations. If a valid URL/title is unavailable, do not include a source reference.
+
+## 3.7 Structured final result
+
+```python
+AgentResponse:
+  kind: enum:
+    text
+    follow_up
+    pricing_quote
+    comparison
+    vehicle_details
+    vehicle_launches
+    gallery
+    error
+  answer_text: string
+  pricing_quote: optional object
+  emi_options: optional list
+  comparison: optional object
+  vehicles: list
+  gallery: optional object
+  sources: list[SourceReference]
+  follow_up: optional object
+  warnings: list[string]
+  data_status: enum:
+    local
+    web_researched
+    mixed
+    incomplete
+  action_summary: list of safe user-visible strings
+```
+
+# PART 4 — Build Typed Tool Wrappers
+
+Do not duplicate business logic. Wrap and call existing services.
+
+## 4.1 Vehicle Search Tool
+
+File: `vehicle_search_tool.py`
+
+Purpose:
+
+- Find vehicle manufacturer/model/variant.
+- Resolve typo/fuzzy matches.
+- Return multiple choices when model/variant is ambiguous.
+- Use existing vehicle repository, vehicle-search orchestrator, and RAG retrieval where appropriate.
+
+Input:
+
+```python
+VehicleSearchInput:
+  query: string
+  manufacturer: optional string
+  model: optional string
+  variant: optional string
+  fuel_type: optional string
+  body_type: optional string
+  year: optional integer
+```
+
+Output:
+
+```python
+VehicleSearchData:
+  matched_vehicles: list
+  exact_match: bool
+  ambiguous: bool
+  suggested_choices: list
+```
+
+Rules:
+
+- Never choose an ambiguous variant silently.
+- If “Nexon” resolves to several fuel/variant choices and price/EMI is requested, ask user to select a variant.
+- For generic queries, return shortlisted cars only when supported by data.
+
+## 4.2 Vehicle Details Tool
+
+File: `vehicle_details_tool.py`
+
+Purpose:
+
+- Get structured vehicle specs, model year, body type, fuel options, safety/features, and local pricing record.
+- Distinguish model year, launch year, facelift/update, and upcoming status.
+
+Rules:
+
+- Never call model-year data “launch” unless launch metadata confirms it.
+- Return data freshness information.
+- Mark missing values as unavailable; do not invent.
+
+## 4.3 Pricing Quote Tool
+
+File: `pricing_quote_tool.py`
+
+Purpose:
+
+- Call the existing `PricingEngine`.
+- Use existing city mapping, RTO rules, insurance rules, fee logic, and local vehicle-price records.
+- Produce only deterministic estimated on-road price result.
+
+Input:
+
+```python
+PricingQuoteInput:
+  manufacturer: string
+  model: string
+  variant: optional string
+  city: optional string
+  state_code: optional string
+  fuel_type: optional string
+  ex_showroom_price: optional decimal
+  include_zero_dep: bool
+  include_dealer_handling: bool
+```
+
+Rules:
+
+- If city/state is absent, ask user for city before quote calculation.
+- If ex-showroom price/variant is missing, find it in local data.
+- If unavailable, ask for exact variant or ex-showroom price.
+- Do not let LLM estimate the price.
+- Label every response “Estimated On-Road Price.”
+- Include `last_updated`, `rule_effective_date`, assumptions, and disclaimer.
+- Do not call external paid pricing APIs.
+
+## 4.4 EMI Tool
+
+File: `emi_tool.py`
+
+Purpose:
+
+- Call existing deterministic EMI module.
+- Use reducing-balance formula.
+- Show 3, 5, and 7-year EMI by default unless user asks specific tenure.
+
+Input:
+
+```python
+EMIInput:
+  on_road_price: decimal
+  down_payment: optional decimal
+  down_payment_percent: optional decimal
+  loan_amount: optional decimal
+  annual_interest_rate: optional decimal
+  tenure_years: list[int]
+```
+
+Rules:
+
+- Down payment cannot be negative or above on-road price.
+- Use local configurable default interest rate only if the user does not supply one.
+- Clearly label default interest-rate assumption.
+- Handle zero-interest safely.
+- Include principal, EMI, total interest, and total payment.
+
+## 4.5 Comparison Tool
+
+File: `comparison_tool.py`
+
+Purpose:
+
+- Compare two or more resolved vehicles.
+- Compare only fields available from tools/local data.
+- Include prices only if both cars have comparable data.
+- Support price/EMI comparison only after city, variant, and required financing information are known.
+
+Comparison fields:
+
+```text
+body type
+fuel type
+transmission
+engine/range
+mileage
+seating
+safety
+key features
+ex-showroom price
+estimated on-road price
+EMI
+strengths
+limitations
+```
+
+Rules:
+
+- Do not declare an overall “winner” without explaining user-constraint reasoning.
+- If user has not provided budget/use case, show neutral comparison and ask what matters most.
+- Never compare mismatched model years without clearly displaying each year.
+
+## 4.6 Vehicle Media Tool
+
+File: `vehicle_media_tool.py`
+
+Purpose:
+
+- Call existing `vehicle_media` service.
+- Return gallery only for positively identified vehicles.
+- Do not return fake/mismatched car images.
+- Gracefully return no gallery if media is unavailable.
+
+## 4.7 Web Research Tool
+
+File: `web_research_tool.py`
+
+Purpose:
+
+- Reuse existing DuckDuckGo search service only for vehicle research and references.
+- Find references for year-wise launches, historical details, upcoming vehicle announcements, and specs missing from local data.
+
+Rules:
+
+1. Prefer official manufacturer Indian websites/newsrooms.
+2. Then trusted automotive sources:
+   - Autocar India
+   - CarWale
+   - CarDekho
+   - ZigWheels
+   - Overdrive
+   - HT Auto
+   - Times Drive.
+3. Do not treat raw search snippets as verified facts.
+4. Do not return DuckDuckGo result page URL as citation.
+5. Validate actual destination URLs.
+6. Separate `launched`, `upcoming`, `announced`, `facelift`, and `model-year`.
+7. If sources conflict, return warning instead of silently choosing one.
+8. Do not use web research for deterministic RTO/EMI calculation.
+9. Cache historical web-research output safely with retrieval date and source metadata.
+10. Do not expose raw scraping errors to the user.
+
+# PART 5 — Agent Planner
+
+Create `planner.py`.
+
+The planner should be deterministic/rule-based first. Do not depend only on the LLM for deciding critical pricing, EMI, or verification steps.
+
+Planner responsibilities:
+
+1. Normalize Hindi, Gujarati, English, and mixed Roman-script user queries.
+2. Extract intent and entities.
+3. Decide tool sequence.
+4. Detect missing required fields.
+5. Return follow-up question instead of guessing.
+6. Limit number of tool calls.
+7. Prevent repeated loops.
+8. Preserve conversational context safely.
+
+Required planning rules:
+
+## 5.1 Price query
+
+Example:
+
+```text
+“Nexon Ahmedabad price”
+```
+
+Plan:
+
+```text
+1. vehicle_search
+2. if variant ambiguous → follow-up
+3. pricing_quote
+4. vehicle_media optional
+5. verifier
+6. response_builder
+```
+
+## 5.2 Price plus EMI query
+
+Example:
+
+```text
+“Nexon Ahmedabad price with ₹3 lakh down payment for 5 years”
+```
+
+Plan:
+
+```text
+1. vehicle_search
+2. city/state normalization
+3. pricing_quote
+4. emi
+5. vehicle_media optional
+6. verifier
+7. response_builder
+```
+
+## 5.3 EMI with missing fields
+
+Example:
+
+```text
+“Nexon EMI batao”
+```
+
+Return only a concise follow-up:
+
+```text
+Nexon ka kaunsa variant, kaunsi city, aur kitna down payment rakhna hai?
+```
+
+Do not compute an estimate until minimum required fields are known.
+
+## 5.4 Comparison query
+
+Example:
+
+```text
+“Creta vs Seltos”
+```
+
+Plan:
+
+```text
+1. vehicle_search for Creta
+2. vehicle_search for Seltos
+3. vehicle_details for both
+4. comparison
+5. verifier
+6. response_builder
+```
+
+If city/financing is not supplied, do not calculate on-road price/EMI. Offer an optional follow-up.
+
+## 5.5 Year-wise launches query
+
+Example:
+
+```text
+“2024 mein India mein kaun si SUV launch hui thi?”
+```
+
+Plan:
+
+```text
+1. local vehicle-history/local database search
+2. web_research only if local evidence is incomplete
+3. filter by year, India market, status=launched, category=SUV
+4. verifier
+5. response_builder with citations
+```
+
+Do not show “Dataset Verification Notice” if usable trusted web references are found.
+
+## 5.6 Specific model query
+
+Example:
+
+```text
+“2024 Creta details”
+```
+
+Plan:
+
+```text
+1. vehicle_search
+2. vehicle_details
+3. web_research only if needed for year-specific verified detail
+4. vehicle_media optional
+5. verifier
+6. response_builder
+```
+
+# PART 6 — Agent Orchestrator
+
+Create `orchestrator.py`.
+
+Responsibilities:
+
+1. Receive `AgentRequest`.
+2. Load safe conversation context.
+3. Call planner.
+4. Return follow-up immediately if required fields are missing.
+5. Execute planned tools in dependency order.
+6. Enforce per-tool timeout and safe failure handling.
+7. Store trace metadata for debugging without exposing private planner reasoning.
+8. Call verifier.
+9. Call response builder.
+10. Return `AgentResponse`.
+
+Requirements:
+
+- Maximum tool-call count per request.
+- No recursive tool loops.
+- Per-tool timeout.
+- Graceful degradation:
+  - pricing fails → explain that pricing is unavailable, do not invent value.
+  - gallery fails → still show verified text.
+  - web research fails → use local data if sufficient.
+  - ambiguous car → ask user to select.
+- Do not execute arbitrary code, shell commands, file writes, or untrusted URLs.
+- Do not expose stack traces to users.
+- Preserve existing logging style but redact sensitive data.
+
+# PART 7 — Verifier
+
+Create `verifier.py`.
+
+The verifier must inspect tool results before final response.
+
+Mandatory checks:
+
+1. All price/RTO/EMI figures must originate from pricing/EMI tools.
+2. City must map to valid state or quote must be state-level only.
+3. Vehicle/variant ambiguity must not be silently resolved.
+4. References must have valid destination URLs.
+5. Web launch references must support requested year and India market.
+6. Upcoming cars must not be shown as launched.
+7. Facelift/model-year update must not be called new launch without evidence.
+8. No unsupported “live” or “exact dealer price” claim.
+9. No hallucinated value exists in final text.
+10. Conflicting tool/source results must produce a user-visible warning.
+11. Missing data must remain marked unavailable.
+
+If verification fails:
+
+- return safe partial result where possible, or
+- return follow-up question, or
+- return user-safe error.
+
+Never fabricate a complete-looking answer.
+
+# PART 8 — Response Builder
+
+Create `response_builder.py`.
+
+It must convert verified `AgentResponse` into:
+
+1. structured frontend payload
+2. concise user-facing explanation.
+
+Do not use long hidden reasoning. Use only verified tool data.
+
+Response formats:
+
+## 8.1 Pricing quote
+
+```markdown
+## Tata Nexon — Ahmedabad Estimated On-Road Price
+
+| Item | Amount |
+|---|---:|
+| Ex-showroom price | ₹... |
+| RTO tax | ₹... |
+| Insurance | ₹... |
+| TCS | ₹... |
+| FASTag / registration | ₹... |
+| Estimated on-road price | ₹... |
+
+### EMI options
+| Tenure | Down payment | Loan amount | EMI | Total interest |
+|---|---:|---:|---:|---:|
+
+Data last updated: ...
+This is an estimated local quote; final dealer quotation may vary.
+```
+
+## 8.2 Vehicle comparison
+
+```markdown
+## Hyundai Creta vs Kia Seltos
+
+| Category | Hyundai Creta | Kia Seltos |
+|---|---|---|
+| Body type | ... | ... |
+| Fuel options | ... | ... |
+| Price | ... | ... |
+| Strengths | ... | ... |
+
+Tell me your city and down payment if you want on-road price and EMI comparison.
+```
+
+## 8.3 Year-wise launch research
+
+```markdown
+## 2024 में भारत में लॉन्च हुई SUVs
+
+| Car | Brand | Status | Launch/announcement | Fuel | Price |
+|---|---|---|---|---|---|
+
+### References
+1. [Real source title](real-url) — source domain
+2. [Real source title](real-url) — source domain
+
+Data status: Web-researched / Mixed local and web data
+```
+
+## 8.4 Follow-up
+
+```markdown
+Mujhe exact quote ke liye yeh details chahiye:
+
+- exact variant
+- city
+- down payment
+
+Aap ek hi message mein bhej sakte hain, for example:
+“Nexon Creative Petrol, Ahmedabad, ₹3 lakh down payment, 5 years.”
+```
+
+# PART 9 — Connect Agent Orchestrator to Chat SSE Flow
+
+Update `backend/app/api/v1/chat.py` safely.
+
+Current flow must become:
+
+```text
+authenticated request
+    ↓
+save user message
+    ↓
+AgentOrchestrator.run()
+    ↓
+emit progress events
+    ↓
+emit structured events
+    ↓
+emit token/explanation event if needed
+    ↓
+save assistant message with structured metadata
+    ↓
+emit complete event with message ID
+```
+
+Add or standardize SSE event types:
+
+```text
+progress
+follow_up
+agent_result
+pricing_quote
+comparison
+vehicle_gallery
+sources
+token
+complete
+error
+```
+
+Requirements:
+
+- Preserve existing normal/casual chat behavior.
+- Preserve existing chat history.
+- Preserve feedback message ID support.
+- Preserve gallery and source card behavior.
+- Save structured response metadata with the assistant message.
+- Do not duplicate SSE cards/events.
+- Support client disconnect/cancellation safely.
+- Do not stream unverified pricing numbers before verifier completes.
+
+# PART 10 — Frontend Agent Response Rendering
+
+Update:
+
+```text
+frontend/src/types/chat.ts
+frontend/src/api/chat.ts
+frontend/src/pages/ChatPage.tsx
+frontend/src/components/ai/
+frontend/src/components/chat/
+```
+
+Create reusable components where needed:
+
+```text
+AgentProgressCard
+PricingQuoteCard
+EmiComparisonCard
+VehicleComparisonCard
+FollowUpChips
+ResearchSourcesCard
+AgentWarningCard
+```
+
+Requirements:
+
+1. Render cards using structured SSE metadata.
+2. Render pricing quote before the explanatory text.
+3. Render gallery only when vehicle is identified.
+4. Render source cards only for real validated references.
+5. Render follow-up chips for missing:
+   - city
+   - variant
+   - down payment
+   - interest rate
+   - tenure.
+6. Keep cards responsive and accessible.
+7. Use Indian currency formatting.
+8. Do not display internal tool errors, chain-of-thought, debug logs, or stack traces.
+9. Preserve thumbs up/down feedback behavior.
+10. Preserve voice-input behavior.
+
+# PART 11 — Testing
+
+Add comprehensive backend tests using mocked tools and mocked DuckDuckGo responses. Do not depend on internet access for tests.
+
+Test at minimum:
+
+1. Casual query still works.
+2. “Nexon Ahmedabad price.”
+3. “Nexon Ahmedabad price with ₹3 lakh down payment for 5 years.”
+4. “Nexon EMI batao” returns follow-up.
+5. Ambiguous Nexon variant returns variant-selection follow-up.
+6. Unknown city returns city clarification.
+7. Invalid down payment is rejected.
+8. Pricing engine failure does not produce fabricated quote.
+9. “Creta vs Seltos.”
+10. “2024 SUV launches India.”
+11. Hindi year-wise launch query.
+12. Gujarati query.
+13. Mixed Roman-Hindi query.
+14. DuckDuckGo source with valid destination URL.
+15. Invalid/fake source URL rejected.
+16. Conflicting web sources create warning.
+17. Upcoming and launched vehicle distinction.
+18. Model year and launch year distinction.
+19. Vehicle gallery success/failure.
+20. Existing feedback endpoint works with agent-generated message.
+21. Existing SSE chat completion returns message ID.
+22. Existing RAG fallback still works.
+23. Tool-call loop prevention.
+24. Maximum tool-call limit.
+25. Unauthorized user cannot access protected functions.
+
+Add frontend tests where current frontend tooling supports them:
+
+- pricing quote card
+- follow-up chips
+- source cards
+- duplicate SSE event prevention
+- gallery with agent response
+- error state.
+
+# PART 12 — Documentation and Final Report
+
+Update documentation with:
+
+1. Agent architecture diagram.
+2. Tool list and responsibility.
+3. Planner decision rules.
+4. Verification rules.
+5. Local pricing versus DuckDuckGo research boundary.
+6. No-paid-API policy.
+7. How to add a future tool.
+8. How to run tests.
+9. Known limitations.
+10. Data freshness rules.
+
+At completion, report:
+
+- all files created/modified
+- exact integration flow
+- actual tests run and their real results
+- features implemented
+- blocked/unverified items
+- migration/setup instructions
+- any backward compatibility considerations.
+
+Do not claim the system is fully production-ready, perfect, fully autonomous, or fully tested unless executed tests and deployment evidence prove it.
+
+
+=============== Next Step ===========================
+
+
+You are implementing a production-safe, controlled Agentic AI layer in the existing AutoMind AI / Project-V application.
+
+Do not replace the current RAG, pricing, EMI, vehicle search, voice, gallery, feedback, authentication, database, or frontend modules. Reuse them as typed tools behind one central Agent Orchestrator.
+
+The target architecture is:
+
+```text
+React Chat and Voice UI
+        ↓
+FastAPI Chat Route
+        ↓
+AgentOrchestrator
+        ↓
+Planner
+        ↓
+Typed Tools
+        ↓
+Verifier
+        ↓
+Structured Agent Result
+        ↓
+LLM Explanation using verified facts only
+        ↓
+SSE Streaming Events
+        ↓
+Chat Cards, Gallery, Reference Cards, Follow-up Chips
+```
+
+The existing project may contain files that were not listed in this prompt. First scan the entire current repository. Treat listed paths as known integration points only, not a complete file list.
+
+Important product constraints:
+
+- Do not add paid third-party APIs.
+- Keep local pricing, RTO, insurance, fees, and EMI calculations deterministic.
+- DuckDuckGo may be used only for research/reference discovery through existing project functionality.
+- Do not trust DuckDuckGo search-result snippets as facts without validating actual destination URLs/content.
+- Do not let the LLM invent prices, tax, launch dates, vehicle names, specifications, or references.
+- Do not expose chain-of-thought or internal planner reasoning to users.
+- Show short user-safe status messages only, such as “Checking local pricing rules” or “Comparing shortlisted cars.”
+- Do not delete existing modules or break existing endpoints.
+- Preserve all existing chat, authentication, database, gallery, feedback, voice, and RAG behavior.
+
+# PART 1 — Repository Audit Before Changes
+
+Inspect the current repository and especially:
+
+```text
+backend/app/api/v1/chat.py
+backend/app/api/v1/pricing.py
+backend/app/api/v1/voice.py
+backend/app/api/v1/feedback.py
+backend/app/services/pricing/
+backend/app/services/ai/
+backend/app/services/vehicle_search/
+backend/app/services/vehicle_media.py
+backend/app/models/
+backend/app/schemas/
+backend/app/repositories/
+backend/app/core/
+backend/tests/
+frontend/src/pages/ChatPage.tsx
+frontend/src/types/chat.ts
+frontend/src/api/chat.ts
+frontend/src/components/ai/
+frontend/src/components/chat/
+frontend/src/components/elements/
+```
+
+Before modifications, report:
+
+1. Current chat request and SSE response flow.
+2. Existing message metadata structure.
+3. Existing pricing/EMI input/output structures.
+4. Existing vehicle-search capabilities.
+5. Existing DuckDuckGo/reference flow.
+6. Existing vehicle-media/gallery flow.
+7. Existing comparison capabilities.
+8. Existing frontend card components.
+9. Existing tests that need updates.
+10. Any newer relevant files found that are not explicitly listed here.
+
+Do not begin major refactoring until this architecture map is complete.
+
+# PART 2 — Create Agentic Module Structure
+
+Create a new modular package. Adapt names only if the project already has equivalent architecture.
+
+```text
+backend/app/services/agentic/
+  __init__.py
+  orchestrator.py
+  planner.py
+  schemas.py
+  state.py
+  verifier.py
+  response_builder.py
+  errors.py
+  tools/
+    __init__.py
+    base.py
+    vehicle_search_tool.py
+    vehicle_details_tool.py
+    pricing_quote_tool.py
+    emi_tool.py
+    comparison_tool.py
+    vehicle_media_tool.py
+    web_research_tool.py
+```
+
+Requirements:
+
+- Keep each tool independent and testable.
+- Do not move or duplicate current business logic unnecessarily.
+- Tool wrappers must call existing services.
+- Use Pydantic schemas for all tool input/output.
+- Do not pass unvalidated dictionaries between tools.
+- Every tool must return a safe result object, never raw unstructured exceptions.
+
+# PART 3 — Agent State and Typed Schemas
+
+Create typed schemas for:
+
+## 3.1 Agent request
+
+```python
+AgentRequest:
+  conversation_id: optional integer/string
+  user_id: required authenticated user identifier
+  message_id: optional
+  message: string
+  locale: optional string
+  conversation_context: list of safe previous messages
+```
+
+## 3.2 Extracted entities
+
+```python
+ExtractedEntities:
+  manufacturer: optional string
+  model: optional string
+  variant: optional string
+  city: optional string
+  state_code: optional string
+  fuel_type: optional string
+  body_type: optional string
+  launch_year: optional integer
+  requested_year: optional integer
+  request_type: optional enum
+  down_payment: optional decimal
+  down_payment_percent: optional decimal
+  loan_amount: optional decimal
+  annual_interest_rate: optional decimal
+  tenures_years: list of integers
+  budget: optional decimal
+  comparison_targets: list of vehicle references
+  language: optional enum
+```
+
+## 3.3 Intent enum
+
+Support at least:
+
+```text
+casual
+vehicle_search
+vehicle_details
+yearwise_launches
+vehicle_category
+vehicle_comparison
+on_road_price
+emi
+price_and_emi
+upcoming_vehicles
+historical_vehicle_lookup
+gallery_request
+sources_inquiry
+unsupported_or_unclear
+```
+
+## 3.4 Planner output
+
+```python
+AgentPlan:
+  intent: AgentIntent
+  extracted_entities: ExtractedEntities
+  steps: list[PlannedStep]
+  needs_follow_up: bool
+  follow_up_question: optional string
+  follow_up_fields: list[string]
+  confidence: float
+```
+
+A planned step must contain:
+
+```python
+PlannedStep:
+  step_id: string
+  tool_name: enum
+  input: typed schema
+  depends_on: list[string]
+  purpose: safe short text
+```
+
+## 3.5 Tool result
+
+Every tool returns:
+
+```python
+ToolResult:
+  tool_name: string
+  success: bool
+  data: typed data or null
+  warnings: list[string]
+  sources: list[SourceReference]
+  error_code: optional string
+  user_safe_error: optional string
+  executed_at: ISO datetime
+```
+
+## 3.6 Source reference
+
+```python
+SourceReference:
+  title: string
+  url: valid HTTP/HTTPS URL
+  domain: string
+  source_type: enum:
+    local_database
+    local_rule
+    official_manufacturer
+    trusted_automotive_publication
+    web_research
+  retrieved_at: ISO datetime
+  published_at: optional ISO date
+  confidence: enum high/medium/low
+```
+
+Never create fake citations. If a valid URL/title is unavailable, do not include a source reference.
+
+## 3.7 Structured final result
+
+```python
+AgentResponse:
+  kind: enum:
+    text
+    follow_up
+    pricing_quote
+    comparison
+    vehicle_details
+    vehicle_launches
+    gallery
+    error
+  answer_text: string
+  pricing_quote: optional object
+  emi_options: optional list
+  comparison: optional object
+  vehicles: list
+  gallery: optional object
+  sources: list[SourceReference]
+  follow_up: optional object
+  warnings: list[string]
+  data_status: enum:
+    local
+    web_researched
+    mixed
+    incomplete
+  action_summary: list of safe user-visible strings
+```
+
+# PART 4 — Build Typed Tool Wrappers
+
+Do not duplicate business logic. Wrap and call existing services.
+
+## 4.1 Vehicle Search Tool
+
+File: `vehicle_search_tool.py`
+
+Purpose:
+
+- Find vehicle manufacturer/model/variant.
+- Resolve typo/fuzzy matches.
+- Return multiple choices when model/variant is ambiguous.
+- Use existing vehicle repository, vehicle-search orchestrator, and RAG retrieval where appropriate.
+
+Input:
+
+```python
+VehicleSearchInput:
+  query: string
+  manufacturer: optional string
+  model: optional string
+  variant: optional string
+  fuel_type: optional string
+  body_type: optional string
+  year: optional integer
+```
+
+Output:
+
+```python
+VehicleSearchData:
+  matched_vehicles: list
+  exact_match: bool
+  ambiguous: bool
+  suggested_choices: list
+```
+
+Rules:
+
+- Never choose an ambiguous variant silently.
+- If “Nexon” resolves to several fuel/variant choices and price/EMI is requested, ask user to select a variant.
+- For generic queries, return shortlisted cars only when supported by data.
+
+## 4.2 Vehicle Details Tool
+
+File: `vehicle_details_tool.py`
+
+Purpose:
+
+- Get structured vehicle specs, model year, body type, fuel options, safety/features, and local pricing record.
+- Distinguish model year, launch year, facelift/update, and upcoming status.
+
+Rules:
+
+- Never call model-year data “launch” unless launch metadata confirms it.
+- Return data freshness information.
+- Mark missing values as unavailable; do not invent.
+
+## 4.3 Pricing Quote Tool
+
+File: `pricing_quote_tool.py`
+
+Purpose:
+
+- Call the existing `PricingEngine`.
+- Use existing city mapping, RTO rules, insurance rules, fee logic, and local vehicle-price records.
+- Produce only deterministic estimated on-road price result.
+
+Input:
+
+```python
+PricingQuoteInput:
+  manufacturer: string
+  model: string
+  variant: optional string
+  city: optional string
+  state_code: optional string
+  fuel_type: optional string
+  ex_showroom_price: optional decimal
+  include_zero_dep: bool
+  include_dealer_handling: bool
+```
+
+Rules:
+
+- If city/state is absent, ask user for city before quote calculation.
+- If ex-showroom price/variant is missing, find it in local data.
+- If unavailable, ask for exact variant or ex-showroom price.
+- Do not let LLM estimate the price.
+- Label every response “Estimated On-Road Price.”
+- Include `last_updated`, `rule_effective_date`, assumptions, and disclaimer.
+- Do not call external paid pricing APIs.
+
+## 4.4 EMI Tool
+
+File: `emi_tool.py`
+
+Purpose:
+
+- Call existing deterministic EMI module.
+- Use reducing-balance formula.
+- Show 3, 5, and 7-year EMI by default unless user asks specific tenure.
+
+Input:
+
+```python
+EMIInput:
+  on_road_price: decimal
+  down_payment: optional decimal
+  down_payment_percent: optional decimal
+  loan_amount: optional decimal
+  annual_interest_rate: optional decimal
+  tenure_years: list[int]
+```
+
+Rules:
+
+- Down payment cannot be negative or above on-road price.
+- Use local configurable default interest rate only if the user does not supply one.
+- Clearly label default interest-rate assumption.
+- Handle zero-interest safely.
+- Include principal, EMI, total interest, and total payment.
+
+## 4.5 Comparison Tool
+
+File: `comparison_tool.py`
+
+Purpose:
+
+- Compare two or more resolved vehicles.
+- Compare only fields available from tools/local data.
+- Include prices only if both cars have comparable data.
+- Support price/EMI comparison only after city, variant, and required financing information are known.
+
+Comparison fields:
+
+```text
+body type
+fuel type
+transmission
+engine/range
+mileage
+seating
+safety
+key features
+ex-showroom price
+estimated on-road price
+EMI
+strengths
+limitations
+```
+
+Rules:
+
+- Do not declare an overall “winner” without explaining user-constraint reasoning.
+- If user has not provided budget/use case, show neutral comparison and ask what matters most.
+- Never compare mismatched model years without clearly displaying each year.
+
+## 4.6 Vehicle Media Tool
+
+File: `vehicle_media_tool.py`
+
+Purpose:
+
+- Call existing `vehicle_media` service.
+- Return gallery only for positively identified vehicles.
+- Do not return fake/mismatched car images.
+- Gracefully return no gallery if media is unavailable.
+
+## 4.7 Web Research Tool
+
+File: `web_research_tool.py`
+
+Purpose:
+
+- Reuse existing DuckDuckGo search service only for vehicle research and references.
+- Find references for year-wise launches, historical details, upcoming vehicle announcements, and specs missing from local data.
+
+Rules:
+
+1. Prefer official manufacturer Indian websites/newsrooms.
+2. Then trusted automotive sources:
+   - Autocar India
+   - CarWale
+   - CarDekho
+   - ZigWheels
+   - Overdrive
+   - HT Auto
+   - Times Drive.
+3. Do not treat raw search snippets as verified facts.
+4. Do not return DuckDuckGo result page URL as citation.
+5. Validate actual destination URLs.
+6. Separate `launched`, `upcoming`, `announced`, `facelift`, and `model-year`.
+7. If sources conflict, return warning instead of silently choosing one.
+8. Do not use web research for deterministic RTO/EMI calculation.
+9. Cache historical web-research output safely with retrieval date and source metadata.
+10. Do not expose raw scraping errors to the user.
+
+# PART 5 — Agent Planner
+
+Create `planner.py`.
+
+The planner should be deterministic/rule-based first. Do not depend only on the LLM for deciding critical pricing, EMI, or verification steps.
+
+Planner responsibilities:
+
+1. Normalize Hindi, Gujarati, English, and mixed Roman-script user queries.
+2. Extract intent and entities.
+3. Decide tool sequence.
+4. Detect missing required fields.
+5. Return follow-up question instead of guessing.
+6. Limit number of tool calls.
+7. Prevent repeated loops.
+8. Preserve conversational context safely.
+
+Required planning rules:
+
+## 5.1 Price query
+
+Example:
+
+```text
+“Nexon Ahmedabad price”
+```
+
+Plan:
+
+```text
+1. vehicle_search
+2. if variant ambiguous → follow-up
+3. pricing_quote
+4. vehicle_media optional
+5. verifier
+6. response_builder
+```
+
+## 5.2 Price plus EMI query
+
+Example:
+
+```text
+“Nexon Ahmedabad price with ₹3 lakh down payment for 5 years”
+```
+
+Plan:
+
+```text
+1. vehicle_search
+2. city/state normalization
+3. pricing_quote
+4. emi
+5. vehicle_media optional
+6. verifier
+7. response_builder
+```
+
+## 5.3 EMI with missing fields
+
+Example:
+
+```text
+“Nexon EMI batao”
+```
+
+Return only a concise follow-up:
+
+```text
+Nexon ka kaunsa variant, kaunsi city, aur kitna down payment rakhna hai?
+```
+
+Do not compute an estimate until minimum required fields are known.
+
+## 5.4 Comparison query
+
+Example:
+
+```text
+“Creta vs Seltos”
+```
+
+Plan:
+
+```text
+1. vehicle_search for Creta
+2. vehicle_search for Seltos
+3. vehicle_details for both
+4. comparison
+5. verifier
+6. response_builder
+```
+
+If city/financing is not supplied, do not calculate on-road price/EMI. Offer an optional follow-up.
+
+## 5.5 Year-wise launches query
+
+Example:
+
+```text
+“2024 mein India mein kaun si SUV launch hui thi?”
+```
+
+Plan:
+
+```text
+1. local vehicle-history/local database search
+2. web_research only if local evidence is incomplete
+3. filter by year, India market, status=launched, category=SUV
+4. verifier
+5. response_builder with citations
+```
+
+Do not show “Dataset Verification Notice” if usable trusted web references are found.
+
+## 5.6 Specific model query
+
+Example:
+
+```text
+“2024 Creta details”
+```
+
+Plan:
+
+```text
+1. vehicle_search
+2. vehicle_details
+3. web_research only if needed for year-specific verified detail
+4. vehicle_media optional
+5. verifier
+6. response_builder
+```
+
+# PART 6 — Agent Orchestrator
+
+Create `orchestrator.py`.
+
+Responsibilities:
+
+1. Receive `AgentRequest`.
+2. Load safe conversation context.
+3. Call planner.
+4. Return follow-up immediately if required fields are missing.
+5. Execute planned tools in dependency order.
+6. Enforce per-tool timeout and safe failure handling.
+7. Store trace metadata for debugging without exposing private planner reasoning.
+8. Call verifier.
+9. Call response builder.
+10. Return `AgentResponse`.
+
+Requirements:
+
+- Maximum tool-call count per request.
+- No recursive tool loops.
+- Per-tool timeout.
+- Graceful degradation:
+  - pricing fails → explain that pricing is unavailable, do not invent value.
+  - gallery fails → still show verified text.
+  - web research fails → use local data if sufficient.
+  - ambiguous car → ask user to select.
+- Do not execute arbitrary code, shell commands, file writes, or untrusted URLs.
+- Do not expose stack traces to users.
+- Preserve existing logging style but redact sensitive data.
+
+# PART 7 — Verifier
+
+Create `verifier.py`.
+
+The verifier must inspect tool results before final response.
+
+Mandatory checks:
+
+1. All price/RTO/EMI figures must originate from pricing/EMI tools.
+2. City must map to valid state or quote must be state-level only.
+3. Vehicle/variant ambiguity must not be silently resolved.
+4. References must have valid destination URLs.
+5. Web launch references must support requested year and India market.
+6. Upcoming cars must not be shown as launched.
+7. Facelift/model-year update must not be called new launch without evidence.
+8. No unsupported “live” or “exact dealer price” claim.
+9. No hallucinated value exists in final text.
+10. Conflicting tool/source results must produce a user-visible warning.
+11. Missing data must remain marked unavailable.
+
+If verification fails:
+
+- return safe partial result where possible, or
+- return follow-up question, or
+- return user-safe error.
+
+Never fabricate a complete-looking answer.
+
+# PART 8 — Response Builder
+
+Create `response_builder.py`.
+
+It must convert verified `AgentResponse` into:
+
+1. structured frontend payload
+2. concise user-facing explanation.
+
+Do not use long hidden reasoning. Use only verified tool data.
+
+Response formats:
+
+## 8.1 Pricing quote
+
+```markdown
+## Tata Nexon — Ahmedabad Estimated On-Road Price
+
+| Item | Amount |
+|---|---:|
+| Ex-showroom price | ₹... |
+| RTO tax | ₹... |
+| Insurance | ₹... |
+| TCS | ₹... |
+| FASTag / registration | ₹... |
+| Estimated on-road price | ₹... |
+
+### EMI options
+| Tenure | Down payment | Loan amount | EMI | Total interest |
+|---|---:|---:|---:|---:|
+
+Data last updated: ...
+This is an estimated local quote; final dealer quotation may vary.
+```
+
+## 8.2 Vehicle comparison
+
+```markdown
+## Hyundai Creta vs Kia Seltos
+
+| Category | Hyundai Creta | Kia Seltos |
+|---|---|---|
+| Body type | ... | ... |
+| Fuel options | ... | ... |
+| Price | ... | ... |
+| Strengths | ... | ... |
+
+Tell me your city and down payment if you want on-road price and EMI comparison.
+```
+
+## 8.3 Year-wise launch research
+
+```markdown
+## 2024 में भारत में लॉन्च हुई SUVs
+
+| Car | Brand | Status | Launch/announcement | Fuel | Price |
+|---|---|---|---|---|---|
+
+### References
+1. [Real source title](real-url) — source domain
+2. [Real source title](real-url) — source domain
+
+Data status: Web-researched / Mixed local and web data
+```
+
+## 8.4 Follow-up
+
+```markdown
+Mujhe exact quote ke liye yeh details chahiye:
+
+- exact variant
+- city
+- down payment
+
+Aap ek hi message mein bhej sakte hain, for example:
+“Nexon Creative Petrol, Ahmedabad, ₹3 lakh down payment, 5 years.”
+```
+
+# PART 9 — Connect Agent Orchestrator to Chat SSE Flow
+
+Update `backend/app/api/v1/chat.py` safely.
+
+Current flow must become:
+
+```text
+authenticated request
+    ↓
+save user message
+    ↓
+AgentOrchestrator.run()
+    ↓
+emit progress events
+    ↓
+emit structured events
+    ↓
+emit token/explanation event if needed
+    ↓
+save assistant message with structured metadata
+    ↓
+emit complete event with message ID
+```
+
+Add or standardize SSE event types:
+
+```text
+progress
+follow_up
+agent_result
+pricing_quote
+comparison
+vehicle_gallery
+sources
+token
+complete
+error
+```
+
+Requirements:
+
+- Preserve existing normal/casual chat behavior.
+- Preserve existing chat history.
+- Preserve feedback message ID support.
+- Preserve gallery and source card behavior.
+- Save structured response metadata with the assistant message.
+- Do not duplicate SSE cards/events.
+- Support client disconnect/cancellation safely.
+- Do not stream unverified pricing numbers before verifier completes.
+
+# PART 10 — Frontend Agent Response Rendering
+
+Update:
+
+```text
+frontend/src/types/chat.ts
+frontend/src/api/chat.ts
+frontend/src/pages/ChatPage.tsx
+frontend/src/components/ai/
+frontend/src/components/chat/
+```
+
+Create reusable components where needed:
+
+```text
+AgentProgressCard
+PricingQuoteCard
+EmiComparisonCard
+VehicleComparisonCard
+FollowUpChips
+ResearchSourcesCard
+AgentWarningCard
+```
+
+Requirements:
+
+1. Render cards using structured SSE metadata.
+2. Render pricing quote before the explanatory text.
+3. Render gallery only when vehicle is identified.
+4. Render source cards only for real validated references.
+5. Render follow-up chips for missing:
+   - city
+   - variant
+   - down payment
+   - interest rate
+   - tenure.
+6. Keep cards responsive and accessible.
+7. Use Indian currency formatting.
+8. Do not display internal tool errors, chain-of-thought, debug logs, or stack traces.
+9. Preserve thumbs up/down feedback behavior.
+10. Preserve voice-input behavior.
+
+# PART 11 — Testing
+
+Add comprehensive backend tests using mocked tools and mocked DuckDuckGo responses. Do not depend on internet access for tests.
+
+Test at minimum:
+
+1. Casual query still works.
+2. “Nexon Ahmedabad price.”
+3. “Nexon Ahmedabad price with ₹3 lakh down payment for 5 years.”
+4. “Nexon EMI batao” returns follow-up.
+5. Ambiguous Nexon variant returns variant-selection follow-up.
+6. Unknown city returns city clarification.
+7. Invalid down payment is rejected.
+8. Pricing engine failure does not produce fabricated quote.
+9. “Creta vs Seltos.”
+10. “2024 SUV launches India.”
+11. Hindi year-wise launch query.
+12. Gujarati query.
+13. Mixed Roman-Hindi query.
+14. DuckDuckGo source with valid destination URL.
+15. Invalid/fake source URL rejected.
+16. Conflicting web sources create warning.
+17. Upcoming and launched vehicle distinction.
+18. Model year and launch year distinction.
+19. Vehicle gallery success/failure.
+20. Existing feedback endpoint works with agent-generated message.
+21. Existing SSE chat completion returns message ID.
+22. Existing RAG fallback still works.
+23. Tool-call loop prevention.
+24. Maximum tool-call limit.
+25. Unauthorized user cannot access protected functions.
+
+Add frontend tests where current frontend tooling supports them:
+
+- pricing quote card
+- follow-up chips
+- source cards
+- duplicate SSE event prevention
+- gallery with agent response
+- error state.
+
+# PART 12 — Documentation and Final Report
+
+Update documentation with:
+
+1. Agent architecture diagram.
+2. Tool list and responsibility.
+3. Planner decision rules.
+4. Verification rules.
+5. Local pricing versus DuckDuckGo research boundary.
+6. No-paid-API policy.
+7. How to add a future tool.
+8. How to run tests.
+9. Known limitations.
+10. Data freshness rules.
+
+At completion, report:
+
+- all files created/modified
+- exact integration flow
+- actual tests run and their real results
+- features implemented
+- blocked/unverified items
+- migration/setup instructions
+- any backward compatibility considerations.
+
+Do not claim the system is fully production-ready, perfect, fully autonomous, or fully tested unless executed tests and deployment evidence prove it.

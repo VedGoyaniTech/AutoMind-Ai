@@ -61,6 +61,9 @@ class CarRepository:
         if filters.min_safety_rating is not None:
             query = query.filter(CarVariant.safety_rating >= filters.min_safety_rating)
 
+        if filters.seating_capacity is not None:
+            query = query.filter(CarVariant.seating_capacity >= filters.seating_capacity)
+
         total = query.count()
 
         offset = (filters.page - 1) * filters.page_size

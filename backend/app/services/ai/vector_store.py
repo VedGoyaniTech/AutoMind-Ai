@@ -2,7 +2,7 @@ import os
 import json
 import numpy as np
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Set
 
 class VectorStore(ABC):
     """Abstract VectorStore interface for pluggable vector search engines."""
@@ -13,13 +13,13 @@ class VectorStore(ABC):
         pass
 
     @abstractmethod
-    def search(self, query_embedding: np.ndarray, top_k: int = 20) -> List[Dict[str, Any]]:
-        """Search nearest vector neighbors for a query embedding."""
+    def search(self, query_embedding: np.ndarray, top_k: int = 20, doc_type: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Search nearest vector neighbors for a query embedding with optional doc_type filtering."""
         pass
 
     @abstractmethod
     def delete(self, doc_ids: List[int]) -> None:
-        """Remove document vectors by ID."""
+        """Remove document vectors by variant ID."""
         pass
 
     @abstractmethod
@@ -42,6 +42,7 @@ class LocalFAISSVectorStore(VectorStore):
     """
     High-performance vector store abstraction supporting FAISS index when available,
     with an automatic fallback to normalized Cosine Similarity NumPy search.
+    Supports dual document types: 'vehicle_record' and 'knowledge_chunk'.
     """
 
     def __init__(self, index_path: str = "./vector_index"):
@@ -60,6 +61,15 @@ class LocalFAISSVectorStore(VectorStore):
 
         if os.path.exists(index_path):
             self.load(index_path)
+
+    def get_indexed_hashes(self) -> Set[str]:
+        """Returns set of all indexed doc_hash values for rapid deduplication."""
+        hashes = set()
+        for doc in self.documents:
+            h = doc.get("doc_hash")
+            if h:
+                hashes.add(h)
+        return hashes
 
     def add_documents(self, documents: List[Dict[str, Any]], embeddings: np.ndarray) -> None:
         if len(documents) == 0:
@@ -88,7 +98,7 @@ class LocalFAISSVectorStore(VectorStore):
 
         self.save(self.index_path)
 
-    def search(self, query_embedding: np.ndarray, top_k: int = 20) -> List[Dict[str, Any]]:
+    def search(self, query_embedding: np.ndarray, top_k: int = 20, doc_type: Optional[str] = None) -> List[Dict[str, Any]]:
         if self.embeddings is None or len(self.documents) == 0:
             return []
 
@@ -98,34 +108,66 @@ class LocalFAISSVectorStore(VectorStore):
         if norm > 0:
             q = q / norm
 
-        actual_k = min(top_k, len(self.documents))
+        search_k = min(top_k * 3 if doc_type else top_k, len(self.documents))
 
         if self.use_faiss and self.faiss_index is not None:
-            scores, indices = self.faiss_index.search(q, actual_k)
+            scores, indices = self.faiss_index.search(q, search_k)
             results = []
             for score, idx in zip(scores[0], indices[0]):
-                if idx >= 0 and idx < len(self.documents):
+                if 0 <= idx < len(self.documents):
                     doc = dict(self.documents[idx])
+                    if doc_type and doc.get("doc_type") != doc_type:
+                        continue
                     doc["similarity_score"] = float(score)
                     results.append(doc)
+                    if len(results) >= top_k:
+                        break
             return results
 
         # Fallback NumPy Cosine Similarity
         scores = np.dot(self.embeddings, q.T).flatten()
-        top_indices = np.argsort(scores)[::-1][:actual_k]
+        top_indices = np.argsort(scores)[::-1]
 
         results = []
         for idx in top_indices:
             doc = dict(self.documents[idx])
+            if doc_type and doc.get("doc_type") != doc_type:
+                continue
             doc["similarity_score"] = float(scores[idx])
             results.append(doc)
+            if len(results) >= top_k:
+                break
         return results
 
     def delete(self, doc_ids: List[int]) -> None:
+        """Deletes car variant records by ID."""
         if self.embeddings is None or len(self.documents) == 0:
             return
         
         keep_indices = [i for i, doc in enumerate(self.documents) if doc.get("car_variant_id") not in doc_ids]
+        if len(keep_indices) == len(self.documents):
+            return
+
+        self.documents = [self.documents[i] for i in keep_indices]
+        if len(keep_indices) > 0:
+            self.embeddings = self.embeddings[keep_indices]
+            if self.use_faiss:
+                import faiss
+                dimension = self.embeddings.shape[1]
+                self.faiss_index = faiss.IndexFlatIP(dimension)
+                self.faiss_index.add(self.embeddings)
+        else:
+            self.embeddings = None
+            self.faiss_index = None
+
+        self.save(self.index_path)
+
+    def delete_by_document_id(self, document_id: str) -> None:
+        """Deletes all knowledge chunks associated with a document ID."""
+        if self.embeddings is None or len(self.documents) == 0:
+            return
+
+        keep_indices = [i for i, doc in enumerate(self.documents) if doc.get("document_id") != document_id]
         if len(keep_indices) == len(self.documents):
             return
 
@@ -187,7 +229,6 @@ class LocalFAISSVectorStore(VectorStore):
 
 # ---------------------------------------------------------------------------
 # Global singleton vector store — imported by chat.py and retriever.py
-# Loads existing index from disk on startup; starts empty if no index yet.
 # ---------------------------------------------------------------------------
 from app.core.config import settings
 

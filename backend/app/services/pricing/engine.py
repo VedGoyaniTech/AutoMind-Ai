@@ -48,6 +48,8 @@ BASELINE_EX_SHOWROOM_PRICES: Dict[str, Dict[str, Any]] = {
     # Premium MPVs & Full-Size SUVs
     "innova": {"mfg": "Toyota", "model": "Innova Hycross", "variant": "ZX (O) Hybrid", "price": 3098000.0, "fuel": "hybrid"},
     "fortuner": {"mfg": "Toyota", "model": "Fortuner", "variant": "4x4 AT GR-S Diesel", "price": 4350000.0, "fuel": "diesel"},
+    "endeavour": {"mfg": "Ford", "model": "Endeavour", "variant": "Titanium Plus 4x4 AT", "price": 3625000.0, "fuel": "diesel"},
+    "endeavor": {"mfg": "Ford", "model": "Endeavour", "variant": "Titanium Plus 4x4 AT", "price": 3625000.0, "fuel": "diesel"},
 
     # Sedans & Hatchbacks
     "dzire": {"mfg": "Maruti Suzuki", "model": "Dzire", "variant": "ZXi Plus AGS", "price": 1014000.0, "fuel": "petrol"},
@@ -72,8 +74,13 @@ BASELINE_EX_SHOWROOM_PRICES: Dict[str, Dict[str, Any]] = {
     "bmw 3": {"mfg": "BMW", "model": "3 Series Gran Limousine", "variant": "330Li M Sport", "price": 6060000.0, "fuel": "petrol"},
     "bmw3": {"mfg": "BMW", "model": "3 Series Gran Limousine", "variant": "330Li M Sport", "price": 6060000.0, "fuel": "petrol"},
     "3 series": {"mfg": "BMW", "model": "3 Series Gran Limousine", "variant": "330Li M Sport", "price": 6060000.0, "fuel": "petrol"},
+    "bmw 5": {"mfg": "BMW", "model": "5 Series LWB", "variant": "530Li M Sport", "price": 7290000.0, "fuel": "petrol"},
+    "5 series": {"mfg": "BMW", "model": "5 Series LWB", "variant": "530Li M Sport", "price": 7290000.0, "fuel": "petrol"},
     "bmw x1": {"mfg": "BMW", "model": "X1", "variant": "sDrive18d M Sport", "price": 5250000.0, "fuel": "diesel"},
     "bmw": {"mfg": "BMW", "model": "3 Series Gran Limousine", "variant": "330Li M Sport", "price": 6060000.0, "fuel": "petrol"},
+    "mercedes e class": {"mfg": "Mercedes-Benz", "model": "E-Class LWB", "variant": "E 200", "price": 7605000.0, "fuel": "petrol"},
+    "mercedes e-class": {"mfg": "Mercedes-Benz", "model": "E-Class LWB", "variant": "E 200", "price": 7605000.0, "fuel": "petrol"},
+    "e class": {"mfg": "Mercedes-Benz", "model": "E-Class LWB", "variant": "E 200", "price": 7605000.0, "fuel": "petrol"},
     "mercedes c class": {"mfg": "Mercedes-Benz", "model": "C-Class", "variant": "C 200", "price": 6185000.0, "fuel": "petrol"},
     "c class": {"mfg": "Mercedes-Benz", "model": "C-Class", "variant": "C 200", "price": 6185000.0, "fuel": "petrol"},
     "mercedes": {"mfg": "Mercedes-Benz", "model": "C-Class", "variant": "C 200", "price": 6185000.0, "fuel": "petrol"},

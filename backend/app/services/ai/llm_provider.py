@@ -6,6 +6,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Generator, List, Dict, Any, Optional
 from app.core.config import settings
+from app.services.ai.vehicle_comparison_service import comparison_service
 
 logger = logging.getLogger(__name__)
 
@@ -1642,7 +1643,15 @@ class GroundedLLMProvider(BaseLLMProvider):
         if any(w in p_lower for w in ["fwd vs rwd", "rwd vs fwd", "awd vs 4x4", "4x4 vs awd", "4wd vs awd", "fwd", "rwd", "awd", "4x4"]):
             return self._generate_drivetrain_comparison_response(prompt, web_results)
 
-        # 4. Extract target vehicle names
+        # 4. Master Automotive Comparison Flow via Unified VehicleComparisonService
+        comp_res = comparison_service.process_comparison(prompt)
+        if comp_res.intent_detected and comp_res.response_markdown:
+            refs = self._format_references_section(web_results)
+            if refs and comp_res.clarification_status == "ready":
+                return f"{comp_res.response_markdown}\n\n---\n{refs}"
+            return comp_res.response_markdown
+
+        # 5. Fallback vehicle name extraction if service did not resolve
         vs_split = re.split(r'\s+(?:vs|versus|compared to|and)\s+', prompt, flags=re.IGNORECASE)
         m_a = vs_split[0].replace("Compare", "").replace("compare", "").replace("Show", "").replace("show", "").strip(" :,-") if len(vs_split) >= 1 else "Model A"
         m_b = vs_split[1].split("expected")[0].split("launch")[0].split("engine")[0].split("top speed")[0].split("cost")[0].strip(" :,-") if len(vs_split) >= 2 else "Model B"
@@ -1805,7 +1814,11 @@ class GroundedLLMProvider(BaseLLMProvider):
             return self._generate_tailored_recommendation_response(prompt, web_results)
 
         # 2. Comparison / vs query (Prioritized over generic year/launch searches)
-        is_comparison = bool(re.search(r'\b(?:vs|versus|compare|comparison|compared\s+to)\b', p_lower)) or any(w in p_lower for w in ["अंतर", "तुलना", "તફાવત", "સરખામણી", "માંથી કઈ", "से कौन"])
+        is_comparison = (
+            comparison_service.detect_comparison_intent(prompt)
+            or bool(re.search(r'\b(?:vs|versus|compare|comparison|compared\s+to)\b', p_lower))
+            or any(w in p_lower for w in ["अंतर", "तुलना", "તફાવત", "સરખામણી", "માંથી કઈ", "से कौन"])
+        )
         if is_comparison:
             return self._generate_versus_comparison_response(prompt, web_results)
 

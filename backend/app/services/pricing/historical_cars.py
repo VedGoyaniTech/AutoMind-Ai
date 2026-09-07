@@ -349,6 +349,20 @@ HISTORICAL_CAR_CATALOG: List[Dict[str, Any]] = [
         "description": "Launched in August 2009, dominated the premium full-size SUV category in India with indestructible off-road capability."
     },
     {
+        "name": "Ford Endeavour 4x4",
+        "brand": "Ford",
+        "launch_year": 2009,
+        "category": "suv",
+        "segment": "Full-Size D2 4x4 SUV",
+        "fuel_type": "diesel",
+        "engine": "3.0L TDCi 4x4 (156 PS / 380 Nm) / 2.0L EcoBlue (170 PS)",
+        "price_era": "₹17.99 – ₹36.25 Lakh",
+        "ex_showroom_price": 1799000.0,
+        "is_luxury": True,
+        "is_vintage_classic": False,
+        "description": "Ford's flagship ladder-frame SUV in India, celebrated for Terrain Management System, plush ride, and American SUV road presence."
+    },
+    {
         "name": "BMW 3 Series (E90)",
         "brand": "BMW",
         "launch_year": 2007,

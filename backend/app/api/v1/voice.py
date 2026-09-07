@@ -76,14 +76,16 @@ async def transcribe_audio(
         content = await audio.read()
         logger.info(f"Received audio file for transcription: size={len(content)} bytes, filename={audio.filename}, content_type={audio.content_type}")
         
-        # If audio data is provided but no external speech API is configured,
-        # extract acoustic intent or fall back to high-confidence automotive match
-        if len(content) > 0:
-            transcript = "Nexon on-road price in Ahmedabad"
-    
-    if not transcript:
-        # Default prompt if empty audio
-        transcript = SAMPLE_VOICE_PROMPTS.get(language, SAMPLE_VOICE_PROMPTS["hi-IN"])[0]["text"]
+        # Audio stream received without speech API configuration: do not inject dummy fallback
+        if len(content) == 0:
+            return TranscribeResponse(
+                success=False,
+                transcript="",
+                language=language,
+                confidence=0.0,
+                detected_intent="general_query",
+                suggested_action="none"
+            )
 
     # Detect automotive intent
     lower = transcript.lower()

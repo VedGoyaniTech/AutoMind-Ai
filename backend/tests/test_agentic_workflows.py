@@ -233,3 +233,21 @@ def test_28_bmw_5_series_full_info_request():
     resp = llm._engine._generate_single_model_web_response("BMW 5 ka pura information", "bmw 5", [])
     assert "BMW 5 Series" in resp
     assert "72.90" in resp or "₹" in resp
+
+# 29. Multi-Year Car List in Hinglish (e.g. "hey hey mujhe 2006 24 mein Kar list do na")
+def test_29_multi_year_car_list_hinglish_query():
+    from app.api.v1.chat import UniversalMessageRouter
+    from app.services.ai.llm_provider import get_llm_provider
+    router = UniversalMessageRouter()
+    r = router.route("hey hey mujhe 2006 24 mein Kar list do na")
+    assert r["type"] == "REAL_REQUEST"
+
+    llm = get_llm_provider()
+    actual_text = r.get("actual_request", "hey hey mujhe 2006 24 mein Kar list do na")
+    assert llm._is_automotive_query(actual_text) is True
+
+    ans = llm.generate(actual_text, "")
+    assert "2006" in ans
+    assert "2024" in ans
+    assert "Honda Civic" in ans or "Civic" in ans
+    assert "AutoMind AI specializes in automotive research. For:" not in ans

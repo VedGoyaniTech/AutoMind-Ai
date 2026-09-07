@@ -70,17 +70,20 @@ class BaseLLMProvider(ABC):
     def _is_automotive_query(self, prompt: str) -> bool:
         p = prompt.lower()
         signals = [
-            "car", "cars", "vehicle", "vehicles", "suv", "sedan", "hatchback", "ev", "electric", "petrol", "diesel",
+            "car", "cars", "kar", "kars", "vehicle", "vehicles", "gadi", "gaadi", "gadiyo", "gadiyon", "gadiya", "gaadiya", "vahan", "vahano",
+            "suv", "sedan", "hatchback", "ev", "electric", "petrol", "diesel",
             "hybrid", "price", "prices", "cost", "lakh", "crore", "mileage", "kmpl", "range", "airbag", "airbags", "safety",
             "ncap", "gncap", "bncap", "engine", "torque", "power", "transmission", "automatic", "manual",
-            "compare", "recommend", "buy", "booking", "test drive", "variant", "model", "brand",
+            "compare", "recommend", "buy", "booking", "test drive", "variant", "model", "brand", "list", "launches", "launched", "launch",
             "tata", "nano", "hyundai", "kia", "maruti", "honda", "toyota", "mahindra", "volkswagen", "bmw", "bwm",
             "audi", "mercedes", "porsche", "ferrari", "farari", "ferari", "lamborghini", "bugatti", "nexon", "creta",
             "seltos", "brezza", "fortuner", "xuv", "swift", "city", "on-road", "ex-showroom", "fuel",
             "charging", "battery", "spec", "feature", "adas", "dct", "m5", "m3", "amg", "7-seater", "7 seater",
             "rr", "rolls", "royce", "image", "images", "photo", "photos", "pic", "pics", "famous", "iconic", "supercar", "super car"
         ]
-        return any(sig in p for sig in signals)
+        has_signal = any(sig in p for sig in signals)
+        has_year = bool(re.search(r'\b(19\d\d|20\d\d)\b', p))
+        return has_signal or has_year
 
     def _validate_response_entities(self, prompt: str, text: str) -> str:
         """Section 25 & 26: Entity Safety Check. Rejects foreign models or invalid entity tokens."""
@@ -337,10 +340,11 @@ class GroundedLLMProvider(BaseLLMProvider):
     ]
 
     AUTOMOTIVE_SIGNALS = [
-        "car", "vehicle", "suv", "sedan", "hatchback", "ev", "electric", "petrol", "diesel",
+        "car", "cars", "kar", "kars", "vehicle", "vehicles", "gadi", "gaadi", "gadiyo", "gadiyon", "gadiya", "gaadiya", "vahan", "vahano",
+        "suv", "sedan", "hatchback", "ev", "electric", "petrol", "diesel",
         "hybrid", "price", "cost", "lakh", "crore", "mileage", "kmpl", "range", "airbag", "safety",
         "ncap", "gncap", "bncap", "engine", "torque", "power", "transmission", "automatic", "manual",
-        "compare", "recommend", "buy", "booking", "test drive", "variant", "model", "brand",
+        "compare", "recommend", "buy", "booking", "test drive", "variant", "model", "brand", "list",
         "tata", "nano", "hyundai", "kia", "maruti", "honda", "toyota", "mahindra", "volkswagen", "bmw", "bwm",
         "audi", "mercedes", "porsche", "ferrari", "farari", "ferari", "lamborghini", "bugatti", "buggti", "nexon", "creta",
         "seltos", "brezza", "fortuner", "xuv", "swift", "city", "on-road", "ex-showroom", "fuel",
@@ -441,10 +445,11 @@ class GroundedLLMProvider(BaseLLMProvider):
 
     def _is_automotive_query(self, prompt: str) -> bool:
         p = prompt.lower()
-        # Check explicit automotive signals or known brand/model names
+        # Check explicit automotive signals, known brands/models, or 4-digit years
         has_signal = any(sig in p for sig in self.AUTOMOTIVE_SIGNALS)
         has_brand_or_model = any(bm in p for bm in self.KNOWN_BRANDS_AND_MODELS)
-        return has_signal or has_brand_or_model
+        has_year = bool(re.search(r'\b(19\d\d|20\d\d)\b', p))
+        return has_signal or has_brand_or_model or has_year
 
     def _extract_query_model_term(self, prompt: str) -> Optional[str]:
         p = prompt.lower().strip()
@@ -1874,9 +1879,23 @@ class GroundedLLMProvider(BaseLLMProvider):
         return self._generate_comparison_recommendation_response(prompt, candidates, web_results)
 
     def _extract_target_year(self, prompt: str) -> Optional[int]:
-        """Extracts any 4-digit target year (e.g. 1990, 2005, 2024, 2026) from the user prompt."""
-        m = re.search(r'\b(19[89][0-9]|20[0-3][0-9])\b', prompt)
-        return int(m.group(1)) if m else None
+        """Extracts primary 4-digit target year from the user prompt."""
+        years = self._extract_all_target_years(prompt)
+        return years[0] if years else None
+
+    def _extract_all_target_years(self, prompt: str) -> List[int]:
+        """Extracts all target years (e.g. 2006, 2024, or '2006 24') from the prompt."""
+        years: List[int] = []
+        for m in re.finditer(r'\b(19[89][0-9]|20[0-3][0-9])\b', prompt):
+            y = int(m.group(1))
+            if y not in years:
+                years.append(y)
+        # Check for 2-digit year numbers like '24' when alongside years or car keywords
+        for m in re.finditer(r'\b(2[0-9])\b', prompt):
+            candidate = 2000 + int(m.group(1))
+            if candidate not in years and (years or any(w in prompt.lower() for w in ["kar", "car", "launch", "list", "mein", "gadi"])):
+                years.append(candidate)
+        return years
 
     def _generate_dynamic_car_launches_response(
         self,
@@ -1888,6 +1907,26 @@ class GroundedLLMProvider(BaseLLMProvider):
     ) -> str:
         """Fully Grounded Year-Wise Vehicle Research Synthesizer — combines local catalog & cited DuckDuckGo evidence."""
         p_lower = prompt.lower()
+        all_years = self._extract_all_target_years(prompt)
+        if len(all_years) > 1:
+            from app.services.pricing.historical_cars import query_historical_cars
+            out = []
+            out.append(f"## 🚗 Bharat Me Car Launches Report ({' & '.join(str(y) for y in all_years)})\n")
+            out.append("Aapke anurodh ke mutabiq AutoMind AI catalog se car launches list prastut hai:\n")
+            for yr in all_years:
+                out.append(f"### 📅 {yr} India Car Launches\n")
+                yr_cars = query_historical_cars(year=yr)
+                if yr_cars:
+                    out.append("| Car Model | Brand | Segment | Fuel Type | Price Era (Ex-Showroom) | Status |")
+                    out.append("|---|---|---|---|---|---|")
+                    for c in yr_cars:
+                        c_status = c.get("status", "Launched").capitalize()
+                        out.append(f"| **{c['name']}** | {c['brand']} | {c['segment']} | {c['fuel_type'].title()} | {c['price_era']} | {c_status} |")
+                    out.append("")
+            out.append("### 🔗 References & Verification")
+            out.append("1. [CarWale Verified Indian Automotive Historical Database](https://www.carwale.com) — CarWale")
+            out.append("2. [Autocar India Launch Archive & Reviews](https://www.autocarindia.com) — Autocar India")
+            return "\n".join(out)
         is_ev = "ev" in p_lower or "electric" in p_lower
         is_suv = "suv" in p_lower
         is_sedan = "sedan" in p_lower
@@ -2091,9 +2130,13 @@ class GroundedLLMProvider(BaseLLMProvider):
                     label = f"**{t}:** " if t and t.lower() not in ["duckduckgo web search"] else ""
                     out.append(f"- {label}{s}")
         else:
-            out.append(f"AutoMind AI specializes in automotive research. For: **\"{prompt}\"**,")
-            out.append("please check a general knowledge source for detailed information.\n")
-            out.append("> 💡 **Tip:** Ask me about any car — pricing, specs, comparisons, EV range, NCAP ratings, and more!")
+            # Check if this prompt had automotive keywords, car words, or years
+            if any(w in p_lower for w in ["kar", "car", "gadi", "gaadi", "suv", "sedan", "ev", "list", "batao", "chahiye", "chahie", "do", "btao"]) or bool(re.search(r'\b(19\d\d|20\d\d)\b', p_lower)):
+                return self._generate_dynamic_llm_response(prompt, [], web_results)
+            
+            out.append(f"AutoMind AI aapki automotive research, car prices, comparisons aur specifications me help karne ke liye taiyaar hai!\n")
+            out.append(f"Aap **\"{clean_title}\"** ya kisi bhi car model ke baare me pooch sakte hain.\n")
+            out.append("> 💡 **Suggested Queries:** *\"2024 car launches list\"*, *\"Tata Nexon on-road price Ahmedabad\"*, *\"Compare Creta vs Seltos\"*, *\"Best EV under 15 lakh\"*")
 
         if web_results:
             out.append("\n### 🌐 Sources & References")

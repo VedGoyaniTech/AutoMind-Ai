@@ -61,10 +61,12 @@ class UniversalMessageRouter:
             "bmw", "audi", "mercedes", "benz", "tata", "mahindra", "hyundai", "kia", "maruti", "suzuki",
             "toyota", "skoda", "volkswagen", "honda", "mg", "nexon", "creta", "thar", "curvv", "xuv700",
             "xuv400", "seltos", "dzire", "swift", "punch", "harrier", "safari", "innova", "brezza", "car",
-            "cars", "suv", "sedan", "ev", "information", "price", "emi", "batao", "chahie", "chahiye",
-            "details", "mileage", "specs", "specifications", "range", "compare", "vs"
+            "cars", "kar", "kars", "gadi", "gaadi", "gadiyo", "gadiyon", "gadiya", "gaadiya", "vahan", "vahano",
+            "suv", "sedan", "ev", "information", "price", "emi", "batao", "chahie", "chahiye", "list",
+            "details", "mileage", "specs", "specifications", "range", "compare", "vs", "launch", "launches", "launched"
         ]
-        is_car_inquiry = any(ak in clean for ak in auto_keywords)
+        has_year = bool(re.search(r'\b(19\d\d|20\d\d)\b', clean))
+        is_car_inquiry = any(ak in clean for ak in auto_keywords) or has_year
 
         # 0.1 User Self-Introduction & Name Capture (ONLY when NOT a car inquiry)
         if not is_car_inquiry:
@@ -121,13 +123,22 @@ class UniversalMessageRouter:
                 elif len(after_pref) <= 3:
                     return {"type": "QUESTION_PREFACE", "reply": "Of course! 😊 What would you like to ask?"}
 
-        # 3. Real Information Request
+        # 3. Real Information Request (strip repeated leading conversational fillers e.g. "hey hey mujhe...")
         actual_req = clean
-        for g in ["hey", "hi", "hello", "yo", "please"]:
-            if actual_req.startswith(g):
-                actual_req = actual_req[len(g):].strip(" ,:-!?")
+        changed = True
+        while changed:
+            changed = False
+            for g in ["hey", "hi", "hello", "yo", "please", "bhai", "yaar", "han", "ha"]:
+                if actual_req == g:
+                    actual_req = ""
+                    changed = True
+                    break
+                elif actual_req.startswith(g + " ") or actual_req.startswith(g + ","):
+                    actual_req = actual_req[len(g):].strip(" ,:-!?")
+                    changed = True
+                    break
 
-        return {"type": "REAL_REQUEST", "actual_request": actual_req}
+        return {"type": "REAL_REQUEST", "actual_request": actual_req or clean}
 
 
 @router.post("/stream")

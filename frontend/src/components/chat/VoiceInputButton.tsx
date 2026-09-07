@@ -48,8 +48,8 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      if (res.data && res.data.transcript) {
-        const text = res.data.transcript;
+      if (res.data && res.data.success && res.data.transcript && res.data.transcript.trim()) {
+        const text = res.data.transcript.trim();
         onTranscript(text);
       }
     } catch (e) {

@@ -18,12 +18,6 @@
 - [Core Value Proposition](#-core-value-proposition)
 - [System Architecture](#-system-architecture)
 - [Key Platform Capabilities](#-key-platform-capabilities)
-  - [1. Autonomous Agentic AI Workflow Layer](#1--autonomous-agentic-ai-workflow-layer)
-  - [2. Factual Vehicle Comparison Engine](#2--factual-vehicle-comparison-engine)
-  - [3. Production-Grade Hybrid Indic RAG Engine](#3--production-grade-hybrid-indic-rag-engine)
-  - [4. Statutory On-Road Price & Reducing-Balance Loan EMI Engine](#4--statutory-on-road-price--reducing-balance-loan-emi-engine)
-  - [5. Multilingual Web Speech & Personalized Memory](#5--multilingual-web-speech--personalized-memory)
-  - [6. Offline DPO Dataset Exporter & Quantization](#6--offline-dpo-dataset-exporter--quantization)
 - [Tech Stack](#-tech-stack)
 - [Directory Structure](#-directory-structure)
 - [Quick Start Guide](#-quick-start-guide)
@@ -90,50 +84,12 @@ flowchart TD
 
 ## 🌟 Key Platform Capabilities
 
-### 1. 🤖 Autonomous Agentic AI Workflow Layer
-- **Agent Orchestrator & Multi-Step Planner:** Recursively decomposes multi-part automotive research requests (e.g., *"Compare Nexon EV vs XUV400 and give me on-road price in Ahmedabad with 5-year loan EMI"*).
-- **Typed Tool Interfaces:**
-  - `CompareVehiclesTool`: Side-by-side technical, dimensional, and pricing verification.
-  - `CalculatePricingAndEMITool`: City-specific RTO, insurance, statutory cess, and multi-tenure EMI calculation.
-  - `SearchAutomotiveKnowledgeTool`: Hybrid semantic document chunk lookup.
-- **Autonomous Verifier:** Validates tool output against real-world constraints before streaming to the client.
-
-### 2. ⚖️ Factual Vehicle Comparison Engine
-- **Multi-Lingual Intent Detection:** Identifies comparison queries across **English**, **Hindi**, **Hinglish**, and **Gujarati** (*"Creta aur Seltos me se konsi achi hai"*, *"Fortuner ane Endeavour ni tulna"*, *"X vs Y"*).
-- **Conversational Filler Cleansing:** Strips filler words (*"mujhe"*, *"please"*, *"ki comparison kro"*, *"kar do"*, *"ke against"*), preventing dirty entity extraction.
-- **Brand-Only Model Disambiguation:** When a user queries only a brand (e.g., *"Rolls Royce"* or *"Rolls Royals"*), AutoMind AI politely halts table generation and presents verified model options (*Ghost, Cullinan, Phantom, Spectre*).
-- **Zero-Fabrication Rejection:** Queries containing unknown cars (e.g., *"Tata Nexon vs unknowncar"*) identify the valid model, flag the missing model honestly, and refuse to invent specs.
-- **Side-by-Side Markdown Tables:** Generates complete comparisons strictly using verified dataset attributes (Engine, Transmission, Price, ARAI Mileage, Safety Rating, Key Features, Verdict).
-
-### 3. 🧠 Production-Grade Hybrid Indic RAG Engine
-- **Dual Vector & Relational Namespaces:**
-  - `vehicle_record`: Structured SQL constraints + normalized vehicle vector embeddings.
-  - `knowledge_chunk`: Unstructured knowledge chunks (OEM brochures, owner manuals, EV guides, Bharat NCAP crash reports).
-- **Universal Multi-Format Ingestion:** Supports `.pdf`, `.txt`, `.md`, `.html`, `.csv`, `.json`, and `.jsonl` with recursive semantic chunking (`chunk_size=500`, `chunk_overlap=50`) and SHA-256 deduplication.
-- **Reciprocal Rank Fusion (RRF):** Merges dense semantic embeddings (`all-MiniLM-L6-v2`, 384-d) with keyword filters and trusted domain web search.
-- **Grounded Citations:** Appends verified source links (`[CarWale]`, `[Autocar India]`, `[CarDekho]`) with full attribution.
-
-### 4. 💰 Statutory On-Road Price & Reducing-Balance Loan EMI Engine
-- **Deterministic Pricing Pipeline:**
-  $$\text{On-Road Price} = \text{Ex-Showroom} + \text{State RTO Tax} + \text{Insurance (1+3 Yr)} + \text{1\% TCS} + \text{FASTag} + \text{HSRP / Cess}$$
-- **Supported State Tax Regimes:**
-  - **Gujarat (`GJ`)**: 6% Road Tax across price bands, 0% EV waiver.
-  - **Maharashtra (`MH`)**: Progressive 11%–13% Petrol, 13%–15% Diesel, 0.5% Road Safety Cess.
-  - **Delhi (`DL`)**: Tiered 4%–10% Petrol, 5%–12.5% Diesel, 0% EV waiver.
-  - **Karnataka (`KA`)**: 13%–18% Road Tax + 11% Infrastructure Cess.
-- **Reducing-Balance Loan EMI Equation:**
-  $$\text{EMI} = P \times r \times \frac{(1+r)^n}{(1+r)^n - 1}$$
-  Supports multi-tenure (3, 5, 7 years) comparison matrices, zero-interest safety, and down-payment validations.
-
-### 5. 🎙️ Multilingual Web Speech & Personalized Memory
-- **Browser-Native Web Speech API:** Speech-to-text with automatic fallback to `webkitSpeechRecognition`.
-- **Locale Toggles:** Hindi (`hi-IN`), Gujarati (`gu-IN`), and English (`en-IN`) with `localStorage` persistence.
-- **Universal Name Memory:** Remembers the user's name across session turns without mistaking car names or queries as personal names.
-
-### 6. ⚡ Offline DPO Dataset Exporter & Quantization
-- **Preference Optimization:** User Thumbs Up / Down ratings with reason codes (incorrect price, irrelevant, incomplete, language error) logged to MySQL.
-- **Strict ML Pairing (`ml/datasets/export_dpo_dataset.py`):** Automatically pairs chosen and rejected responses for identical prompts, redacting PII (emails, phone numbers) into standard DPO JSONL format.
-- **4-Bit Quantization Ready:** Benchmarked for GGUF (Q4_K_M) via `llama.cpp` and BitsAndBytes NF4, reducing VRAM usage from 3.8 GB to 1.25 GB (67.1% saving).
+- **🤖 Autonomous Agentic AI:** Multi-step planner and orchestrator with specialized tools (`compare_vehicles`, `calculate_pricing`, `search_knowledge`) and pre-execution validation.
+- **⚖️ Verified Vehicle Comparison:** Multi-lingual intent detection (English, Hindi, Hinglish, Gujarati) with clean filler removal, brand disambiguation (Rolls-Royce ➔ Ghost, Cullinan, Phantom, Spectre), and zero-hallucination Markdown tables.
+- **🧠 Hybrid Indic RAG Engine:** Dense FAISS semantic search (384-d) combined with SQL filters, OEM document ingestion (PDF, CSV, JSON), and trusted web citations (CarWale, Autocar).
+- **💰 Statutory On-Road & EMI Engine:** State-accurate RTO tax calculations (GJ, MH, DL, KA), statutory cess, insurance, and reducing-balance multi-tenure (3/5/7 yr) loan EMI matrices.
+- **🎙️ Speech Recognition & Personalized Memory:** Realtime browser voice input (English, Hindi, Gujarati) with persistent user name memory.
+- **⚡ Preference DPO & 4-Bit Edge Quantization:** Thumbs Up/Down feedback collection with automated PII redaction and 67% VRAM reduction via 4-bit quantization (GGUF/NF4).
 
 ---
 

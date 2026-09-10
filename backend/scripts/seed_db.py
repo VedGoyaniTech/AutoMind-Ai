@@ -45,28 +45,36 @@ def seed():
                 db.refresh(existing)
             source_objs.append(existing)
 
-        # 2. Seed / Synchronize Demo User
-        print("Seeding/Ensuring Demo User (demo@automind.ai / password123)...")
-        demo_user = db.query(User).filter(User.email == "demo@automind.ai").first()
-        if not demo_user:
-            demo_user = User(
-                full_name="Alex Vance",
-                email="demo@automind.ai",
-                hashed_password=get_password_hash("password123"),
-                is_admin=True
-            )
-            db.add(demo_user)
-            db.commit()
-            db.refresh(demo_user)
+        # 2. Optional Development Demo User Seeding (STRICTLY LOCAL DEV ONLY)
+        # Never runs in production. Requires explicit opt-in via SEED_DEMO_DATA=true.
+        allow_demo = (
+            settings.APP_ENV == "development"
+            and os.getenv("SEED_DEMO_DATA", "").lower() in ("true", "1", "yes")
+        )
+        if allow_demo:
+            print("[DEV NOTICE] Seeding local development demo user (demo@automind.ai)...")
+            demo_password = os.getenv("DEV_DEMO_PASSWORD", "LocalDevPass@2026")
+            demo_user = db.query(User).filter(User.email == "demo@automind.ai").first()
+            if not demo_user:
+                demo_user = User(
+                    full_name="Local Demo User",
+                    email="demo@automind.ai",
+                    hashed_password=get_password_hash(demo_password),
+                    is_admin=False  # Never administrator by default
+                )
+                db.add(demo_user)
+                db.commit()
+                db.refresh(demo_user)
 
-            pref = UserPreference(user_id=demo_user.id, answer_detail="Balanced", units="Metric", currency="INR")
-            db.add(pref)
-            db.commit()
+                pref = UserPreference(user_id=demo_user.id, answer_detail="Balanced", units="Metric", currency="INR")
+                db.add(pref)
+                db.commit()
+            else:
+                demo_user.hashed_password = get_password_hash(demo_password)
+                demo_user.is_admin = False
+                db.commit()
         else:
-            # Synchronize password hash to guarantee password123 works
-            demo_user.hashed_password = get_password_hash("password123")
-            demo_user.is_admin = True
-            db.commit()
+            print("Skipping demo user seeding (requires APP_ENV=development and SEED_DEMO_DATA=true).")
 
         # 3. Seed Vehicles
         print("Seeding Sample Vehicles & Specifications...")

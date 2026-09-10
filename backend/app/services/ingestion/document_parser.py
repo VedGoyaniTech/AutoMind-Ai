@@ -84,7 +84,7 @@ class DocumentParser:
     @classmethod
     def _parse_pdf(cls, file_path: str, source_name: str) -> List[Dict[str, Any]]:
         text_content = ""
-        # Try pypdf / PyPDF2 / pdfplumber if installed
+        # Standardized on pypdf
         try:
             import pypdf
             reader = pypdf.PdfReader(file_path)
@@ -93,19 +93,15 @@ class DocumentParser:
                 if t:
                     text_content += t + "\n"
         except ImportError:
+            logger.warning("pypdf is not installed. PDF parsing will fall back to binary extraction.")
             try:
-                import PyPDF2
-                reader = PyPDF2.PdfReader(file_path)
-                for page in reader.pages:
-                    t = page.extract_text()
-                    if t:
-                        text_content += t + "\n"
-            except Exception as e:
-                logger.warning(f"PDF library not available or error parsing {file_path}: {e}")
-                # Simple binary string extraction fallback
                 with open(file_path, "rb") as f:
                     raw_bytes = f.read()
                 text_content = re.sub(rb'[^\x20-\x7E\n]', b' ', raw_bytes).decode('ascii', errors='ignore')
+            except Exception as e:
+                logger.warning(f"Error reading binary fallback for {file_path}: {e}")
+        except Exception as e:
+            logger.warning(f"pypdf encountered an error parsing {file_path}: {e}")
 
         cleaned = cls._clean_text(text_content)
         title = os.path.splitext(os.path.basename(file_path))[0].replace("_", " ").title()

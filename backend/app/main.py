@@ -23,18 +23,7 @@ logger = logging.getLogger("automind.main")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Initializing AutoMind AI Backend...")
-    # Automatically create database tables if they do not exist
-    Base.metadata.create_all(bind=engine)
-    logger.info("Database schema verified.")
-
-    # Auto-seed database if empty
-    try:
-        from scripts.seed_db import seed
-        seed()
-        logger.info("Initial data auto-seeded successfully.")
-    except Exception as e:
-        logger.info(f"Auto-seed status: {e}")
-
+    logger.info("Database schema lifecycle is managed via Alembic migrations.")
     yield
     logger.info("AutoMind AI Backend shutting down.")
 

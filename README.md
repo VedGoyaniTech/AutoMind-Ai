@@ -6,7 +6,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6.svg?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED.svg?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
 [![MySQL 8.0](https://img.shields.io/badge/MySQL-8.0-4479A1.svg?style=flat&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![Tests](https://img.shields.io/badge/Tests-105%2F105%20Passing%20(100%25)-brightgreen.svg?style=flat&logo=pytest&logoColor=white)](https://pytest.org/)
+[![Tests](https://img.shields.io/badge/Tests-119%2F119%20Passing%20(100%25)-brightgreen.svg?style=flat&logo=pytest&logoColor=white)](https://pytest.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat)](LICENSE)
 
 **AutoMind AI** is an enterprise-grade, agentic automotive intelligence and conversational research platform designed for the Indian and global automobile ecosystems. Combining a fine-tuned multilingual LLM layer, a deterministic Hybrid RAG engine, an autonomous Agentic Planner-Verifier architecture, and statutory on-road pricing & loan EMI calculation engines, AutoMind AI provides verifiable, hallucination-free automotive consultation in **English, Hindi, Hinglish, and Gujarati**.
@@ -146,45 +146,52 @@ Project-V/
 
 ## 🚀 Quick Start Guide
 
-### 1. Docker Desktop Deployment (Recommended)
+### 1. Docker Deployment (Recommended)
 
-Run the full stack with a single command:
-
+#### Local Development (`compose.dev.yml`)
+Includes volume mounts, live hot-reloading, and dev services:
 ```bash
 # 1. Clone repository
 git clone https://github.com/VedGoyaniTech/AutoMind-Ai.git
 cd AutoMind-Ai
 
 # 2. Configure environment variables
-cp backend/.env.example backend/.env
+cp .env.example .env
 
-# 3. Build and launch all multi-container services
-docker compose up -d --build
+# 3. Build and launch development containers
+docker compose -f compose.dev.yml up -d --build
 ```
 
 **Service Endpoints:**
 - 🌐 **Frontend Application:** [http://localhost:5173](http://localhost:5173)
 - ⚙️ **Backend REST API:** [http://localhost:8000](http://localhost:8000)
 - 📖 **Interactive Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
-- 🗄️ **MySQL Database:** `localhost:3307` (user: `root`, password: `automind_password`)
+- 🗄️ **MySQL Database:** `localhost:3307` (user: `automind_user`, db: `automind_db`)
+
+#### Hardened Production Deployment (`compose.prod.yml`)
+Hardened topology with dedicated migration init container, unprivileged backend worker, Nginx reverse proxy with SSE-safe configuration, and internal private MySQL:
+```bash
+docker compose -f compose.prod.yml up -d --build
+```
 
 ---
 
-### 2. Local Development Setup
+### 2. Local Development Setup (Native)
 
 #### Backend Setup:
 ```bash
 cd backend
-python -m venv venv
+python3.11 -m venv venv
+source venv/bin/activate       # Linux / macOS (or venv\Scripts\activate on Windows)
 
-# Activate virtual environment
-source venv/bin/activate       # Linux / macOS
-# or: venv\Scripts\activate    # Windows
-
+# Core dependencies
 pip install -r requirements.txt
 
-# Seed vehicle database and demo user
-python scripts/seed_db.py
+# Run configuration pre-flight validation
+python scripts/validate_config.py
+
+# Execute database migrations
+alembic upgrade head
 
 # Start FastAPI development server
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
@@ -193,7 +200,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 #### Frontend Setup:
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 
@@ -252,7 +259,10 @@ docker exec automind_backend pytest /app/tests/test_agentic_workflows.py -v
 ---
 
 ## 🛡️ License & Security
-
-- **Authentication:** Industry-standard JWT tokens with secure HTTP-only cookies / authorization headers and Bcrypt password hashing.
+- **Security Policy & Secret Rotation:** See [docs/SECURITY.md](docs/SECURITY.md) for vulnerability reporting and rotation guidance (`openssl rand -hex 32`).
+- **Production Hardening:** Fails fast on default keys or wildcard CORS with credentials via startup validation.
+- **Health Probes:** Liveness (`/api/v1/health/live`) and DB readiness (`/api/v1/health/ready` with 503 handling).
+- **Authentication:** Strict JWT token enforcement (zero demo bypasses, integer ID validation, 401 on malformed/expired/inactive tokens).
 - **Data Protection:** Parameterized SQL queries via SQLAlchemy ORM; automated PII redaction on DPO exports.
 - **License:** Released under the [MIT License](LICENSE). Built for developers, researchers, and automobile enthusiasts.
+

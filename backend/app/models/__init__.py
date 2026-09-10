@@ -4,6 +4,7 @@ from app.models.source import Source
 from app.models.car import Manufacturer, CarModel, CarVariant, SavedCar
 from app.models.chat import Conversation, Message
 from app.models.ingestion import IngestionJob
+from app.models.feedback import MessageFeedback
 
 __all__ = [
     "Base",
@@ -16,5 +17,7 @@ __all__ = [
     "SavedCar",
     "Conversation",
     "Message",
-    "IngestionJob"
+    "IngestionJob",
+    "MessageFeedback"
 ]
+

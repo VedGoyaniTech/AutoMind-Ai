@@ -1,0 +1,7 @@
+# AutoMind AI — CPU Retrieval & RAG Dependencies
+sentence-transformers>=2.5.0
+faiss-cpu>=1.7.4
+duckduckgo-search>=5.0.0
+rapidfuzz>=3.6.0
+pypdf>=4.1.0
+numpy>=1.26.0

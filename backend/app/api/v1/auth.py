@@ -14,42 +14,59 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
-    user_repo = UserRepository(db)
-    clean_token = (token or "").replace("Bearer ", "").strip()
-
-    if not clean_token or clean_token in ["null", "undefined"]:
-        demo = user_repo.get_by_email("demo@automind.ai")
-        if demo:
-            return demo
+    """
+    Authenticate the current user via JWT bearer token.
+    Strictly enforces 401 Unauthorized for missing, malformed, expired,
+    unmatched, or inactive user tokens with zero fallback to demo accounts.
+    """
+    if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication token is missing."
+            detail="Authentication token is missing.",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
-    if clean_token == "demo-jwt-token-automind-2026":
-        demo = user_repo.get_by_email("demo@automind.ai")
-        if not demo:
-            demo = user_repo.create("Alex Vance", "demo@automind.ai", "password123", is_admin=True)
-        return demo
+    clean_token = token.replace("Bearer ", "").strip()
+    if not clean_token or clean_token.lower() in ["null", "undefined"]:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication token is missing or empty.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     payload = decode_access_token(clean_token)
     if not payload or "sub" not in payload:
-        demo = user_repo.get_by_email("demo@automind.ai")
-        if demo:
-            return demo
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired authentication token."
+            detail="Invalid or expired authentication token.",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
-    user = user_repo.get_by_id(int(payload["sub"]))
+    # Validate subject safely — non-integer or malformed subjects must return 401, not 500
+    sub = payload.get("sub")
+    try:
+        user_id = int(sub)
+    except (ValueError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Malformed token subject identifier.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    user_repo = UserRepository(db)
+    user = user_repo.get_by_id(user_id)
     if not user:
-        demo = user_repo.get_by_email("demo@automind.ai")
-        if demo:
-            return demo
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
-            detail="User account not found."
+            detail="User account not found.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User account is inactive or deactivated.",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
     return user
@@ -82,22 +99,23 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 def login(credentials: UserLogin, db: Session = Depends(get_db)):
+    """Authenticate registered user credentials. No hardcoded or auto-seeded accounts."""
     repo = UserRepository(db)
     user = repo.get_by_email(credentials.email)
     
-    # Auto-ensure demo user exists
-    if credentials.email == "demo@automind.ai":
-        if not user:
-            user = repo.create("Alex Vance", "demo@automind.ai", "password123", is_admin=True)
-        else:
-            user.hashed_password = get_password_hash("password123")
-            db.commit()
-    else:
-        if not user or not verify_password(credentials.password, user.hashed_password):
-            raise HTTPException(status_code=401, detail="Incorrect email or password.")
+    if not user or not verify_password(credentials.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
-    if not user or not user.is_active:
-        raise HTTPException(status_code=403, detail="User account is deactivated or unavailable.")
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User account is inactive or deactivated.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
     access_token = create_access_token(user.id)
     user_resp = UserResponse.model_validate(user)

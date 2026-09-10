@@ -1,0 +1,96 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: automind_mysql_prod
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-automind_db}
+      MYSQL_USER: ${MYSQL_USER:-automind_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_prod_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal_network
+
+  migration:
+    build:
+      context: ./backend
+      dockerfile: ../docker/Dockerfile.backend
+    container_name: automind_migration_prod
+    restart: "no"
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      APP_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      APP_SECRET: ${APP_SECRET}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      DEBUG: "false"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - internal_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../docker/Dockerfile.backend
+    container_name: automind_backend_prod
+    restart: always
+    environment:
+      APP_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      APP_SECRET: ${APP_SECRET}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      DEBUG: "false"
+      LLM_PROVIDER: ${LLM_PROVIDER:-grounded}
+      EMBEDDING_MODEL_ID: ${EMBEDDING_MODEL_ID:-all-MiniLM-L6-v2}
+      VECTOR_STORE_TYPE: ${VECTOR_STORE_TYPE:-local}
+      VECTOR_INDEX_PATH: ${VECTOR_INDEX_PATH:-/app/vector_index}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    depends_on:
+      mysql:
+        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
+    networks:
+      - internal_network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile.frontend
+    container_name: automind_frontend_prod
+    restart: always
+    ports:
+      - "80:80"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - internal_network
+
+networks:
+  internal_network:
+    driver: bridge
+
+volumes:
+  mysql_prod_data:

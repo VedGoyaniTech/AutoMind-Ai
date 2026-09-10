@@ -44,6 +44,10 @@ class KnowledgeChunkMetadata(BaseModel):
     updated_at: Optional[str] = None
     reliability_score: float = 0.90
     doc_type: str = "knowledge_chunk"
+    review_status: Optional[str] = "approved"
+    last_verified_at: Optional[str] = None
+    is_stale: bool = False
+    freshness_warning: Optional[str] = None
 
 class RAGSearchResult(BaseModel):
     """Unified retrieval result item with explicit score, type, and source provenance."""
@@ -55,6 +59,10 @@ class RAGSearchResult(BaseModel):
     source_name: str
     source_url: Optional[str] = None
     domain: Optional[str] = None
+    review_status: Optional[str] = "approved"
+    last_verified_at: Optional[str] = None
+    is_stale: bool = False
+    freshness_warning: Optional[str] = None
     metadata: Dict[str, Any] = Field(default_factory=dict)
 
 class RAGMetadata(BaseModel):

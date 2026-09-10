@@ -5,6 +5,16 @@ from app.models.car import Manufacturer, CarModel, CarVariant, SavedCar
 from app.models.chat import Conversation, Message
 from app.models.ingestion import IngestionJob
 from app.models.feedback import MessageFeedback
+from app.models.provenance import (
+    VehicleSpecification,
+    VehiclePrice,
+    RTORuleVersion,
+    SafetyRating,
+    InsuranceAssumption,
+    RecallCampaign,
+    EVChargingStation,
+    OwnershipCostAssumption,
+)
 
 __all__ = [
     "Base",
@@ -18,6 +28,15 @@ __all__ = [
     "Conversation",
     "Message",
     "IngestionJob",
-    "MessageFeedback"
+    "MessageFeedback",
+    "VehicleSpecification",
+    "VehiclePrice",
+    "RTORuleVersion",
+    "SafetyRating",
+    "InsuranceAssumption",
+    "RecallCampaign",
+    "EVChargingStation",
+    "OwnershipCostAssumption",
 ]
+
 

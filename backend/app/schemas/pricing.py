@@ -81,6 +81,9 @@ class DataFreshnessInfo(BaseModel):
     lastVerifiedAt: Optional[str] = "2026-03-01"
     isEstimate: bool = True
     dataSourceLabel: str = "local_rto_registry"
+    reviewStatus: Optional[str] = "approved"
+    sourceCitation: Optional[str] = None
+    freshnessWarning: Optional[str] = None
 
 class PricingQuoteResponse(BaseModel):
     location: LocationInfo

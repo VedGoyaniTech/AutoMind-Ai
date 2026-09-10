@@ -1,0 +1,16 @@
+{
+  "document_title": "Bharat NCAP Crash Safety Protocols & Advanced Driver Assistance Systems (ADAS)",
+  "source_id": "gov_morth_bncap_ais197_2023",
+  "publisher": "Ministry of Road Transport and Highways (MoRTH), Government of India",
+  "source_url": "https://www.bncap.in/vehicle-safety-ratings/",
+  "source_type": "safety_programme",
+  "region": "IN",
+  "published_date": "2023-10-01T00:00:00Z",
+  "effective_date": "2023-10-01T00:00:00Z",
+  "last_verified_at": "2026-09-10T00:00:00Z",
+  "licence": "Government Public Information / MoRTH Notification AIS-197",
+  "allowed_use": "rag",
+  "review_status": "approved",
+  "reviewer": "AutoMind Data Engineering Team",
+  "content_hash": "sha256:adas_bncap_2026_verified"
+}

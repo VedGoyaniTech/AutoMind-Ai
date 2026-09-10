@@ -15,9 +15,11 @@ from app.models.source import Source
 router = APIRouter(prefix="/admin", tags=["Admin & Ingestion"])
 
 def check_admin(current_user: User = Depends(get_current_user)):
-    # Allow active users in dev or explicit admin status
-    if not current_user.is_admin and not current_user.is_active:
-        raise HTTPException(status_code=403, detail="Administrator permissions required.")
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator permissions required. Real admin authentication required."
+        )
     return current_user
 
 @router.get("/stats")
@@ -228,3 +230,230 @@ def get_pricing_audit_summary(
         "last_audit_date": "2026-03-01",
         "states_covered": ["GJ", "MH", "DL", "KA"]
     }
+
+
+# ==============================================================================
+# DATA FOUNDATION & PROVENANCE MANAGEMENT ENDPOINTS
+# ==============================================================================
+
+from pydantic import BaseModel, Field
+from typing import Optional, Dict, Any, List
+from datetime import datetime, timezone
+import os
+
+class SourceStatusUpdate(BaseModel):
+    review_status: Optional[str] = None
+    revoked: Optional[bool] = None
+    notes: Optional[str] = None
+
+
+@router.get("/data/sources")
+def list_data_sources(
+    review_status: Optional[str] = None,
+    source_type: Optional[str] = None,
+    is_active: Optional[bool] = None,
+    skip: int = 0,
+    limit: int = 50,
+    db: Session = Depends(get_db),
+    admin: User = Depends(check_admin)
+):
+    """Lists registered automotive data sources and their review/active status."""
+    query = db.query(Source)
+    if review_status:
+        query = query.filter(Source.review_status == review_status)
+    if source_type:
+        query = query.filter(Source.source_type == source_type)
+    if is_active is not None:
+        query = query.filter(Source.revoked == (not is_active))
+    
+    total = query.count()
+    sources = query.offset(skip).limit(limit).all()
+    return {
+        "total": total,
+        "skip": skip,
+        "limit": limit,
+        "sources": [
+            {
+                "id": s.id,
+                "source_uid": s.source_uid,
+                "name": s.name,
+                "publisher": s.publisher,
+                "domain": s.domain,
+                "source_type": s.source_type,
+                "licence": s.licence,
+                "acquisition_method": s.acquisition_method,
+                "allowed_use": s.allowed_use,
+                "region": s.region,
+                "published_date": s.published_date.isoformat() if s.published_date else None,
+                "fetched_date": s.fetched_date.isoformat() if s.fetched_date else None,
+                "last_verified_at": s.last_verified_at.isoformat() if s.last_verified_at else None,
+                "revoked": s.revoked,
+                "version": s.version,
+                "review_status": s.review_status,
+                "reliability_score": s.reliability_score,
+                "notes": s.notes
+            }
+            for s in sources
+        ]
+    }
+
+
+@router.get("/data/audit-report")
+def get_dataset_audit_report(
+    admin: User = Depends(check_admin)
+):
+    """Returns the latest training and knowledge dataset audit report."""
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    report_path = os.path.join(base_dir, "ml", "datasets", "reports", "dataset_audit_report.json")
+    if os.path.exists(report_path):
+        with open(report_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {
+        "status": "not_generated",
+        "message": "Dataset audit report has not been generated yet. Run scripts/data_foundation_cli.py audit-training-data."
+    }
+
+
+@router.post("/data/validate-import")
+def validate_catalogue_import_endpoint(
+    payload: Dict[str, Any],
+    admin: User = Depends(check_admin)
+):
+    """Validates an incoming catalogue import payload against strict schema and Decimal currency rules."""
+    import tempfile
+    from scripts.data_foundation_cli import validate_catalogue_import
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as tmp:
+        json.dump(payload, tmp)
+        tmp_path = tmp.name
+    try:
+        is_valid, errors, summary = validate_catalogue_import(tmp_path, dry_run=True)
+        return {
+            "is_valid": is_valid,
+            "errors_count": len(errors),
+            "errors": errors,
+            "summary": summary
+        }
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+
+
+@router.post("/data/import")
+def import_catalogue_data_endpoint(
+    payload: Dict[str, Any],
+    db: Session = Depends(get_db),
+    admin: User = Depends(check_admin)
+):
+    """Imports validated catalogue data into the relational database with full provenance."""
+    import tempfile
+    from scripts.data_foundation_cli import import_catalogue_data
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as tmp:
+        json.dump(payload, tmp)
+        tmp_path = tmp.name
+    try:
+        result = import_catalogue_data(tmp_path)
+        return {
+            "status": "success",
+            "result": result
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Import failed: {str(e)}")
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
+
+
+@router.patch("/data/sources/{source_id}/status")
+def update_source_review_status(
+    source_id: int,
+    payload: SourceStatusUpdate,
+    db: Session = Depends(get_db),
+    admin: User = Depends(check_admin)
+):
+    """Updates the review status, revocation, or notes for a data source."""
+    source = db.query(Source).filter(Source.id == source_id).first()
+    if not source:
+        raise HTTPException(status_code=404, detail=f"Source ID {source_id} not found.")
+    
+    if payload.review_status is not None:
+        source.review_status = payload.review_status
+    if payload.revoked is not None:
+        source.revoked = payload.revoked
+    if payload.notes is not None:
+        source.notes = payload.notes
+    source.last_verified_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(source)
+    return {
+        "status": "success",
+        "source_id": source.id,
+        "source_uid": source.source_uid,
+        "review_status": source.review_status,
+        "revoked": source.revoked,
+        "last_verified_at": source.last_verified_at.isoformat() if source.last_verified_at else None,
+        "notes": source.notes
+    }
+
+
+@router.get("/data/facts")
+def query_verified_facts_with_provenance(
+    model_name: Optional[str] = None,
+    variant_name: Optional[str] = None,
+    field_name: Optional[str] = None,
+    db: Session = Depends(get_db),
+    admin: User = Depends(check_admin)
+):
+    """Queries verified specifications and prices with full source citation and provenance."""
+    from app.models.provenance import VehicleSpecification, VehiclePrice
+    
+    spec_query = db.query(VehicleSpecification).join(CarVariant).join(CarModel)
+    price_query = db.query(VehiclePrice).join(CarVariant).join(CarModel)
+    
+    if model_name:
+        spec_query = spec_query.filter(CarModel.name.ilike(f"%{model_name}%"))
+        price_query = price_query.filter(CarModel.name.ilike(f"%{model_name}%"))
+    if variant_name:
+        spec_query = spec_query.filter(CarVariant.variant_name.ilike(f"%{variant_name}%"))
+        price_query = price_query.filter(CarVariant.variant_name.ilike(f"%{variant_name}%"))
+    if field_name:
+        spec_query = spec_query.filter(VehicleSpecification.field_name == field_name)
+        
+    specs = spec_query.limit(100).all()
+    prices = price_query.limit(100).all()
+    
+    return {
+        "specifications": [
+            {
+                "id": s.id,
+                "variant": s.variant.variant_name if s.variant else None,
+                "model": s.variant.car_model.name if s.variant and s.variant.car_model else None,
+                "field_name": s.field_name,
+                "raw_value": s.raw_value,
+                "unit": s.unit,
+                "effective_date": s.effective_date.isoformat() if s.effective_date else None,
+                "last_verified_at": s.last_verified_at.isoformat() if s.last_verified_at else None,
+                "review_status": s.review_status,
+                "source": s.source.name if s.source else None,
+                "source_uid": s.source.source_uid if s.source else None
+            }
+            for s in specs
+        ],
+        "prices": [
+            {
+                "id": p.id,
+                "variant": p.variant.variant_name if p.variant else None,
+                "model": p.variant.car_model.name if p.variant and p.variant.car_model else None,
+                "amount": str(p.amount),
+                "currency": p.currency,
+                "state_code": p.state_code,
+                "city": p.city,
+                "price_type": p.price_type,
+                "effective_from": p.effective_from.isoformat() if p.effective_from else None,
+                "is_current": p.is_current,
+                "source": p.source.name if p.source else None,
+                "source_uid": p.source.source_uid if p.source else None
+            }
+            for p in prices
+        ]
+    }
+

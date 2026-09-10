@@ -25,6 +25,11 @@
     "held_out_evaluation_leakage_prevented": true,
     "prohibit_unlicensed_scraping": true
   },
+  "exclusions": [
+    "backend/data/tweet_eval/* (TweetEval NLP Benchmark)",
+    "ml/datasets/master_v4_combined_dataset.jsonl (Locomotive and non-automotive domain contamination)",
+    "ml/datasets/test/test.jsonl (Held-out evaluation split, never leaked into training)"
+  ],
   "audit_findings": {
     "total_jsonl_lines_in_repo": 3391,
     "status": "Multi-version experiment splits identified; not 3,391 unique verified records",

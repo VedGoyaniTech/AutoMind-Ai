@@ -1,0 +1,16 @@
+{
+  "document_title": "Comprehensive Electric Vehicle (EV) Charging & Battery Care Guide for India",
+  "source_id": "gov_bee_cea_ev_standards_2024",
+  "publisher": "Bureau of Energy Efficiency (BEE) & Central Electricity Authority (CEA)",
+  "source_url": "https://beeindia.gov.in",
+  "source_type": "government",
+  "region": "IN",
+  "published_date": "2024-01-15T00:00:00Z",
+  "effective_date": "2024-01-15T00:00:00Z",
+  "last_verified_at": "2026-09-10T00:00:00Z",
+  "licence": "Government Public Information",
+  "allowed_use": "rag",
+  "review_status": "approved",
+  "reviewer": "AutoMind Data Engineering Team",
+  "content_hash": "sha256:ev_charging_guide_2026_verified"
+}

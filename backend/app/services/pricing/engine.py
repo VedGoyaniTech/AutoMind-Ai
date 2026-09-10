@@ -18,8 +18,12 @@ from app.services.pricing.fees import calculate_statutory_and_dealer_fees
 from app.services.pricing.emi import calculate_multi_tenure_emi_options
 from app.schemas.pricing import (
     PricingQuoteRequest, PricingQuoteResponse,
-    LocationInfo, VehicleInfo, PriceBreakdown, EMIOptionItem
+    LocationInfo, VehicleInfo, PriceBreakdown, EMIOptionItem,
+    DataFreshnessInfo
 )
+from app.models.car import CarVariant, CarModel
+from app.models.provenance import VehiclePrice, RTORuleVersion
+from app.models.source import Source
 
 # Standard Ex-Showroom Baseline Registry for popular models when not in DB
 BASELINE_EX_SHOWROOM_PRICES: Dict[str, Dict[str, Any]] = {
@@ -123,6 +127,46 @@ class PricingEngine:
         fuel = (req.fuelType or "petrol").lower()
         is_estimated = False
 
+        freshness_info = DataFreshnessInfo(
+            priceEffectiveDate="2026-01-01",
+            ruleEffectiveDate="2026-01-01",
+            lastVerifiedAt="2026-03-01",
+            isEstimate=True,
+            dataSourceLabel="local_rto_registry",
+            reviewStatus="approved"
+        )
+
+        # Attempt to lookup in verified database if session is present
+        if self.db and (req.model or req.variant):
+            try:
+                query = self.db.query(VehiclePrice).join(
+                    CarVariant, VehiclePrice.variant_id == CarVariant.id
+                ).join(CarModel, CarVariant.model_id == CarModel.id)
+                if req.model:
+                    query = query.filter(CarModel.name.ilike(f"%{req.model}%"))
+                if req.variant:
+                    query = query.filter(CarVariant.variant_name.ilike(f"%{req.variant}%"))
+                query = query.filter(VehiclePrice.is_current == True)
+                found_price = query.first()
+                if found_price:
+                    if ex_price is None or ex_price <= 0:
+                        ex_price = float(found_price.amount)
+                    if found_price.variant:
+                        variant_name = found_price.variant.variant_name
+                        fuel = (found_price.variant.fuel_type or fuel).lower()
+                        if found_price.variant.car_model:
+                            model_name = found_price.variant.car_model.name
+                            if found_price.variant.car_model.manufacturer:
+                                mfg = found_price.variant.car_model.manufacturer.name
+                    if found_price.source:
+                        freshness_info.priceEffectiveDate = str(found_price.effective_from)
+                        freshness_info.lastVerifiedAt = str(found_price.source.last_verified_at) if found_price.source.last_verified_at else "2026-03-01"
+                        freshness_info.dataSourceLabel = found_price.source.name
+                        freshness_info.reviewStatus = found_price.source.review_status
+                        freshness_info.sourceCitation = f"{found_price.source.name} ({found_price.source.licence})"
+            except Exception:
+                pass
+
         # Attempt to lookup in baseline catalog if price is missing
         if ex_price is None or ex_price <= 0:
             query_key = (req.model or "").lower().strip()
@@ -136,13 +180,16 @@ class PricingEngine:
                     fuel = data["fuel"]
                     is_estimated = True
                     matched = True
+                    freshness_info.dataSourceLabel = "catalog_baseline"
+                    freshness_info.freshnessWarning = "Baseline estimate; please verify against official OEM price notification."
                     break
             
             if not matched:
                 raise ValueError(
-                    f"Ex-showroom price is required for vehicle '{model_name}'. "
-                    f"Please provide an exShowroomPrice or choose from known catalog models: {list(BASELINE_EX_SHOWROOM_PRICES.keys())}."
+                    f"Ex-showroom price is required; specifications are unavailable for '{model_name}'. "
+                    f"No verified pricing source found. Please provide an exShowroomPrice or choose from known catalog models: {list(BASELINE_EX_SHOWROOM_PRICES.keys())}."
                 )
+
 
         # 3. Calculate RTO Tax & Cess
         rto_res = calculate_state_rto_tax(
@@ -265,6 +312,7 @@ class PricingEngine:
                 onRoadPrice=on_road_total
             ),
             emiOptions=emi_items,
+            dataFreshness=freshness_info,
             assumptions=assumptions,
             disclaimer=disclaimer,
             formattedSummary=summary_md

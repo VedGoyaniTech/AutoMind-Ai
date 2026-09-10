@@ -11,6 +11,12 @@ class SourceCard(BaseModel):
     domain: str
     reason: str
     reliability_score: float
+    review_status: Optional[str] = "approved"
+    last_verified_at: Optional[str] = None
+    published_date: Optional[str] = None
+    is_stale: bool = False
+    freshness_warning: Optional[str] = None
+
 
 class ChatMessageSend(BaseModel):
     conversation_id: Optional[int] = None

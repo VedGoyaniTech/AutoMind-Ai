@@ -24,14 +24,16 @@ vector_index/
 # Data and Raw Crawls
 data/raw/*
 !data/raw/.gitkeep
+!data/raw/README.md
 data/sample/*
 !data/sample/.gitkeep
+data/reports/*
+!data/reports/.gitkeep
 
 # ML Datasets & Generated Partitions
 ml/datasets/quarantine/
 ml/datasets/cleaned/
 ml/datasets/dpo_exported/
-ml/datasets/reports/
 ml/datasets/*.dpo.jsonl
 
 # ML Model Weights & Checkpoints

@@ -1,0 +1,176 @@
+{
+  "source": {
+    "source_uid": "fixture_oem_official_2026",
+    "name": "Indian OEM Official Public Specification Fixture",
+    "publisher": "AutoMind Automotive Research Fixture Registry",
+    "domain": "automind.ai",
+    "base_url": "https://automind.ai/fixtures",
+    "source_type": "fixture",
+    "licence": "AutoMind Test Fixture MIT",
+    "acquisition_method": "fixture",
+    "reliability_score": 1.0,
+    "allowed_use": "catalogue",
+    "region": "IN",
+    "published_date": "2026-01-01T00:00:00Z",
+    "effective_date": "2026-01-01T00:00:00Z",
+    "last_verified_at": "2026-09-10T00:00:00Z",
+    "review_status": "approved",
+    "version": "1.0.0"
+  },
+  "manufacturers": [
+    {
+      "name": "Tata Motors",
+      "country": "India"
+    },
+    {
+      "name": "Hyundai",
+      "country": "South Korea"
+    }
+  ],
+  "models": [
+    {
+      "manufacturer_name": "Tata Motors",
+      "name": "Nexon",
+      "body_type": "SUV",
+      "generation": "Gen 2 Facelift",
+      "country": "India",
+      "launch_status": "launched"
+    },
+    {
+      "manufacturer_name": "Hyundai",
+      "name": "Creta",
+      "body_type": "SUV",
+      "generation": "Gen 2 Facelift",
+      "country": "India",
+      "launch_status": "launched"
+    }
+  ],
+  "variants": [
+    {
+      "model_name": "Nexon",
+      "variant_name": "Creative Plus MT",
+      "model_year": 2026,
+      "fuel_type": "Petrol",
+      "transmission": "Manual",
+      "engine_cc": 1199,
+      "horsepower": 120.0,
+      "torque_nm": 170.0,
+      "seating_capacity": 5,
+      "airbags": 6,
+      "combined_mileage": 17.4,
+      "prices": [
+        {
+          "price_type": "ex_showroom",
+          "state_code": "GJ",
+          "city": "Ahmedabad",
+          "currency": "INR",
+          "amount": 1100000.00,
+          "effective_from": "2026-01-01T00:00:00Z",
+          "review_status": "approved"
+        },
+        {
+          "price_type": "ex_showroom",
+          "state_code": "MH",
+          "city": "Mumbai",
+          "currency": "INR",
+          "amount": 1105000.00,
+          "effective_from": "2026-01-01T00:00:00Z",
+          "review_status": "approved"
+        }
+      ],
+      "specifications": [
+        {
+          "field_name": "airbags",
+          "value_numeric": 6.0,
+          "unit": null,
+          "effective_date": "2026-01-01T00:00:00Z",
+          "last_verified_at": "2026-09-10T00:00:00Z",
+          "review_status": "approved"
+        },
+        {
+          "field_name": "ground_clearance",
+          "value_numeric": 208.0,
+          "unit": "mm",
+          "effective_date": "2026-01-01T00:00:00Z",
+          "last_verified_at": "2026-09-10T00:00:00Z",
+          "review_status": "approved"
+        },
+        {
+          "field_name": "boot_space",
+          "value_numeric": 382.0,
+          "unit": "liters",
+          "effective_date": "2026-01-01T00:00:00Z",
+          "last_verified_at": "2026-09-10T00:00:00Z",
+          "review_status": "approved"
+        }
+      ]
+    },
+    {
+      "model_name": "Creta",
+      "variant_name": "SX (O) 1.5 IVT",
+      "model_year": 2026,
+      "fuel_type": "Petrol",
+      "transmission": "Automatic",
+      "engine_cc": 1497,
+      "horsepower": 115.0,
+      "torque_nm": 143.8,
+      "seating_capacity": 5,
+      "airbags": 6,
+      "combined_mileage": 17.7,
+      "prices": [
+        {
+          "price_type": "ex_showroom",
+          "state_code": "GJ",
+          "city": "Ahmedabad",
+          "currency": "INR",
+          "amount": 1860000.00,
+          "effective_from": "2026-01-01T00:00:00Z",
+          "review_status": "approved"
+        },
+        {
+          "price_type": "ex_showroom",
+          "state_code": "MH",
+          "city": "Mumbai",
+          "currency": "INR",
+          "amount": 1868000.00,
+          "effective_from": "2026-01-01T00:00:00Z",
+          "review_status": "approved"
+        }
+      ],
+      "specifications": [
+        {
+          "field_name": "airbags",
+          "value_numeric": 6.0,
+          "unit": null,
+          "effective_date": "2026-01-01T00:00:00Z",
+          "last_verified_at": "2026-09-10T00:00:00Z",
+          "review_status": "approved"
+        },
+        {
+          "field_name": "boot_space",
+          "value_numeric": 433.0,
+          "unit": "liters",
+          "effective_date": "2026-01-01T00:00:00Z",
+          "last_verified_at": "2026-09-10T00:00:00Z",
+          "review_status": "approved"
+        }
+      ]
+    }
+  ],
+
+  "rto_rules": [
+    {
+      "state_code": "GJ",
+      "fuel_type": "Petrol",
+      "vehicle_class": "Personal",
+      "min_price": 0.00,
+      "max_price": null,
+      "tax_rate_percent": 6.00,
+      "fixed_fee": 0.00,
+      "cess_percent": 0.00,
+      "notification_ref": "MoRTH/2024/RTO-GJ-44",
+      "effective_date": "2024-01-01T00:00:00Z",
+      "approval_status": "approved"
+    }
+  ]
+}

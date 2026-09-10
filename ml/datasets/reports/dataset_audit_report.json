@@ -1,0 +1,746 @@
+{
+  "audit_timestamp": "2026-09-10T09:06:18.178267+00:00",
+  "total_files_scanned": 30,
+  "total_lines": 3733,
+  "total_valid_json": 3733,
+  "total_invalid_json": 0,
+  "duplicate_hash_groups_count": 588,
+  "key_findings": [
+    "Repository contains 3733 total JSONL lines across 30 files; these represent versioned, overlapping experiment copies, NOT 3733 unique verified automotive records.",
+    "master_v4_combined_dataset.jsonl contains non-automotive contamination (railway locomotives, corporate financial inquiries) and is strictly quarantined from fine-tuning.",
+    "TweetEval dataset files (11 sentiment/stance/emotion tasks) are NLP benchmarks only and are excluded from automotive training.",
+    "All held-out evaluation sets (ml/datasets/test/*, test_eval.jsonl) must remain strictly segregated and never leaked into training.",
+    "Zero dynamic prices or vehicle specs are memorized into the weights; factual ground truth is strictly routed to the versioned database."
+  ],
+  "file_details": [
+    {
+      "relative_path": "backend/data/finetune_dataset.jsonl",
+      "filename": "finetune_dataset.jsonl",
+      "line_count": 8,
+      "valid_json_count": 8,
+      "invalid_json_count": 0,
+      "contaminated_records": 0,
+      "contamination_samples": [],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "legacy_experiment_archive"
+    },
+    {
+      "relative_path": "backend/data/fixtures/training/clarification_abstention_fixture.jsonl",
+      "filename": "clarification_abstention_fixture.jsonl",
+      "line_count": 2,
+      "valid_json_count": 2,
+      "invalid_json_count": 0,
+      "contaminated_records": 0,
+      "contamination_samples": [],
+      "languages": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "tasks": [
+        "clarification_abstention"
+      ],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "fixture_only"
+    },
+    {
+      "relative_path": "backend/data/fixtures/training/evidence_bound_answer_fixture.jsonl",
+      "filename": "evidence_bound_answer_fixture.jsonl",
+      "line_count": 2,
+      "valid_json_count": 2,
+      "invalid_json_count": 0,
+      "contaminated_records": 0,
+      "contamination_samples": [],
+      "languages": [
+        "en-IN"
+      ],
+      "tasks": [
+        "evidence_bound_qa"
+      ],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "fixture_only"
+    },
+    {
+      "relative_path": "backend/data/fixtures/training/held_out_evaluation_fixture.jsonl",
+      "filename": "held_out_evaluation_fixture.jsonl",
+      "line_count": 2,
+      "valid_json_count": 2,
+      "invalid_json_count": 0,
+      "contaminated_records": 0,
+      "contamination_samples": [],
+      "languages": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "tasks": [
+        "evaluation"
+      ],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "fixture_only"
+    },
+    {
+      "relative_path": "backend/data/fixtures/training/intent_tool_routing_fixture.jsonl",
+      "filename": "intent_tool_routing_fixture.jsonl",
+      "line_count": 3,
+      "valid_json_count": 3,
+      "invalid_json_count": 0,
+      "contaminated_records": 0,
+      "contamination_samples": [],
+      "languages": [
+        "en-IN",
+        "gu-IN",
+        "hi-IN"
+      ],
+      "tasks": [
+        "tool_routing"
+      ],
+      "provenance_coverage_percent": 100.0,
+      "recommendation": "fixture_only"
+    },
+    {
+      "relative_path": "backend/data/fixtures/training/multilingual_automotive_fixture.jsonl",
+      "filename": "multilingual_automotive_fixture.jsonl",
+      "line_count": 2,
+      "valid_json_count": 2,
+      "invalid_json_count": 0,
+      "contaminated_records": 0,
+      "contamination_samples": [],
+      "languages": [
+        "gu-IN",
+        "hi-IN"
+      ],
+      "tasks": [
+        "multilingual_automotive"
+      ],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "fixture_only"
+    },
+    {
+      "relative_path": "backend/data/fixtures/training/safety_prompt_injection_fixture.jsonl",
+      "filename": "safety_prompt_injection_fixture.jsonl",
+      "line_count": 2,
+      "valid_json_count": 2,
+      "invalid_json_count": 0,
+      "contaminated_records": 0,
+      "contamination_samples": [],
+      "languages": [
+        "en-IN"
+      ],
+      "tasks": [
+        "safety_prompt_injection"
+      ],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "fixture_only"
+    },
+    {
+      "relative_path": "backend/data/fixtures/training/vehicle_entity_resolution_fixture.jsonl",
+      "filename": "vehicle_entity_resolution_fixture.jsonl",
+      "line_count": 3,
+      "valid_json_count": 3,
+      "invalid_json_count": 0,
+      "contaminated_records": 0,
+      "contamination_samples": [],
+      "languages": [
+        "en-IN",
+        "hi-IN"
+      ],
+      "tasks": [
+        "entity_resolution"
+      ],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "fixture_only"
+    },
+    {
+      "relative_path": "ml/datasets/cleaned/master_cleaned_catalog.jsonl",
+      "filename": "master_cleaned_catalog.jsonl",
+      "line_count": 268,
+      "valid_json_count": 268,
+      "invalid_json_count": 0,
+      "contaminated_records": 4,
+      "contamination_samples": [
+        {
+          "line": 133,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "Why didn't the smaller locomotive ever operate on public tracks despite being able reach considerable speeds?"
+        },
+        {
+          "line": 163,
+          "matched_terms": [
+            "railway"
+          ],
+          "snippet": "How might ground level power affect the cost or complexity of certain projects such as railway constructions?"
+        },
+        {
+          "line": 233,
+          "matched_terms": [
+            "railway"
+          ],
+          "snippet": "What happened to Robert Anderson's invention after he attempted to patent it?"
+        }
+      ],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "quarantine_candidate"
+    },
+    {
+      "relative_path": "ml/datasets/combined_cleaned_dataset.jsonl",
+      "filename": "combined_cleaned_dataset.jsonl",
+      "line_count": 307,
+      "valid_json_count": 307,
+      "invalid_json_count": 0,
+      "contaminated_records": 4,
+      "contamination_samples": [
+        {
+          "line": 1,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "Why didn't the smaller locomotive ever operate on public tracks despite being able reach considerable speeds?"
+        },
+        {
+          "line": 50,
+          "matched_terms": [
+            "railway"
+          ],
+          "snippet": "What happened to Robert Anderson's invention after he attempted to patent it?"
+        },
+        {
+          "line": 58,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "How did the work of inventors like Nicolas - Joseph Cugnot , Richard Trevithick , and Samuel Brown contribute to the evo"
+        }
+      ],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "quarantine_candidate"
+    },
+    {
+      "relative_path": "ml/datasets/darkB_electric_vehicles_qa_dataset.jsonl",
+      "filename": "darkB_electric_vehicles_qa_dataset.jsonl",
+      "line_count": 278,
+      "valid_json_count": 278,
+      "invalid_json_count": 0,
+      "contaminated_records": 3,
+      "contamination_samples": [
+        {
+          "line": 41,
+          "matched_terms": [
+            "railway"
+          ],
+          "snippet": "What happened to Robert Anderson's invention after he attempted to patent it?"
+        },
+        {
+          "line": 118,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "Why didn't the smaller locomotive ever operate on public tracks despite being able reach considerable speeds?"
+        },
+        {
+          "line": 132,
+          "matched_terms": [
+            "railway"
+          ],
+          "snippet": "How might ground level power affect the cost or complexity of certain projects such as railway constructions?"
+        }
+      ],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "quarantine_candidate"
+    },
+    {
+      "relative_path": "ml/datasets/formatted_instruction_dataset.jsonl",
+      "filename": "formatted_instruction_dataset.jsonl",
+      "line_count": 307,
+      "valid_json_count": 307,
+      "invalid_json_count": 0,
+      "contaminated_records": 4,
+      "contamination_samples": [
+        {
+          "line": 1,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "Why didn't the smaller locomotive ever operate on public tracks despite being able reach considerable speeds?"
+        },
+        {
+          "line": 50,
+          "matched_terms": [
+            "railway"
+          ],
+          "snippet": "What happened to Robert Anderson's invention after he attempted to patent it?"
+        },
+        {
+          "line": 58,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "How did the work of inventors like Nicolas - Joseph Cugnot , Richard Trevithick , and Samuel Brown contribute to the evo"
+        }
+      ],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "quarantine_candidate"
+    },
+    {
+      "relative_path": "ml/datasets/master_v2_combined_dataset.jsonl",
+      "filename": "master_v2_combined_dataset.jsonl",
+      "line_count": 307,
+      "valid_json_count": 307,
+      "invalid_json_count": 0,
+      "contaminated_records": 4,
+      "contamination_samples": [
+        {
+          "line": 1,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "Why didn't the smaller locomotive ever operate on public tracks despite being able reach considerable speeds?"
+        },
+        {
+          "line": 50,
+          "matched_terms": [
+            "railway"
+          ],
+          "snippet": "What happened to Robert Anderson's invention after he attempted to patent it?"
+        },
+        {
+          "line": 58,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "How did the work of inventors like Nicolas - Joseph Cugnot , Richard Trevithick , and Samuel Brown contribute to the evo"
+        }
+      ],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "quarantine_candidate"
+    },
+    {
+      "relative_path": "ml/datasets/master_v3_combined_dataset.jsonl",
+      "filename": "master_v3_combined_dataset.jsonl",
+      "line_count": 314,
+      "valid_json_count": 314,
+      "invalid_json_count": 0,
+      "contaminated_records": 4,
+      "contamination_samples": [
+        {
+          "line": 1,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "Why didn't the smaller locomotive ever operate on public tracks despite being able reach considerable speeds?"
+        },
+        {
+          "line": 50,
+          "matched_terms": [
+            "railway"
+          ],
+          "snippet": "What happened to Robert Anderson's invention after he attempted to patent it?"
+        },
+        {
+          "line": 58,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "How did the work of inventors like Nicolas - Joseph Cugnot , Richard Trevithick , and Samuel Brown contribute to the evo"
+        }
+      ],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "quarantine_candidate"
+    },
+    {
+      "relative_path": "ml/datasets/master_v4_combined_dataset.jsonl",
+      "filename": "master_v4_combined_dataset.jsonl",
+      "line_count": 320,
+      "valid_json_count": 320,
+      "invalid_json_count": 0,
+      "contaminated_records": 4,
+      "contamination_samples": [
+        {
+          "line": 1,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "Why didn't the smaller locomotive ever operate on public tracks despite being able reach considerable speeds?"
+        },
+        {
+          "line": 50,
+          "matched_terms": [
+            "railway"
+          ],
+          "snippet": "What happened to Robert Anderson's invention after he attempted to patent it?"
+        },
+        {
+          "line": 58,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "How did the work of inventors like Nicolas - Joseph Cugnot , Richard Trevithick , and Samuel Brown contribute to the evo"
+        }
+      ],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "quarantine_candidate"
+    },
+    {
+      "relative_path": "ml/datasets/quarantine/quarantine.jsonl",
+      "filename": "quarantine.jsonl",
+      "line_count": 58,
+      "valid_json_count": 58,
+      "invalid_json_count": 0,
+      "contaminated_records": 0,
+      "contamination_samples": [],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "legacy_experiment_archive"
+    },
+    {
+      "relative_path": "ml/datasets/sample_instruction_dataset.jsonl",
+      "filename": "sample_instruction_dataset.jsonl",
+      "line_count": 3,
+      "valid_json_count": 3,
+      "invalid_json_count": 0,
+      "contaminated_records": 0,
+      "contamination_samples": [],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "fixture_only"
+    },
+    {
+      "relative_path": "ml/datasets/test/test.jsonl",
+      "filename": "test.jsonl",
+      "line_count": 28,
+      "valid_json_count": 28,
+      "invalid_json_count": 0,
+      "contaminated_records": 1,
+      "contamination_samples": [
+        {
+          "line": 23,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "How did the work of inventors like Nicolas - Joseph Cugnot , Richard Trevithick , and Samuel Brown contribute to the evo"
+        }
+      ],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "quarantine_candidate"
+    },
+    {
+      "relative_path": "ml/datasets/test_eval.jsonl",
+      "filename": "test_eval.jsonl",
+      "line_count": 31,
+      "valid_json_count": 31,
+      "invalid_json_count": 0,
+      "contaminated_records": 1,
+      "contamination_samples": [
+        {
+          "line": 31,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "How did the work of inventors like Nicolas - Joseph Cugnot , Richard Trevithick , and Samuel Brown contribute to the evo"
+        }
+      ],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "quarantine_candidate"
+    },
+    {
+      "relative_path": "ml/datasets/test_eval_v2.jsonl",
+      "filename": "test_eval_v2.jsonl",
+      "line_count": 17,
+      "valid_json_count": 17,
+      "invalid_json_count": 0,
+      "contaminated_records": 0,
+      "contamination_samples": [],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "held_out_evaluation_never_train"
+    },
+    {
+      "relative_path": "ml/datasets/train.jsonl",
+      "filename": "train.jsonl",
+      "line_count": 276,
+      "valid_json_count": 276,
+      "invalid_json_count": 0,
+      "contaminated_records": 3,
+      "contamination_samples": [
+        {
+          "line": 154,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "Why didn't the smaller locomotive ever operate on public tracks despite being able reach considerable speeds?"
+        },
+        {
+          "line": 185,
+          "matched_terms": [
+            "railway"
+          ],
+          "snippet": "How might ground level power affect the cost or complexity of certain projects such as railway constructions?"
+        },
+        {
+          "line": 272,
+          "matched_terms": [
+            "railway"
+          ],
+          "snippet": "What happened to Robert Anderson's invention after he attempted to patent it?"
+        }
+      ],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "quarantine_candidate"
+    },
+    {
+      "relative_path": "ml/datasets/train/train.jsonl",
+      "filename": "train.jsonl",
+      "line_count": 214,
+      "valid_json_count": 214,
+      "invalid_json_count": 0,
+      "contaminated_records": 2,
+      "contamination_samples": [
+        {
+          "line": 133,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "Why didn't the smaller locomotive ever operate on public tracks despite being able reach considerable speeds?"
+        },
+        {
+          "line": 163,
+          "matched_terms": [
+            "railway"
+          ],
+          "snippet": "How might ground level power affect the cost or complexity of certain projects such as railway constructions?"
+        }
+      ],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "quarantine_candidate"
+    },
+    {
+      "relative_path": "ml/datasets/train_v2.jsonl",
+      "filename": "train_v2.jsonl",
+      "line_count": 260,
+      "valid_json_count": 260,
+      "invalid_json_count": 0,
+      "contaminated_records": 4,
+      "contamination_samples": [
+        {
+          "line": 1,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "Why didn't the smaller locomotive ever operate on public tracks despite being able reach considerable speeds?"
+        },
+        {
+          "line": 50,
+          "matched_terms": [
+            "railway"
+          ],
+          "snippet": "What happened to Robert Anderson's invention after he attempted to patent it?"
+        },
+        {
+          "line": 58,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "How did the work of inventors like Nicolas - Joseph Cugnot , Richard Trevithick , and Samuel Brown contribute to the evo"
+        }
+      ],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "quarantine_candidate"
+    },
+    {
+      "relative_path": "ml/datasets/train_v3.jsonl",
+      "filename": "train_v3.jsonl",
+      "line_count": 282,
+      "valid_json_count": 282,
+      "invalid_json_count": 0,
+      "contaminated_records": 3,
+      "contamination_samples": [
+        {
+          "line": 160,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "Why didn't the smaller locomotive ever operate on public tracks despite being able reach considerable speeds?"
+        },
+        {
+          "line": 193,
+          "matched_terms": [
+            "railway"
+          ],
+          "snippet": "How might ground level power affect the cost or complexity of certain projects such as railway constructions?"
+        },
+        {
+          "line": 278,
+          "matched_terms": [
+            "railway"
+          ],
+          "snippet": "What happened to Robert Anderson's invention after he attempted to patent it?"
+        }
+      ],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "quarantine_candidate"
+    },
+    {
+      "relative_path": "ml/datasets/train_v4.jsonl",
+      "filename": "train_v4.jsonl",
+      "line_count": 288,
+      "valid_json_count": 288,
+      "invalid_json_count": 0,
+      "contaminated_records": 3,
+      "contamination_samples": [
+        {
+          "line": 164,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "Why didn't the smaller locomotive ever operate on public tracks despite being able reach considerable speeds?"
+        },
+        {
+          "line": 198,
+          "matched_terms": [
+            "railway"
+          ],
+          "snippet": "How might ground level power affect the cost or complexity of certain projects such as railway constructions?"
+        },
+        {
+          "line": 284,
+          "matched_terms": [
+            "railway"
+          ],
+          "snippet": "What happened to Robert Anderson's invention after he attempted to patent it?"
+        }
+      ],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "quarantine_candidate"
+    },
+    {
+      "relative_path": "ml/datasets/validation.jsonl",
+      "filename": "validation.jsonl",
+      "line_count": 31,
+      "valid_json_count": 31,
+      "invalid_json_count": 0,
+      "contaminated_records": 1,
+      "contamination_samples": [
+        {
+          "line": 31,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "How did the work of inventors like Nicolas - Joseph Cugnot , Richard Trevithick , and Samuel Brown contribute to the evo"
+        }
+      ],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "quarantine_candidate"
+    },
+    {
+      "relative_path": "ml/datasets/validation/validation.jsonl",
+      "filename": "validation.jsonl",
+      "line_count": 26,
+      "valid_json_count": 26,
+      "invalid_json_count": 0,
+      "contaminated_records": 1,
+      "contamination_samples": [
+        {
+          "line": 19,
+          "matched_terms": [
+            "railway"
+          ],
+          "snippet": "What happened to Robert Anderson's invention after he attempted to patent it?"
+        }
+      ],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "quarantine_candidate"
+    },
+    {
+      "relative_path": "ml/datasets/validation_v2.jsonl",
+      "filename": "validation_v2.jsonl",
+      "line_count": 30,
+      "valid_json_count": 30,
+      "invalid_json_count": 0,
+      "contaminated_records": 0,
+      "contamination_samples": [],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "legacy_experiment_archive"
+    },
+    {
+      "relative_path": "ml/datasets/validation_v3.jsonl",
+      "filename": "validation_v3.jsonl",
+      "line_count": 32,
+      "valid_json_count": 32,
+      "invalid_json_count": 0,
+      "contaminated_records": 1,
+      "contamination_samples": [
+        {
+          "line": 32,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "How did the work of inventors like Nicolas - Joseph Cugnot , Richard Trevithick , and Samuel Brown contribute to the evo"
+        }
+      ],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "quarantine_candidate"
+    },
+    {
+      "relative_path": "ml/datasets/validation_v4.jsonl",
+      "filename": "validation_v4.jsonl",
+      "line_count": 32,
+      "valid_json_count": 32,
+      "invalid_json_count": 0,
+      "contaminated_records": 1,
+      "contamination_samples": [
+        {
+          "line": 32,
+          "matched_terms": [
+            "locomotive"
+          ],
+          "snippet": "How did the work of inventors like Nicolas - Joseph Cugnot , Richard Trevithick , and Samuel Brown contribute to the evo"
+        }
+      ],
+      "languages": [],
+      "tasks": [],
+      "provenance_coverage_percent": 0.0,
+      "recommendation": "quarantine_candidate"
+    }
+  ]
+}

@@ -7,6 +7,9 @@ import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Ensure test DB environment variable is set before app.db.session imports
+os.environ["DATABASE_URL"] = "sqlite:///./test_temp.db"
+
 from app.main import app
 from app.db.session import get_db, Base
 from app.models.user import User

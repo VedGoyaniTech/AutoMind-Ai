@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
-from typing import Optional
-from sqlalchemy import String, DateTime, Float, Integer, Text, JSON, ForeignKey
+from typing import Optional, List
+from sqlalchemy import String, DateTime, Float, Integer, Text, JSON, ForeignKey, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.session import Base
 
@@ -17,19 +17,32 @@ class Manufacturer(Base):
 
 
 class CarModel(Base):
+    """
+    Normalized vehicle catalog model entity with generation, market region, and launch lifecycle.
+    """
     __tablename__ = "car_models"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     manufacturer_id: Mapped[int] = mapped_column(Integer, ForeignKey("manufacturers.id", ondelete="CASCADE"), nullable=False)
     name: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
-    body_type: Mapped[str] = mapped_column(String(100), index=True, nullable=False) # SUV, Sedan, Hatchback, MUV, EV, Hybrid
+    body_type: Mapped[str] = mapped_column(String(100), index=True, nullable=False)  # SUV, Sedan, Hatchback, MUV, EV, Hybrid
+    generation: Mapped[str] = mapped_column(String(100), default="Current")
+    country: Mapped[str] = mapped_column(String(100), default="India")
+    launch_status: Mapped[str] = mapped_column(String(50), default="launched")  # launched, upcoming, discontinued
+    launch_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    discontinued_date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    source_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("sources.id", ondelete="SET NULL"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     manufacturer: Mapped["Manufacturer"] = relationship("Manufacturer", back_populates="models")
     variants: Mapped[list["CarVariant"]] = relationship("CarVariant", back_populates="car_model", cascade="all, delete-orphan")
+    safety_ratings: Mapped[list["SafetyRating"]] = relationship("SafetyRating", cascade="all, delete-orphan")
 
 
 class CarVariant(Base):
+    """
+    Car variant specifications with provenance-backed price history and specifications.
+    """
     __tablename__ = "car_variants"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
@@ -38,8 +51,11 @@ class CarVariant(Base):
 
     variant_name: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
     model_year: Mapped[int] = mapped_column(Integer, index=True, nullable=False)
+    lifecycle_status: Mapped[str] = mapped_column(String(50), default="active", index=True)  # active, discontinued, upcoming
+    feature_set_version: Mapped[str] = mapped_column(String(50), default="1.0")
+    engine_battery_identifier: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
 
-    # Financial & Availability
+    # Financial & Availability (Cached/legacy scalar values; granular history in vehicle_prices)
     ex_showroom_price: Mapped[float] = mapped_column(Float, index=True, nullable=False) # In INR (e.g. 1500000)
     estimated_on_road_price: Mapped[float] = mapped_column(Float, nullable=False)
     currency: Mapped[str] = mapped_column(String(10), default="INR")
@@ -91,6 +107,8 @@ class CarVariant(Base):
     car_model: Mapped["CarModel"] = relationship("CarModel", back_populates="variants")
     source: Mapped[Optional["Source"]] = relationship("Source", back_populates="variants")
     saved_by: Mapped[list["SavedCar"]] = relationship("SavedCar", back_populates="variant", cascade="all, delete-orphan")
+    specifications: Mapped[list["VehicleSpecification"]] = relationship("VehicleSpecification", back_populates="variant", cascade="all, delete-orphan")
+    prices: Mapped[list["VehiclePrice"]] = relationship("VehiclePrice", back_populates="variant", cascade="all, delete-orphan")
 
 
 class SavedCar(Base):

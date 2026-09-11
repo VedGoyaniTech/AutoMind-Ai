@@ -463,7 +463,7 @@ MODEL_ALIASES: Dict[str, str] = {
 BRAND_CATALOG: Dict[str, Dict[str, Any]] = {
     "rolls-royce": {
         "brand_name": "Rolls-Royce",
-        "aliases": ["rolls royce", "rolls-royce", "rolls", "royce", "rolls royals", "rolls royal", "royals", "rr"],
+        "aliases": ["rolls royce", "rolls-royce", "rolls", "royce", "rolls royals", "rolls-royals", "rolls royal", "rolls-royal", "rollsroyals", "rollsroyal", "royals", "rr"],
         "models": [
             "Rolls-Royce Ghost",
             "Rolls-Royce Cullinan",
@@ -584,7 +584,7 @@ class VehicleComparisonService:
     COMPARISON_INTENT_PATTERN = re.compile(
         r"""(?ix)
         \b(?:
-            vs\.?|versus|v/s|compare|comparison|compared\s+to|differ(?:ence)?|
+            vs\.?|versus|v/s|compare|comparison|cpmarsion|cpmarison|comarsion|comparision|compairison|compared\s+to|differ(?:ence)?|
             which\s+is\s+better|better\s+than|against|
             tulna|sarxamni|sarxamani|antar|farak|farq|bhed|
             taphawat|tafavat|
@@ -604,7 +604,7 @@ class VehicleComparisonService:
         ^(?:
             please\s+|pls\s+|can\s+you\s+|i\s+want\s+to\s+|want\s+to\s+|
             show\s+me\s+|tell\s+me\s+|give\s+me\s+|details\s+of\s+|
-            mujhe\s+|muze\s+|hume\s+|humko\s+|mera\s+|meri\s+|mere\s+|
+            mujhe\s+|muje\s+|muze\s+|hume\s+|humko\s+|mera\s+|meri\s+|mere\s+|
             mane\s+|hu\s+|mara\s+mate\s+|
             batao\s+|dijiye\s+|
             compare\s+|comparison\s+of\s+|toulna\s+|sarxamni\s+|
@@ -629,15 +629,15 @@ class VehicleComparisonService:
     SUFFIX_FILLERS = re.compile(
         r"""(?ix)
         \b(?:
-            (?:ka|ki|ke|ko|no|ni)?\s*(?:difference|farak|farq|antar|bhed|tulna|sarxamni|taphawat|tafavat)(?:\s+(?:batao|bataiye|batana|batado|dijiye|kaho|karo|kro|kar\s+do|karna\s+hai))?(?:\s+na)?|
-            (?:batao|bataiye|batana|batado|dijiye|kaho|karo|kro|kar\s+do|karna\s+hai)(?:\s+na)?|
+            (?:ka|ki|ke|ko|no|ni)?\s*(?:difference|farak|farq|antar|bhed|tulna|sarxamni|taphawat|tafavat|comparison|cpmarsion|cpmarison|comarsion|comparision|compairison|compare)(?:\s+(?:batao|bataiye|batana|batado|dijiye|kaho|karo|kro|kar\s+do|karna\s+hai|do|de))?(?:\s+na)?|
+            (?:batao|bataiye|batana|batado|dijiye|kaho|karo|kro|kar\s+do|karna\s+hai|do|de)(?:\s+na)?|
             difference|farak|farq|antar|bhed|
-            ki\s+comparison\s+kro|ki\s+comparison\s+karo|ka\s+comparison\s+kro|ka\s+comparison\s+karo|
-            ki\s+comparison|ka\s+comparison|ke\s+beech\s+comparison|
+            (?:ka|ki|ke|ko|no|ni)?\s*(?:comparison|cpmarsion|cpmarison|comarsion|comparision|compairison|compare)|
+            ke\s+beech\s+comparison|
             no\s+comparison|ni\s+tulna|ni\s+sarxamni|sarxamni\s+karo|tulna\s+karo|
             compare\s+karo|compare\s+kro|compare\s+kar\s+do|compare\s+karna\s+hai|compare\s+karne|
-            compare|comparison|
-            kro|karo|kar\s+do|karna\s+hai|karne\s+hai|
+            compare|comparison|cpmarsion|cpmarison|comarsion|comparision|compairison|
+            kro|karo|kar\s+do|karna\s+hai|karne\s+hai|do|de|dijiye|
             me\s+se\s+konsi\s+achi\s+hai|me\s+se\s+konsi\s+better\s+hai|me\s+se\s+konsi|mein\s+se\s+kaunsi|me\s+konsi|
             better\s+hai\s+ya|better\s+hai|achi\s+hai|acchi\s+hai|accha\s+hai|badhiya\s+hai|
             sari\s+che|sari\s+chhe|
@@ -740,11 +740,14 @@ class VehicleComparisonService:
                 cleaned_input=cleaned
             )
 
-        # Normalize common brand typo variants
         normalized_str = c_lower
         for typo, canonical in [
+            ("rolls-royals", "rolls-royce"),
+            ("rolls-royal", "rolls-royce"),
             ("rolls royals", "rolls-royce"),
             ("rolls royal", "rolls-royce"),
+            ("rollsroyals", "rolls-royce"),
+            ("rollsroyal", "rolls-royce"),
             ("bwm", "bmw"),
             ("mercedes benz", "mercedes-benz"),
             ("endeavor", "endeavour")
@@ -872,6 +875,25 @@ class VehicleComparisonService:
             f"AutoMind AI hamare verified database se authentic head-to-head comparison generate karega."
         )
 
+    def _render_dual_brand_clarification_prompt(self, res_a: VehicleResolution, res_b: VehicleResolution) -> str:
+        """Ask user to select exact models when both sides are brands (e.g. BMW vs Rolls-Royce)."""
+        brand_a = res_a.brand_name or res_a.cleaned_input
+        brand_b = res_b.brand_name or res_b.cleaned_input
+        options_a = "\n".join([f"{i+1}. **{m}**" for i, m in enumerate(res_a.available_models)])
+        options_b = "\n".join([f"{i+1}. **{m}**" for i, m in enumerate(res_b.available_models)])
+        eg_a = res_a.available_models[0] if res_a.available_models else brand_a
+        eg_b = res_b.available_models[0] if res_b.available_models else brand_b
+
+        return (
+            f"### ⚠️ Model Clarification Required\n\n"
+            f"Aapne **{brand_a}** aur **{brand_b}** dono ke brand names mention kiye hain, lekin authentic comparison ke liye exact car models select karna zaroori hai.\n\n"
+            f"**Verified {brand_a} Models:**\n"
+            f"{options_a}\n\n"
+            f"**Verified {brand_b} Models:**\n"
+            f"{options_b}\n\n"
+            f"👉 Kripya exact models batayein (jaise: *\"{eg_a} vs {eg_b}\"*), aur AutoMind AI verified database se authentic head-to-head comparison generate karega."
+        )
+
     def _render_not_found_message(self, valid_res: Optional[VehicleResolution], invalid_res: VehicleResolution) -> str:
         """Inform user about missing model without inventing specs."""
         inv_name = invalid_res.cleaned_input or invalid_res.raw_input
@@ -971,6 +993,18 @@ class VehicleComparisonService:
         )
 
         # Scenario 1: Brand Only clarification needed
+        if res_a.status == ResolutionStatus.BRAND_ONLY and res_b.status == ResolutionStatus.BRAND_ONLY:
+            msg = self._render_dual_brand_clarification_prompt(res_a, res_b)
+            return ComparisonResult(
+                success=True,
+                intent_detected=True,
+                candidate_a=cand_a,
+                candidate_b=cand_b,
+                resolution_a=res_a,
+                resolution_b=res_b,
+                response_markdown=msg,
+                clarification_status="clarification_needed"
+            )
         if res_a.status == ResolutionStatus.BRAND_ONLY:
             msg = self._render_clarification_prompt(res_a, res_b)
             return ComparisonResult(

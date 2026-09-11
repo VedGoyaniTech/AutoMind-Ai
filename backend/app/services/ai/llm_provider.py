@@ -1953,8 +1953,8 @@ class GroundedLLMProvider(BaseLLMProvider):
         # 2. Comparison / vs query (Prioritized over generic year/launch searches)
         is_comparison = (
             comparison_service.detect_comparison_intent(prompt)
-            or bool(re.search(r'\b(?:vs|versus|v/s|compare|comparison|compared\s+to|differ(?:ence)?|farak|farq|antar|tulna|sarxamni)\b', p_lower))
-            or any(w in p_lower for w in ["अंतर", "तुलना", "તફાવત", "સરખામણી", "માંથી કઈ", "से कौन", "farak", "farq", "difference"])
+            or bool(re.search(r'\b(?:vs|versus|v/s|compare|comparison|cpmarsion|cpmarison|comarsion|comparision|compairison|compared\s+to|differ(?:ence)?|farak|farq|antar|tulna|sarxamni)\b', p_lower))
+            or any(w in p_lower for w in ["अंतर", "तुलना", "તફાવત", "સરખામણી", "માંથી કઈ", "से कौन", "farak", "farq", "difference", "cpmarsion", "cpmarison", "comarsion"])
         )
         if is_comparison:
             return self._generate_versus_comparison_response(prompt, web_results)

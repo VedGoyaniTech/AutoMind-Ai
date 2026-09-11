@@ -309,3 +309,43 @@ def test_websites_buying_guide(llm):
     assert "Tata Nexon" not in llm_resp
     assert "Maruti Brezza" not in llm_resp
 
+
+def test_bmw_and_rolls_royals_dual_brand_typo(service, llm):
+    """
+    Test: 'muje BMW and rolls-royals ki cpmarsion do'
+    - Detects intent despite typos ('cpmarsion', 'rolls-royals', 'muje')
+    - Extracts 'BMW' and 'rolls-royals'
+    - Resolves both as BRAND_ONLY
+    - Asks user for model clarification with verified BMW and Rolls-Royce models
+    - Does NOT crash, dump generic cars, or hallucinate specs
+    """
+    query = "muje BMW and rolls-royals ki cpmarsion do"
+    assert service.detect_comparison_intent(query) is True
+
+    cand_a, cand_b = service.extract_candidates(query)
+    assert cand_a == "BMW"
+    assert cand_b == "rolls-royals"
+
+    res = service.process_comparison(query)
+    assert res.intent_detected is True
+    assert res.clarification_status == "clarification_needed"
+    assert res.resolution_a.status == ResolutionStatus.BRAND_ONLY
+    assert res.resolution_a.brand_name == "BMW"
+    assert res.resolution_b.status == ResolutionStatus.BRAND_ONLY
+    assert res.resolution_b.brand_name == "Rolls-Royce"
+
+    # Both brand model lists should be in the prompt
+    assert "BMW" in res.response_markdown
+    assert "Rolls-Royce" in res.response_markdown
+    assert "Ghost" in res.response_markdown
+    assert "5 Series" in res.response_markdown
+    assert "| Parameter / Feature |" not in res.response_markdown
+
+    # LLM Provider check
+    llm_resp = llm.generate(query, "")
+    assert "BMW" in llm_resp
+    assert "Rolls-Royce" in llm_resp
+    assert "Ghost" in llm_resp
+    assert "| Parameter / Feature |" not in llm_resp
+
+

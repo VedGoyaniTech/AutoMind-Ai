@@ -383,8 +383,8 @@ class GroundedLLMProvider(BaseLLMProvider):
             try:
                 bracket_end = line.index("]")
                 idx_str = line[1:bracket_end]
-                # DB candidate lines must have integer index e.g. [1], [2], [3]
-                if not idx_str.isdigit():
+                # DB candidate lines can have index e.g. [1], [2] or [VEH-1], [CAR-1]
+                if not (idx_str.isdigit() or idx_str.startswith("VEH-") or idx_str.startswith("CAR-")):
                     continue
                 rest = line[bracket_end + 1:].strip()
                 parts = [p.strip() for p in rest.split("|")]
@@ -1196,7 +1196,12 @@ class GroundedLLMProvider(BaseLLMProvider):
                 return self._generate_single_model_web_response(prompt, clean_term, web_results)
 
             # 5. Multi-Car Comparison / Broad Recommendation Query
-            if web_results and not any(w in prompt.lower() for w in ["compare", "vs", "versus", "recommend", "best", "which"]):
+            rec_keywords = [
+                "compare", "vs", "versus", "recommend", "best", "which",
+                "budget", "under", "below", "kaun", "konsi", "kon si", "purchase",
+                "kharid", "buy", "suggest", "chahiye", "chahie", "rupaye", "rupees", "lakh"
+            ]
+            if web_results and not any(w in prompt.lower() for w in rec_keywords):
                 return self._generate_single_model_web_response(prompt, "Vehicle", web_results)
 
             return self._generate_comparison_recommendation_response(prompt, candidates, web_results)
@@ -1205,7 +1210,6 @@ class GroundedLLMProvider(BaseLLMProvider):
             logger.error(f"[GroundedLLMProvider] Error during generation: {err}", exc_info=True)
             return (
                 f"## AutoMind AI Research Response\n\n"
-                f"Evaluated automotive research records for query: **\"{prompt}\"**.\n\n"
                 f"Please specify exact parameters (budget, model name, fuel type) for deeper analysis."
             )
 
@@ -1621,6 +1625,51 @@ class GroundedLLMProvider(BaseLLMProvider):
             out.append(f"\n---\n{refs}")
         return "\n".join(out)
 
+    def _generate_sources_guide_response(self, prompt: str, web_results: List[Dict[str, str]]) -> str:
+        """Generates an authoritative, factual guide on top automotive websites, databases, and portals to check before purchasing a vehicle."""
+        out = []
+        out.append("## 🌐 Essential Automotive Portals & Resources Before Buying a Car\n")
+        out.append("Nayi ya used car khareedne se pehle pricing, real-world mileage, safety crash ratings, dealer discounts aur ownership issues verify karne ke liye ye top verified platforms zaroor refer karein:\n")
+
+        out.append("### 1. 💰 Pricing, On-Road Calculator & Variant Comparison")
+        out.append("| Platform / Website | Core Utility & What to Check | Official Portal |")
+        out.append("| :--- | :--- | :--- |")
+        out.append("| **CarWale** | **Accurate City-Wise On-Road Price:** Exact RTO registration tax, TCS, FASTag charges, variant-by-variant feature comparison, and local dealer quote requests. | [carwale.com](https://www.carwale.com) |")
+        out.append("| **CarDekho** | **Variant Breakdown & EMI Tools:** Visual 360-degree interior/exterior tours, loan EMI calculators, dealer offers, and pre-owned car valuation. | [cardekho.com](https://www.cardekho.com) |\n")
+
+        out.append("### 2. 🧪 Instrumented Road Tests & Performance Reviews")
+        out.append("| Platform / Website | Core Utility & What to Check | Official Portal |")
+        out.append("| :--- | :--- | :--- |")
+        out.append("| **Autocar India** | **Instrumented Performance & Acceleration:** Real-world VBOX-tested 0–100 km/h acceleration, 100–0 km/h braking distance, tank-to-tank city & highway mileage tests. | [autocarindia.com](https://www.autocarindia.com) |")
+        out.append("| **Overdrive & MotorBeam** | **Ride Quality & Dynamics:** High-speed expressway stability, body roll analysis, suspension behavior on rough roads, and long-term fleet reports. | [motorbeam.com](https://www.motorbeam.com) |\n")
+
+        out.append("### 3. 🛡️ Official Safety Crash Test Ratings")
+        out.append("| Platform / Authority | Core Utility & What to Check | Official Portal |")
+        out.append("| :--- | :--- | :--- |")
+        out.append("| **Bharat NCAP (B-NCAP)** | **Indian Crash Test Benchmark:** Official government crash safety scores (Adult Occupant Protection & Child Occupant Protection) for Indian-market vehicles. | [bncap.in](https://www.bncap.in) |")
+        out.append("| **Global NCAP (Safer Cars For India)** | **Historical Safety Ratings:** Independent structural integrity assessments, bodyshell stability status, and ISOFIX child restraint ratings. | [globalncap.org](https://www.globalncap.org) |\n")
+
+        out.append("### 4. 👥 Real Owner Reviews, Reliability & Dealer Behavior")
+        out.append("| Platform / Forum | Core Utility & What to Check | Official Portal |")
+        out.append("| :--- | :--- | :--- |")
+        out.append("| **Team-BHP** | **Unbiased Community Forum:** Real-world ownership threads, long-term niggle reports, manufacturer service quality discussions, and the industry-standard **Pre-Delivery Inspection (PDI) Checklist**. | [team-bhp.com](https://www.team-bhp.com) |\n")
+
+        out.append("### 5. 🏛️ Government Compliance & Registration")
+        out.append("| Portal | Core Utility & What to Check | Official Portal |")
+        out.append("| :--- | :--- | :--- |")
+        out.append("| **Parivahan Sewa (MoRTH / VAHAN)** | **Official RTO Norms:** State-specific road tax slab percentages, green tax, high-security registration plate (HSRP) compliance, and Bharat Stage emission norms. | [parivahan.gov.in](https://parivahan.gov.in) |\n")
+
+        out.append("### 💡 Recommended 4-Step Checklist Before Final Payment")
+        out.append("1. **Do Not Rely Only on Dealer Insurance:** Get independent insurance quotes from Policybazaar / Acko (dealers often quote 30–40% higher; dealers usually match external quotes when shown).")
+        out.append("2. **Conduct Stockyard PDI:** Carry the **Team-BHP PDI Checklist** to physically verify the VIN number (manufacturing month/year), odometer reading (<50 km), and inspect body panels before RTO registration.")
+        out.append("3. **Verify Waiting Period & Discounts:** Use CarWale and local buyer groups on Team-BHP to check active consumer schemes, corporate discounts, and exchange bonuses.")
+        out.append("4. **Test Drive on Broken Roads:** Always test-drive the specific engine-gearbox variant you intend to buy over real potholes and highway stretches, rather than just smooth dealer showroom circuits.")
+
+        refs = self._format_references_section(web_results)
+        if refs:
+            out.append(f"\n---\n{refs}")
+        return "\n".join(out)
+
     def _generate_versus_comparison_response(self, prompt: str, web_results: List[Dict[str, str]]) -> str:
         """Generates a rich, factual head-to-head comparison table between two specific vehicle models."""
         p_lower = prompt.lower()
@@ -1809,6 +1858,16 @@ class GroundedLLMProvider(BaseLLMProvider):
         if any(w in p_lower for w in ["on road", "on-road", "onroad", "rto", "emi", "down payment", "downpayment", "loan", "કિંમત", "ઓન-રોડ"]):
             return self._generate_pricing_and_emi_response(prompt, web_results)
 
+        # 0.8. Essential Automotive Portals, Websites & Research Resources Inquiry
+        if any(w in p_lower for w in [
+            "which websites", "what websites", "which website", "best website", "best websites",
+            "websites should i check", "website should i check", "check before buying",
+            "sources to check", "where to check before buying", "where to read reviews",
+            "car websites", "automotive websites", "konsi website dekhu", "konsi website dekhe",
+            "kon si website dekhu", "website batao", "website bataye", "portals", "portal"
+        ]):
+            return self._generate_sources_guide_response(prompt, web_results)
+
         # 1. Multi-constraint Personalized Budget & Feature Recommendation
         if any(w in p_lower for w in ["office commute", "10-12 lakh", "10 to 12", "18 lakh", "ventilated", "rural", "rough road", "ground clearance", "under 15 lakh", "15 lakh", "15 लाख", "12 લાખ", "૧૨ લાખ", "૧૫ લાખ", "सुरक्षित", "સુરક્ષિત", "options under", "maintenance kam"]):
             return self._generate_tailored_recommendation_response(prompt, web_results)
@@ -1816,8 +1875,8 @@ class GroundedLLMProvider(BaseLLMProvider):
         # 2. Comparison / vs query (Prioritized over generic year/launch searches)
         is_comparison = (
             comparison_service.detect_comparison_intent(prompt)
-            or bool(re.search(r'\b(?:vs|versus|compare|comparison|compared\s+to)\b', p_lower))
-            or any(w in p_lower for w in ["अंतर", "तुलना", "તફાવત", "સરખામણી", "માંથી કઈ", "से कौन"])
+            or bool(re.search(r'\b(?:vs|versus|v/s|compare|comparison|compared\s+to|differ(?:ence)?|farak|farq|antar|tulna|sarxamni)\b', p_lower))
+            or any(w in p_lower for w in ["अंतर", "तुलना", "તફાવત", "સરખામણી", "માંથી કઈ", "से कौन", "farak", "farq", "difference"])
         )
         if is_comparison:
             return self._generate_versus_comparison_response(prompt, web_results)
@@ -1830,19 +1889,22 @@ class GroundedLLMProvider(BaseLLMProvider):
         if any(w in p_lower for w in ["famous", "iconic", "legendary", "popular car list", "all time", "best cars in history"]):
             return self._generate_category_response("famous", prompt, web_results)
 
-        # 5. Rolls-Royce / RR Acronym Query (e.g. "me ask the RR mean Rolls Royals", "RR", "rolls royce")
+        # 5. Rolls-Royce / RR Acronym Query (ONLY when asking specifically about Rolls-Royce brand/lineup alone, NOT when comparing against another car)
+        other_brands = ["bmw", "mercedes", "audi", "bentley", "porsche", "maybach", "ferrari", "lamborghini", "jaguar"]
+        has_other_brand = any(b in p_lower for b in other_brands)
         _p_words = set(p_lower.split())
-        if "rr" in _p_words or any(w in p_lower for w in ["rolls royce", "rolls-royce", "rolls royal", "rolls royals"]):
+        if not is_comparison and not has_other_brand and ("rr" in _p_words or any(w in p_lower for w in ["rolls royce", "rolls-royce", "rolls royal", "rolls royals"])):
             return self._generate_category_response("rolls_royce", prompt, web_results)
 
         # 6. Dynamic Car Launch & Category Synthesizer (extracts ANY year dynamically: 2023, 2024, 2025, 2026, 2027, etc.)
         target_year = self._extract_target_year(prompt)
         is_luxury_query = any(w in p_lower for w in ["luxury", "luxry", "luxurious", "premium", "exotic", "supercar", "expensive", "sports car"])
+        has_budget_or_rec = any(b in p_lower for b in ["budget", "under", "below", "lakh", "rupaye", "rupees", "rs.", "inr", "crore", "cr", "kaun", "konsi", "kon si", "purchase", "kharid", "buy", "suggest", "chahiye", "chahie", "compare", "vs"]) or any(ch.isdigit() for ch in prompt)
         
         if self._is_new_car_launch_query(prompt) or target_year:
             return self._generate_dynamic_car_launches_response(prompt, target_year, is_luxury_query, candidates, web_results)
 
-        if is_luxury_query:
+        if is_luxury_query and not has_budget_or_rec and not candidates:
             return self._generate_category_response("luxury", prompt, web_results)
 
         # 7. Technical / conceptual query
@@ -1858,7 +1920,7 @@ class GroundedLLMProvider(BaseLLMProvider):
             return self._generate_category_response("muscle", prompt, web_results)
 
         # 9. 7-Seater / Family / Safest Cars Query
-        if any(w in p_lower for w in ["7-seater", "7 seater", "7 seat", "7 seats", "seven seater", "family car", "family cars", "safest 7"]):
+        if any(w in p_lower for w in ["7-seater", "7 seater", "7 seat", "7 seats", "seven seater", "family car", "family cars", "safest 7"]) and not candidates:
             return self._generate_category_response("7_seater", prompt, web_results)
 
         # 10. Category Queries (SUV, EV, Luxury, Sedan, Hatchback, Supercar)
@@ -1866,7 +1928,7 @@ class GroundedLLMProvider(BaseLLMProvider):
             return self._generate_category_response("suv", prompt, web_results)
         if any(w in p_lower for w in ["all ev", "evs", "ev list", "electric car", "electric cars", "best ev"]) and not candidates:
             return self._generate_category_response("ev", prompt, web_results)
-        if any(w in p_lower for w in ["all luxury", "luxury car", "luxury cars", "luxury list"]):
+        if any(w in p_lower for w in ["all luxury", "luxury car", "luxury cars", "luxury list"]) and not has_budget_or_rec and not candidates:
             return self._generate_category_response("luxury", prompt, web_results)
         if any(w in p_lower for w in ["all sedan", "sedans", "sedan list", "best sedan", "best sedans"]) and not candidates:
             return self._generate_category_response("sedan", prompt, web_results)
@@ -2055,7 +2117,6 @@ class GroundedLLMProvider(BaseLLMProvider):
 
         out = []
         out.append(f"## {year_label}में भारत में लॉन्च हुई {cat_label}\n")
-        out.append("नीचे की सूची AutoMind AI की local data और cited web research पर आधारित है।\n")
 
         # Table Header
         out.append("| Car | Brand | Status | India Launch / Announcement | Fuel | Starting Price* |")
@@ -2070,12 +2131,7 @@ class GroundedLLMProvider(BaseLLMProvider):
             c_price = c.get("price", "Market Price")
             out.append(f"| **{c_name}** | {c_brand} | {c_status} | {c_date} | {c_fuel} | {c_price} |")
 
-        out.append("\n### Important notes")
-        out.append("- “Launched” और “Upcoming” vehicles अलग रखे गए हैं।")
-        out.append("- *Price ex-showroom price है, where the cited source supports it.")
-        out.append("- On-road price city के हिसाब से अलग होगा.\n")
-
-        out.append("### References")
+        out.append("\n### References")
         out.append("1. [CarWale Automotive Research Database](https://www.carwale.com) — CarWale — retrieved on 2026-03-01")
         out.append("2. [Autocar India Verified News & First Drives](https://www.autocarindia.com) — Autocar India")
         if web_results:
@@ -2084,11 +2140,6 @@ class GroundedLLMProvider(BaseLLMProvider):
                 url = wr.get("url", "https://www.autocarindia.com")
                 domain = url.split("//")[-1].split("/")[0].replace("www.", "")
                 out.append(f"{idx}. [{title}]({url}) — {domain}")
-
-        out.append("\n### Data confidence")
-        out.append("- **High:** Official source or two matching credible sources (Autocar India / CarWale).")
-        out.append("- **Medium:** One credible automotive source.")
-        out.append("- **Low:** Insufficient verification; do not list as a confirmed launch.")
 
         return "\n".join(out)
 
@@ -2609,9 +2660,11 @@ class GroundedLLMProvider(BaseLLMProvider):
             "supercar": "supercar", "super car": "supercar",
             "sports car": "supercar",
         }
-        for kw, cat_key in CATEGORY_KEYWORDS.items():
-            if kw in p_lower or kw == key_term:
-                return self._generate_category_response(cat_key, prompt, web_results)
+        has_budget_or_rec = any(b in p_lower for b in ["budget", "under", "below", "lakh", "rupaye", "rupees", "rs.", "inr", "crore", "cr", "kaun", "konsi", "kon si", "purchase", "kharid", "buy", "suggest", "chahiye", "chahie"]) or any(ch.isdigit() for ch in prompt)
+        if not has_budget_or_rec:
+            for kw, cat_key in CATEGORY_KEYWORDS.items():
+                if kw in p_lower or kw == key_term:
+                    return self._generate_category_response(cat_key, prompt, web_results)
 
         # ── Specific model abbreviation corrections ───────────────────────────
         if "nano" in key_term or "nano" in p_lower:
@@ -2779,6 +2832,23 @@ class GroundedLLMProvider(BaseLLMProvider):
 
     def _generate_comparison_recommendation_response(self, prompt: str, candidates: List[Dict[str, Any]], web_results: List[Dict[str, str]]) -> str:
         """Generates multi-car comparison or broad recommendation report when explicitly requested."""
+        clean_p = prompt.lower().replace(",", "")
+        prompt_budget = None
+        p_lakh_m = re.search(r'(?:under|below|less than|within|upto|up to|budget|budget is|budget of|max|maximum)\D*(\d+(?:\.\d+)?)\s*(?:lakh|lakhs|l|लाख|લાખ)', clean_p)
+        if p_lakh_m:
+            prompt_budget = float(p_lakh_m.group(1)) * 100000.0
+        else:
+            p_num_m = re.search(r'(?:under|below|less than|within|upto|up to|budget|budget is|budget of|max|maximum)\D*(\d{6,8})', clean_p)
+            if not p_num_m:
+                p_num_m = re.search(r'budget\D*(\d{6,8})', clean_p)
+            if p_num_m:
+                prompt_budget = float(p_num_m.group(1))
+
+        if prompt_budget:
+            budget_candidates = [c for c in candidates if self._extract_price_float(c) <= prompt_budget]
+            if budget_candidates:
+                candidates = budget_candidates
+
         sorted_c = sorted(candidates, key=self._extract_price_float)
 
         def parse_lakh(raw: str) -> float:
@@ -2802,7 +2872,6 @@ class GroundedLLMProvider(BaseLLMProvider):
 
         out = []
         out.append("## 🧠 AutoMind AI — Vehicle Comparison & Recommendation Report\n")
-        out.append(f"Evaluated **{len(candidates)} vehicle candidates** for query: *\"{prompt}\"*\n")
 
         if sorted_c:
             out.append("### 📊 Head-to-Head Comparison Matrix\n")
@@ -2821,8 +2890,6 @@ class GroundedLLMProvider(BaseLLMProvider):
                 out.append(f"| **{name}** | {fuel} | {price} | {onroad} | {safety} | {airbags} | {eff} |")
             out.append("")
 
-
-
         if web_results:
             out.append("### 🌐 Latest Market Insights\n")
             for w in web_results[:3]:
@@ -2840,6 +2907,9 @@ class GroundedLLMProvider(BaseLLMProvider):
             five_stars = [c for c in candidates if "5" in c["specs"].get("Safety", "")]
             if five_stars:
                 out.append(f"- 🛡️ **Highest Safety:** **{five_stars[0]['name']}** (5-Star GNCAP Rating)")
+            if any(w in prompt.lower() for w in ["luxury", "premium", "features"]):
+                luxury_pick = sorted_c[-1]
+                out.append(f"- 👑 **Top Luxury & Feature-Packed Pick within Budget:** **{luxury_pick['name']}** ({luxury_pick['specs'].get('Price', '—')})")
 
         refs = self._format_references_section(web_results)
         if refs:

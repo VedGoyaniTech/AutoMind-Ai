@@ -97,7 +97,9 @@ def test_12_gujarati_query(llm):
 def test_13_mixed_roman_hindi_query(llm):
     resp = llm.generate("2024 mein India me kaun si cars launch hui thi?", "")
     assert "2024" in resp
-    assert "Important notes" in resp
+    assert "Important notes" not in resp
+    assert "Data confidence" not in resp
+    assert "References" in resp
 
 # 14. Launched versus upcoming distinction
 def test_14_launched_vs_upcoming_distinction():
@@ -107,11 +109,12 @@ def test_14_launched_vs_upcoming_distinction():
     assert any(c["name"] == "Tata Sierra EV" for c in upcoming)
     assert not any(c["status"] == "upcoming" for c in launched)
 
-# 15. Conflicting sources / notes handling
+# 15. Clean notes handling without clutter
 def test_15_conflicting_sources_handling(llm):
     resp = llm.generate("2024 car launches India", "")
-    assert "Important notes" in resp
-    assert "On-road price city के हिसाब से अलग होगा" in resp
+    assert "Important notes" not in resp
+    assert "Data confidence" not in resp
+    assert "References" in resp
 
 # 16. No trusted sources returns honest information not confirmed
 def test_16_no_trusted_sources_honest_response(llm):

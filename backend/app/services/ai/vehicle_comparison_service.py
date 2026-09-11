@@ -584,9 +584,9 @@ class VehicleComparisonService:
     COMPARISON_INTENT_PATTERN = re.compile(
         r"""(?ix)
         \b(?:
-            vs\.?|versus|v/s|compare|comparison|compared\s+to|differ(?:ence)?\s+between|
+            vs\.?|versus|v/s|compare|comparison|compared\s+to|differ(?:ence)?|
             which\s+is\s+better|better\s+than|against|
-            tulna|sarxamni|sarxamani|antar|farak|farq|
+            tulna|sarxamni|sarxamani|antar|farak|farq|bhed|
             taphawat|tafavat|
             me\s+se\s+konsi|mein\s+se\s+kaunsi|me\s+konsi|
             better\s+hai|achi\s+hai|acchi\s+hai|accha\s+hai|badhiya\s+hai|
@@ -594,7 +594,7 @@ class VehicleComparisonService:
             kro|karo|kar\s+do|karna\s+hai
         )\b|
         [તત]ુલના|સરખામણી|તફાવત|અંતર|માંથી\s*કઈ|
-        तुलना|अंतर|फर्क|से\s*कौन
+        तुलना|अंतर|फर्क|भेद|से\s*कौन
         """
     )
 
@@ -629,18 +629,20 @@ class VehicleComparisonService:
     SUFFIX_FILLERS = re.compile(
         r"""(?ix)
         \b(?:
+            (?:ka|ki|ke|ko|no|ni)?\s*(?:difference|farak|farq|antar|bhed|tulna|sarxamni|taphawat|tafavat)(?:\s+(?:batao|bataiye|batana|batado|dijiye|kaho|karo|kro|kar\s+do|karna\s+hai))?(?:\s+na)?|
+            (?:batao|bataiye|batana|batado|dijiye|kaho|karo|kro|kar\s+do|karna\s+hai)(?:\s+na)?|
+            difference|farak|farq|antar|bhed|
             ki\s+comparison\s+kro|ki\s+comparison\s+karo|ka\s+comparison\s+kro|ka\s+comparison\s+karo|
             ki\s+comparison|ka\s+comparison|ke\s+beech\s+comparison|
             no\s+comparison|ni\s+tulna|ni\s+sarxamni|sarxamni\s+karo|tulna\s+karo|
             compare\s+karo|compare\s+kro|compare\s+kar\s+do|compare\s+karna\s+hai|compare\s+karne|
             compare|comparison|
             kro|karo|kar\s+do|karna\s+hai|karne\s+hai|
-            batao|bataiye|dijiye|kaho|
             me\s+se\s+konsi\s+achi\s+hai|me\s+se\s+konsi\s+better\s+hai|me\s+se\s+konsi|mein\s+se\s+kaunsi|me\s+konsi|
             better\s+hai\s+ya|better\s+hai|achi\s+hai|acchi\s+hai|accha\s+hai|badhiya\s+hai|
             sari\s+che|sari\s+chhe|
             which\s+is\s+better|which\s+one\s+is\s+better|which\s+one|
-            cars?|gadi|gaadi|gadiyo|gadion|details|info
+            cars?|gadi|gaadi|gadiyo|gadion|details|info|na
         )\b
         """
     )

@@ -256,3 +256,56 @@ def test_developer_trace_logging(service, caplog):
             and "clarification_status='clarification_needed'" in record.message
             for record in caplog.records
         )
+
+
+# --------------------------------------------------------------------------
+# 5. Specific User Query Regression Tests
+# --------------------------------------------------------------------------
+def test_bmw_5_vs_rolls_royce_phantom_difference(service, llm):
+    """
+    Test: 'Mujhe BMW 5 and Rolls-Royce Phantom ka difference batao na'
+    Must compare BMW 5 Series against Rolls-Royce Phantom VIII head-to-head.
+    Must NOT dump the Rolls-Royce entire lineup or fallback to generic vehicles.
+    """
+    query = "Mujhe BMW 5 and Rolls-Royce Phantom ka difference batao na"
+    assert service.detect_comparison_intent(query) is True
+    
+    cand_a, cand_b = service.extract_candidates(query)
+    assert cand_a == "BMW 5"
+    assert cand_b == "Rolls-Royce Phantom"
+
+    res = service.process_comparison(query)
+    assert res.intent_detected is True
+    assert res.clarification_status == "ready"
+    assert res.resolution_a.status == ResolutionStatus.EXACT_MODEL
+    assert "BMW 5 Series" in res.resolution_a.model_name
+    assert res.resolution_b.status == ResolutionStatus.EXACT_MODEL
+    assert "Rolls-Royce Phantom" in res.resolution_b.model_name
+
+    # Check LLM response
+    llm_resp = llm.generate(query, "")
+    assert "BMW 5 Series" in llm_resp
+    assert "Rolls-Royce Phantom" in llm_resp
+    assert "| Parameter / Feature |" in llm_resp
+    assert "Evaluated" not in llm_resp
+
+
+def test_websites_buying_guide(llm):
+    """
+    Test: 'Which websites should I check before buying?'
+    Must return essential automotive resources (CarWale, CarDekho, Autocar India, Team-BHP, Bharat NCAP).
+    Must NOT return default car comparison table (Nexon, Brezza, etc.) or robotic lines.
+    """
+    query = "Which websites should I check before buying?"
+    llm_resp = llm.generate(query, "")
+    
+    assert "CarWale" in llm_resp
+    assert "CarDekho" in llm_resp
+    assert "Autocar India" in llm_resp
+    assert "Team-BHP" in llm_resp
+    assert "Bharat NCAP" in llm_resp
+    assert "Evaluated" not in llm_resp
+    # Ensure default cars are NOT returned
+    assert "Tata Nexon" not in llm_resp
+    assert "Maruti Brezza" not in llm_resp
+

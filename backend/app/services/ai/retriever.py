@@ -41,8 +41,10 @@ class HybridRetriever:
         year_match = re.search(r'\b(19[89][0-9]|20[0-3][0-9])\b', p_lower)
         req_year = int(year_match.group(1)) if year_match else None
         
-        is_luxury = (filter_schema.price_min is not None and filter_schema.price_min >= 2000000.0) or any(
-            w in p_lower for w in ["luxury", "luxry", "luxurious", "premium", "exotic", "supercar"]
+        is_luxury = (filter_schema.price_min is not None and filter_schema.price_min >= 2000000.0 and filter_schema.price_max is None) or (
+            filter_schema.price_max is None and any(
+                w in p_lower for w in ["luxury", "luxry", "luxurious", "premium", "exotic", "supercar"]
+            )
         )
         req_category = "luxury" if is_luxury else (filter_schema.body_type or (filter_schema.fuel_type if filter_schema.fuel_type == "EV" else None))
         req_fuel = filter_schema.fuel_type
@@ -95,17 +97,14 @@ class HybridRetriever:
             filter_schema.price_max or filter_schema.price_min or filter_schema.min_airbags or
             filter_schema.min_safety_rating or filter_schema.seating_capacity or filter_schema.transmission
         )
-        if has_sql_constraints:
-            sql_candidates, _ = self.car_repo.search_variants(filter_schema)
-        else:
-            sql_candidates = []
+        sql_candidates, _ = self.car_repo.search_variants(filter_schema)
 
         # Apply strict year filter on SQL candidates if requested
         if req_year and sql_candidates:
             sql_candidates = [c for c in sql_candidates if c.model_year == req_year]
 
-        # Apply luxury filter if requested
-        if is_luxury and sql_candidates:
+        # Apply luxury filter if requested and no explicit max budget ceiling
+        if is_luxury and not filter_schema.price_max and sql_candidates:
             luxury_mfrs = ["BMW", "Mercedes-Benz", "Audi", "Porsche", "Jaguar", "Land Rover", "Volvo", "Lexus", "Rolls-Royce", "Bentley", "Lamborghini", "Ferrari", "BYD"]
             sql_candidates = [c for c in sql_candidates if c.ex_showroom_price >= 2500000.0 or any(lm.lower() in c.car_model.manufacturer.name.lower() for lm in luxury_mfrs)]
 
@@ -164,7 +163,9 @@ class HybridRetriever:
                     if v_obj:
                         if req_year and v_obj.model_year != req_year:
                             continue
-                        if is_luxury and (v_obj.ex_showroom_price < 2500000.0 and not any(lm.lower() in v_obj.car_model.manufacturer.name.lower() for lm in ["BMW", "Mercedes-Benz", "Audi", "Porsche", "Jaguar", "Land Rover", "Volvo", "Lexus", "Rolls-Royce", "Bentley", "Lamborghini", "Ferrari", "BYD"])):
+                        if filter_schema.price_max and v_obj.ex_showroom_price > filter_schema.price_max:
+                            continue
+                        if is_luxury and not filter_schema.price_max and (v_obj.ex_showroom_price < 2500000.0 and not any(lm.lower() in v_obj.car_model.manufacturer.name.lower() for lm in ["BMW", "Mercedes-Benz", "Audi", "Porsche", "Jaguar", "Land Rover", "Volvo", "Lexus", "Rolls-Royce", "Bentley", "Lamborghini", "Ferrari", "BYD"])):
                             continue
                         doc_map[key] = self._variant_to_doc_dict(v_obj)
                     else:

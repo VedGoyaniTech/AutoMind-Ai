@@ -247,8 +247,17 @@ def upgrade() -> None:
         batch_op.create_index(batch_op.f('ix_sources_region'), ['region'], unique=False)
         batch_op.create_index(batch_op.f('ix_sources_review_status'), ['review_status'], unique=False)
         batch_op.create_index(batch_op.f('ix_sources_source_type'), ['source_type'], unique=False)
+
+    bind = op.get_bind()
+    if bind.dialect.name == "sqlite":
+        bind.execute(sa.text("UPDATE sources SET source_uid = 'legacy_source_' || id WHERE source_uid = 'legacy_source'"))
+    else:
+        bind.execute(sa.text("UPDATE sources SET source_uid = CONCAT('legacy_source_', id) WHERE source_uid = 'legacy_source'"))
+
+    with op.batch_alter_table('sources', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_sources_source_uid'), ['source_uid'], unique=True)
     # ### end Alembic commands ###
+
 
 
 def downgrade() -> None:

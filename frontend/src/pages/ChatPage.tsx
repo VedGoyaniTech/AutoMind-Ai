@@ -151,6 +151,7 @@ export const ChatPage: React.FC = () => {
       return;
     }
 
+    let activeConvId = loadedConvIdRef.current;
     try {
       const payloadBody = JSON.stringify({
         conversation_id: loadedConvIdRef.current,
@@ -196,7 +197,7 @@ export const ChatPage: React.FC = () => {
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
-      let activeConvId = loadedConvIdRef.current;
+      activeConvId = loadedConvIdRef.current;
       let finalStreamText = '';
       let finalSources: SourceCard[] = [];
       let finalCars: CarVariantSummary[] = [];
@@ -246,14 +247,23 @@ export const ChatPage: React.FC = () => {
                   setActiveCars(finalCars);
                 } else if (data.event_type === 'error') {
                   console.error('[ChatSSE Error Event]', data.message);
+                  const errorMsg = data.message || 'An error occurred while generating the response. Please try again.';
+                  const assistantMsg: ChatMessage = {
+                    id: Date.now(),
+                    conversation_id: activeConvId || undefined,
+                    role: 'assistant',
+                    content: `⚠️ ${errorMsg}`,
+                    metadata: {},
+                  };
+                  setMessages((prev) => [...prev, assistantMsg]);
                   setStreamingText('');
                   finalStreamText = '';
                 } else if (data.event_type === 'complete') {
                   finalMessageId = data.message_id;
                   const contentToSave = finalStreamText.trim() || data.content;
-                  if (contentToSave && !contentToSave.startsWith('⚠️')) {
+                  if (contentToSave) {
                     const assistantMsg: ChatMessage = {
-                      id: finalMessageId,
+                      id: finalMessageId || Date.now(),
                       conversation_id: activeConvId || undefined,
                       role: 'assistant',
                       content: contentToSave,
@@ -280,9 +290,9 @@ export const ChatPage: React.FC = () => {
       }
 
       // Safety fallback: If stream ended without complete event, only save clean valid text
-      if (finalStreamText.trim() && !finalStreamText.startsWith('⚠️')) {
+      if (finalStreamText.trim()) {
         const assistantMsg: ChatMessage = {
-          id: finalMessageId,
+          id: finalMessageId || Date.now(),
           conversation_id: activeConvId || undefined,
           role: 'assistant',
           content: finalStreamText.trim(),
@@ -290,15 +300,28 @@ export const ChatPage: React.FC = () => {
             sources: finalSources,
             cars: finalCars,
             gallery: finalGallery || undefined,
+            pricing_quote: finalPricingQuote || undefined,
           },
         };
         setMessages((prev) => [...prev, assistantMsg]);
         setStreamingText('');
         setActiveGallery(null);
+        setActivePricingQuote(null);
       }
     } catch (err: any) {
       if (err.name !== 'AbortError') {
         console.error('Chat SSE Error:', err);
+        const errorContent = err?.message?.includes('status:')
+          ? `Server returned error (${err.message}). Please retry in a moment.`
+          : 'Unable to connect to the AutoMind assistant server. Please check your connection and try again.';
+        const assistantMsg: ChatMessage = {
+          id: Date.now(),
+          conversation_id: activeConvId || undefined,
+          role: 'assistant',
+          content: `⚠️ ${errorContent}`,
+          metadata: {},
+        };
+        setMessages((prev) => [...prev, assistantMsg]);
       }
       setStreamingText('');
     } finally {

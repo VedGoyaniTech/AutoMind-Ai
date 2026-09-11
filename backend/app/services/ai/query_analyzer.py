@@ -29,13 +29,19 @@ class QueryAnalyzer:
         price_max: Optional[float] = None
         price_min: Optional[float] = None
 
-        lakh_match = re.search(r'(?:under|below|less than|within|upto|up to|अंदर|नीचे|सुधी|કિંમત|બજેટ|नी अंदर)\s*(?:₹|rs\.?|inr)?\s*(\d+(?:\.\d+)?)\s*(?:lakh|lakhs|l|लाख|લાખ)', lower)
+        clean_lower = lower.replace(",", "")
+
+        lakh_match = re.search(r'(?:under|below|less than|within|upto|up to|budget|budget is|budget of|max|maximum|अंदर|नीचे|सुधी|કિંમત|બજેટ|ની અંદર|तक)\s*(?:₹|rs\.?|inr|of|is|mein|me|ka)?\s*(\d+(?:\.\d+)?)\s*(?:lakh|lakhs|l|लाख|લાખ)', clean_lower)
         if not lakh_match:
-            lakh_match = re.search(r'(\d+(?:\.\d+)?)\s*(?:lakh|lakhs|l|लाख|લાખ)\s*(?:under|below|less than|within|upto|up to|के अंदर|माँ|સુધી|ની અંદર|अंदर)', lower)
+            lakh_match = re.search(r'(\d+(?:\.\d+)?)\s*(?:lakh|lakhs|l|लाख|લાખ)\s*(?:under|below|less than|within|upto|up to|budget|के अंदर|माँ|સુધી|ની અંદર|अंदर|तक)?', clean_lower)
         if lakh_match:
             price_max = float(lakh_match.group(1)) * 100000.0
 
-        num_price_match = re.search(r'(?:under|below|अंदर|ની અંદર)\s*(?:₹|rs\.?|inr)?\s*(\d{6,8})', lower)
+        num_price_match = re.search(r'(?:under|below|less than|within|upto|up to|budget|budget is|budget of|max|maximum|अंदर|नीचे|सुधी|સુધી|ની અંદર|तक|माँ)\s*(?:₹|rs\.?|inr|of|is|mein|me|ka)?\s*(\d{6,8})', clean_lower)
+        if not num_price_match:
+            num_price_match = re.search(r'(\d{6,8})\s*(?:₹|rs\.?|inr|rupaye|rupee|rupees|रुपये|રૂપિયા)?\s*(?:under|below|less than|within|upto|up to|budget|के अंदर|माँ|સુધી|ની અંદર|अंदर|तक)', clean_lower)
+        if not num_price_match:
+            num_price_match = re.search(r'budget\D*(\d{6,8})', clean_lower)
         if num_price_match:
             price_max = float(num_price_match.group(1))
 
@@ -107,7 +113,7 @@ class QueryAnalyzer:
 
         # 9. Luxury & Supercar detection
         is_luxury = any(w in lower for w in ["luxury", "luxry", "luxurious", "premium", "exotic", "supercar", "expensive", "sports car", "लग्जरी", "લક્ઝરી"])
-        if is_luxury and not price_min:
+        if is_luxury and not price_min and not price_max:
             price_min = 2500000.0
 
         # 10. Year Extraction (e.g. 2005, 2024, 2026, or "is saal" / "abhi")
@@ -136,24 +142,27 @@ class QueryAnalyzer:
 
         # 13. Category Normalization
         category_name = "all"
-        if is_luxury:
+        if is_luxury and not price_max:
             category_name = "luxury"
         elif detected_body_type:
             category_name = detected_body_type
         elif detected_fuel == "EV":
             category_name = "EV"
 
+        is_websites_request = any(word in lower for word in [
+            "websites", "website", "sources", "source", "check before buying", "links", "where to read",
+            "portal", "portals", "konsi website", "kon si website", "best site", "sites"
+        ])
         is_launch = any(w in lower for w in ["launch", "lounch", "launched", "lunched", "upcoming", "release", "releases", "new car", "new cars", "लॉन्च", "લૉન્ચ"]) or requested_year is not None
-        is_compare = any(word in lower for word in ["compare", "vs", "versus", "difference", "better than", "or", "तुलना", "સરખામણી"])
-        is_websites_request = any(word in lower for word in ["websites", "sources", "check before buying", "links", "where to read"])
+        is_compare = bool(re.search(r'\b(compare|comparison|vs|versus|v/s|difference|better than|tulna|sarxamni)\b', lower)) or any(w in lower for w in ["अंतर", "तुलना", "તફાવત", "સરખામણી", "માંથી કઈ", "से कौन", "farak", "farq"])
 
         intent_type = "vehicle_search"
-        if is_compare:
+        if is_websites_request:
+            intent_type = "sources_inquiry"
+        elif is_compare:
             intent_type = "comparison"
         elif is_launch:
             intent_type = "car_launches"
-        elif is_websites_request:
-            intent_type = "sources_inquiry"
 
         filter_schema = CarSearchFilter(
             query=prompt,

@@ -59,6 +59,29 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
     }
   };
 
+  // Cleanup speech recognition and media streams on unmount
+  useEffect(() => {
+    return () => {
+      userWantsListeningRef.current = false;
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (_) {}
+      }
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        try {
+          mediaRecorderRef.current.stop();
+        } catch (_) {}
+      }
+      if (mediaStreamRef.current) {
+        try {
+          mediaStreamRef.current.getTracks().forEach((t) => t.stop());
+        } catch (_) {}
+        mediaStreamRef.current = null;
+      }
+    };
+  }, []);
+
   // Stop recording cleanly (toggle off)
   const stopListening = useCallback(() => {
     userWantsListeningRef.current = false;
@@ -93,7 +116,7 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
     sessionTranscriptRef.current = '';
   }, [onTranscript]);
 
-  // Start speech recognition & MediaRecorder fallback (toggle on)
+  // Start speech recognition or MediaRecorder fallback (toggle on)
   const startListening = async () => {
     setErrorMessage(null);
     setInterimPreview('');
@@ -102,44 +125,26 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
     sessionTranscriptRef.current = '';
     audioChunksRef.current = [];
     userWantsListeningRef.current = true;
-    setIsListening(true);
 
-    // 1. Initialize MediaRecorder audio capture as backup
-    let mediaStream: MediaStream | null = null;
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    // Release any previously hanging mic streams or recognition sessions
+    if (mediaStreamRef.current) {
       try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaStreamRef.current = mediaStream;
-        const recorder = new MediaRecorder(mediaStream);
-        recorder.ondataavailable = (event) => {
-          if (event.data && event.data.size > 0) {
-            audioChunksRef.current.push(event.data);
-          }
-        };
-        recorder.onstop = () => {
-          mediaStream?.getTracks().forEach((t) => t.stop());
-          if (!finalTranscriptRef.current && audioChunksRef.current.length > 0) {
-            const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-            sendAudioToServerFallback(audioBlob);
-          }
-        };
-        recorder.start(500);
-        mediaRecorderRef.current = recorder;
-      } catch (micErr: any) {
-        if (micErr.name === 'NotAllowedError' || micErr.name === 'PermissionDeniedError') {
-          userWantsListeningRef.current = false;
-          setIsListening(false);
-          setErrorMessage('Microphone blocked. Please click 🔒 in URL address bar to allow microphone access.');
-          return;
-        }
-      }
+        mediaStreamRef.current.getTracks().forEach((t) => t.stop());
+      } catch (_) {}
+      mediaStreamRef.current = null;
+    }
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (_) {}
     }
 
-    // 2. Initialize Browser Speech Recognition
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (SpeechRecognition) {
+      // Primary: Web Speech API (Chrome, Edge, Safari) — handles audio capture directly
+      // Do NOT run getUserMedia concurrently to prevent audio-capture device locking on Linux
       try {
         const recognition = new SpeechRecognition();
         recognition.continuous = true;
@@ -167,25 +172,28 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
           if (fullText) {
             finalTranscriptRef.current = fullText;
             setInterimPreview(fullText);
-            // Pass clean current transcript directly (without duplicating)
             onTranscript(fullText);
           }
         };
 
         recognition.onerror = (event: any) => {
           console.warn('Speech recognition notice:', event.error);
+          if (event.error === 'no-speech') {
+            // User paused speaking or is thinking — keep listening
+            return;
+          }
           if (event.error === 'not-allowed') {
             userWantsListeningRef.current = false;
             setIsListening(false);
-            setErrorMessage('Microphone blocked. Click 🔒 in address bar to allow mic.');
+            setErrorMessage('Microphone blocked. Click 🔒 in address bar to allow mic access.');
           } else if (event.error === 'audio-capture') {
             userWantsListeningRef.current = false;
             setIsListening(false);
-            setErrorMessage('Microphone busy or not detected.');
+            setErrorMessage('Microphone busy or not detected. Please ensure no other app is using your mic.');
           }
         };
 
-        // Handle auto-restart when browser times out on natural speech pauses
+        // Handle auto-restart when browser pauses on natural speech pauses
         recognition.onend = () => {
           if (sessionTranscriptRef.current) {
             baseTranscriptRef.current = [baseTranscriptRef.current, sessionTranscriptRef.current]
@@ -211,10 +219,47 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
         };
 
         recognitionRef.current = recognition;
+        setIsListening(true);
         recognition.start();
       } catch (e) {
         console.warn('SpeechRecognition start notice:', e);
+        setIsListening(false);
+        userWantsListeningRef.current = false;
       }
+    } else if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      // Fallback for browsers without SpeechRecognition (e.g. Firefox)
+      try {
+        const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaStreamRef.current = mediaStream;
+        const recorder = new MediaRecorder(mediaStream);
+        recorder.ondataavailable = (event) => {
+          if (event.data && event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+        recorder.onstop = () => {
+          mediaStream?.getTracks().forEach((t) => t.stop());
+          if (audioChunksRef.current.length > 0) {
+            const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+            sendAudioToServerFallback(audioBlob);
+          }
+        };
+        recorder.start(500);
+        mediaRecorderRef.current = recorder;
+        setIsListening(true);
+      } catch (micErr: any) {
+        userWantsListeningRef.current = false;
+        setIsListening(false);
+        if (micErr.name === 'NotAllowedError' || micErr.name === 'PermissionDeniedError') {
+          setErrorMessage('Microphone blocked. Please click 🔒 in URL address bar to allow microphone access.');
+        } else {
+          setErrorMessage('Microphone not accessible. Please check audio device.');
+        }
+      }
+    } else {
+      userWantsListeningRef.current = false;
+      setIsListening(false);
+      setErrorMessage('Speech recognition is not supported in this browser.');
     }
   };
 

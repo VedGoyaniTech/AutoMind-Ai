@@ -137,13 +137,16 @@ class GroundedLLMProvider(BaseLLMProvider):
         "vinteg": "vintage", "vantige": "vintage", "vintag": "vintage",
         "purani": "vintage", "old": "vintage",
         # Hindi & Gujarati Script Mappings
-        "टाटा": "Tata", "टाटा नेक्सन": "Tata Nexon", "नेक्सन": "Tata Nexon",
+        "टाटा": "Tata", "टाટા नेक्सन": "Tata Nexon", "नेक्सन": "Tata Nexon",
         "हुंडई": "Hyundai", "क्रेटा": "Hyundai Creta", "हुंडई क्रेटा": "Hyundai Creta",
         "महिन्द्रा": "Mahindra", "महिंद्रा": "Mahindra", "थार": "Mahindra Thar", "महिंद्रा थार": "Mahindra Thar",
         "मारुति": "Maruti", "मारुति सुजुकी": "Maruti Suzuki", "स्विफ्ट": "Maruti Swift",
         "ટોયોટા": "Toyota", "હ્યુન્ડાઇ": "Hyundai", "હ્યુન્ડાઈ": "Hyundai", "ક્રેટા": "Hyundai Creta",
-        "મહિન્દ્રા": "Mahindra", "થાર": "Mahindra Thar", "જિમ્ની": "Maruti Jimny", "નેક્સન": "Tata Nexon",
-        "ઓટોમેટિક": "automatic", "ઓફ-રોડિંગ": "off-roading", "सुरक्षित": "safe", "સુરક્ષિત": "safe"
+        "મહેન્દ્રા": "Mahindra", "મહેન્દ્ર": "Mahindra", "મહિન્દ્રા": "Mahindra", "મહિંદ્રા": "Mahindra",
+        "થાર": "Mahindra Thar", "જિમ્ની": "Maruti Jimny", "નેક્સન": "Tata Nexon",
+        "ઓટોમેટિક": "automatic", "ઓફ-રોડિંગ": "off-roading", "सुरक्षित": "safe", "સુરક્ષિત": "safe",
+        "xuv 700": "Mahindra XUV700", "xuv700": "Mahindra XUV700", "mahindra xuv700": "Mahindra XUV700",
+        "xuv 400": "Mahindra XUV400", "xuv 300": "Mahindra XUV300", "xuv 3xo": "Mahindra XUV 3XO"
     }
 
     MODEL_KNOWLEDGE_BASE = {
@@ -300,6 +303,63 @@ class GroundedLLMProvider(BaseLLMProvider):
                 {"name": "BMW M3 Competition M xDrive", "engine": "3.0L Inline-6 Twin-Turbo (503 HP / 650 Nm)", "price_inr": "₹1.47 – ₹1.53 Crore"},
                 {"name": "BMW M3 CS Special Edition", "engine": "3.0L Inline-6 Twin-Turbo (543 HP / 650 Nm)", "price_inr": "₹1.85 Crore"}
             ]
+        },
+        "xuv700": {
+            "brand": "Mahindra XUV700",
+            "country": "India (Mahindra & Mahindra)",
+            "key_specs": {
+                "Engine Options": "2.0L mStallion Turbo-Petrol (200 PS / 380 Nm) & 2.2L mHawk Turbo-Diesel (155–185 PS / 420–450 Nm)",
+                "Transmission": "6-Speed Manual & 6-Speed Aisin Torque Converter Automatic (Optional AWD on AX7/AX7L Diesel)",
+                "Price Range": "₹13.99 – ₹26.04 Lakh (Ex-Showroom)",
+                "Safety Rating": "5-Star Global NCAP (Adult: 16.03/17, Child: 41.66/49) + 7 Airbags Standard on Top Variants",
+                "Advanced Safety (ADAS)": "Level 2 ADAS (Autonomous Emergency Braking, Adaptive Cruise Control with Stop & Go, Lane Keep Assist, Smart Pilot Assist, High Beam Assist)",
+                "Infotainment & Cockpit": "Dual 10.25-inch HD Superscreen Displays (Digital Cluster + Touchscreen) with AdrenoX UI & Alexa Built-in",
+                "Audio & Acoustics": "Sony 12-Speaker 3D Immersive Sound System with Custom Equalizer & Roof-Mounted Speakers",
+                "Key Luxury Features": "Panoramic Skyroof (Largest in segment), Flush Smart Door Handles, Wireless Charger, Dual-Zone Climate Control, 360-Degree Camera with Blind View Monitor",
+                "Seating & Comfort": "5-Seater and 7-Seater layouts with Ergo Lever, 6-way Powered Memory Driver Seat & 60:40 Split Folding"
+            },
+            "models": [
+                {"name": "Mahindra XUV700 MX (5-Seater)", "engine": "2.0L Turbo Petrol (200 PS) / 2.2L Diesel (155 PS) | 6MT", "price_inr": "₹13.99 – ₹14.59 Lakh"},
+                {"name": "Mahindra XUV700 AX3 (5 / 7-Seater)", "engine": "2.0L Turbo Petrol (200 PS) / 2.2L Diesel (185 PS) | 6MT / 6AT", "price_inr": "₹16.39 – ₹18.59 Lakh"},
+                {"name": "Mahindra XUV700 AX5 / AX5 Select", "engine": "Skyroof, Dual HD Screens, LED DRLs, 6 Airbags | 6MT / 6AT", "price_inr": "₹17.69 – ₹20.39 Lakh"},
+                {"name": "Mahindra XUV700 AX7 (7-Seater)", "engine": "Level 2 ADAS, Leatherette Cabin, Dual-Zone Climate | 6MT / 6AT", "price_inr": "₹19.49 – ₹22.99 Lakh"},
+                {"name": "Mahindra XUV700 AX7 Luxury (AX7L) AWD", "engine": "Sony 12-Speaker 3D Audio, 360 Cam, Blind View Monitor, All-Wheel Drive | 6AT", "price_inr": "₹23.99 – ₹26.04 Lakh"}
+            ]
+        },
+        "thar": {
+            "brand": "Mahindra Thar / Thar Roxx",
+            "country": "India (Mahindra & Mahindra)",
+            "key_specs": {
+                "Body Styles": "3-Door 4x4 / RWD & 5-Door Thar Roxx 4x4 / RWD",
+                "Engine Options": "2.0L mStallion Turbo-Petrol (150–177 PS) & 2.2L mHawk Turbo-Diesel (130–175 PS)",
+                "Transmission": "6-Speed Manual & 6-Speed Torque Converter Automatic",
+                "Price Range": "₹11.35 – ₹22.49 Lakh (Ex-Showroom)",
+                "Safety Rating": "4-Star Global NCAP (3-Door) / 5-Star Bharat NCAP Capability (Thar Roxx)",
+                "Off-Road Hardware": "Mechanical Locking Differential (MLD), Brake Locking Differential (BLD), 4x4 Low Range (4L), 650mm Water Wading Capacity"
+            },
+            "models": [
+                {"name": "Mahindra Thar AX(O) Hard Top (3-Door)", "engine": "2.0L Petrol / 2.2L Diesel | 6MT 4x4 / RWD", "price_inr": "₹11.35 – ₹14.85 Lakh"},
+                {"name": "Mahindra Thar LX Hard Top (3-Door)", "engine": "2.0L Petrol / 2.2L Diesel | 6MT / 6AT 4x4", "price_inr": "₹14.99 – ₹17.60 Lakh"},
+                {"name": "Mahindra Thar Roxx MX1 / MX3 (5-Door)", "engine": "2.0L Petrol / 2.2L Diesel | 6MT / 6AT RWD", "price_inr": "₹12.99 – ₹15.99 Lakh"},
+                {"name": "Mahindra Thar Roxx AX7L 4x4 (5-Door)", "engine": "Panoramic Sunroof, Level 2 ADAS, Harman Kardon Audio, 4x4 | 6AT", "price_inr": "₹20.99 – ₹22.49 Lakh"}
+            ]
+        },
+        "scorpio": {
+            "brand": "Mahindra Scorpio-N & Classic",
+            "country": "India (Mahindra & Mahindra)",
+            "key_specs": {
+                "Body Style": "Full-Size Ladder-Frame 7-Seater Authentic SUV",
+                "Engine Options": "2.0L mStallion Turbo-Petrol (203 PS) & 2.2L mHawk Turbo-Diesel (132–175 PS)",
+                "Transmission": "6-Speed Manual & 6-Speed Automatic with 4XPLOR Intelligent 4WD System",
+                "Price Range": "₹13.60 – ₹24.54 Lakh (Ex-Showroom)",
+                "Safety Rating": "5-Star Global NCAP (Adult Occupant Protection)"
+            },
+            "models": [
+                {"name": "Mahindra Scorpio-N Z2 / Z4", "engine": "2.0L Petrol (203 PS) / 2.2L Diesel (132–175 PS) | 6MT / 6AT", "price_inr": "₹13.85 – ₹17.50 Lakh"},
+                {"name": "Mahindra Scorpio-N Z6 / Z8", "engine": "Sunroof, AdrenoX Touchscreen, Wireless Charging | 6MT / 6AT", "price_inr": "₹16.80 – ₹21.50 Lakh"},
+                {"name": "Mahindra Scorpio-N Z8L 4XPLOR (4WD)", "engine": "Sony 12-Speaker Sound, Front Camera, Mechanical Locking Diff 4WD | 6AT", "price_inr": "₹22.50 – ₹24.54 Lakh"},
+                {"name": "Mahindra Scorpio Classic S / S11", "engine": "2.2L Gen-2 mHawk Diesel (132 PS / 300 Nm) | 6-Speed MT", "price_inr": "₹13.62 – ₹17.42 Lakh"}
+            ]
         }
     }
 
@@ -310,7 +370,8 @@ class GroundedLLMProvider(BaseLLMProvider):
         "tata harrier", "harrier", "tata punch", "punch", "tata tiago", "tiago", "tata altroz", "altroz",
         "maruti brezza", "brezza", "maruti swift", "swift", "maruti baleno", "baleno",
         "hyundai creta", "creta", "hyundai alcazar", "kia seltos", "seltos", "kia sonet", "sonet",
-        "mahindra xuv700", "xuv700", "mahindra xuv400", "xuv400", "mahindra thar", "thar", "scorpio",
+        "mahindra xuv 700", "xuv 700", "mahindra xuv700", "xuv700", "mahindra xuv 400", "xuv 400", "mahindra xuv400", "xuv400",
+        "mahindra xuv 3xo", "xuv 3xo", "mahindra thar", "thar roxx", "thar", "scorpio-n", "scorpio",
         "toyota fortuner", "fortuner", "toyota innova", "innova", "bmw m5", "m5", "bmw m3", "m3",
         "bugatti tourbillon", "bugatti chiron", "chiron", "ferrari 296", "ferrari roma", "purosangue"
     ]
@@ -454,6 +515,23 @@ class GroundedLLMProvider(BaseLLMProvider):
 
     def _extract_query_model_term(self, prompt: str) -> Optional[str]:
         p = prompt.lower().strip()
+
+        # 0. Normalize Indic script brand and model tokens to standard English names
+        indic_car_tokens = [
+            ("મહેન્દ્રા", "mahindra"), ("મહેન્દ્ર", "mahindra"), ("મહિન્દ્રા", "mahindra"), ("મહિંદ્રા", "mahindra"),
+            ("ટાટા", "tata"), ("હ્યુન્ડાઈ", "hyundai"), ("હ્યુન્ડાઇ", "hyundai"), ("हुंडई", "hyundai"),
+            ("ટોયોટા", "toyota"), ("टोयोटा", "toyota"), ("મારુતિ", "maruti"), ("मारुति", "maruti"),
+            ("કિયા", "kia"), ("किया", "kia"), ("થાર", "thar"), ("નેક્સન", "nexon"),
+            ("ક્રેટા", "creta"), ("સેલ્ટોસ", "seltos"), ("બ્રેઝા", "brezza"), ("સફારી", "safari"),
+            ("સ્કોર્પિયો", "scorpio"), ("ફોર્ચ્યુનર", "fortuner")
+        ]
+        for indic_term, eng_term in indic_car_tokens:
+            p = p.replace(indic_term, eng_term)
+
+        # Normalize spaced model tokens (e.g. "xuv 700" -> "xuv700", "xuv 300" -> "xuv300")
+        p = re.sub(r'\bxuv\s*([0-9]|3xo|pro)', r'xuv\1', p)
+        p = re.sub(r'\bi\s*([0-9]{2})', r'i\1', p)
+
         # 1. Check priority specific multi-word model list FIRST (e.g. "tata nano" before "tata")
         for m in self.SPECIFIC_MODEL_PRIORITY:
             if m in p:
@@ -461,7 +539,7 @@ class GroundedLLMProvider(BaseLLMProvider):
 
         # 2. Check typo corrections
         for typo, correct in self.TYPO_CORRECTIONS.items():
-            if re.search(r'\b' + re.escape(typo) + r'\b', p):
+            if typo in p:
                 return correct.lower()
 
         # 3. Check general brands and models (with word boundary regex for short names)
@@ -2669,6 +2747,12 @@ class GroundedLLMProvider(BaseLLMProvider):
         # ── Specific model abbreviation corrections ───────────────────────────
         if "nano" in key_term or "nano" in p_lower:
             key_term = "nano"
+        elif "xuv700" in key_term or "xuv700" in p_lower or "xuv 700" in p_lower:
+            key_term = "xuv700"
+        elif "thar" in key_term or "thar" in p_lower:
+            key_term = "thar"
+        elif "scorpio" in key_term or "scorpio" in p_lower:
+            key_term = "scorpio"
         elif "m3" in key_term or "m3" in p_lower:
             key_term = "m3"
         elif "m5" in key_term or "m5" in p_lower:
@@ -2676,8 +2760,12 @@ class GroundedLLMProvider(BaseLLMProvider):
         elif "phantom" in key_term or "phantom" in p_lower:
             key_term = "phantom"
 
-        pretty_name = self.TYPO_CORRECTIONS.get(key_term, model_name)
-        pretty_name = pretty_name.upper() if len(pretty_name) <= 4 else pretty_name.capitalize()
+        if key_term in self.TYPO_CORRECTIONS:
+            pretty_name = self.TYPO_CORRECTIONS[key_term]
+        elif len(model_name) <= 4:
+            pretty_name = model_name.upper()
+        else:
+            pretty_name = model_name.title()
 
         # 1. Match longest/most specific key in MODEL_KNOWLEDGE_BASE first
         kb_info = self.MODEL_KNOWLEDGE_BASE.get(key_term)
@@ -2717,8 +2805,8 @@ class GroundedLLMProvider(BaseLLMProvider):
             # Key specs from KB
             kb_specs = kb_info.get("key_specs", {})
             if kb_specs:
-                out.append("### 📊 Key Specifications\n")
-                for spec_key, spec_val in list(kb_specs.items())[:6]:
+                out.append("### 📊 Key Specifications & Modern Features\n")
+                for spec_key, spec_val in list(kb_specs.items())[:10]:
                     out.append(f"- **{spec_key}:** {spec_val}")
                 out.append("")
 

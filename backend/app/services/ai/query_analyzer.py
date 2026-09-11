@@ -24,6 +24,8 @@ class QueryAnalyzer:
         for indic_d, arabic_d in self.INDIC_DIGITS.items():
             norm_text = norm_text.replace(indic_d, arabic_d)
         lower = norm_text.lower()
+        lower = re.sub(r'\bxuv\s*([0-9]|3xo|pro)', r'xuv\1', lower)
+        lower = re.sub(r'\bi\s*([0-9]{2})', r'i\1', lower)
 
         # 1. Price constraint parsing
         price_max: Optional[float] = None
@@ -79,10 +81,25 @@ class QueryAnalyzer:
 
         # 6. Extract Manufacturer
         detected_manufacturer: Optional[str] = None
-        for m in self.MANUFACTURERS:
-            if m.lower() in lower:
-                detected_manufacturer = m
+        indic_m_map = {
+            "મહેન્દ્રા": "Mahindra", "મહેન્દ્ર": "Mahindra", "મહિન્દ્રા": "Mahindra", "મહિંદ્રા": "Mahindra",
+            "टाटा": "Tata", "ટાટા": "Tata",
+            "હ્યુન્ડાઈ": "Hyundai", "હ્યુન્ડાઇ": "Hyundai", "हुंडई": "Hyundai",
+            "મારુતિ": "Maruti", "मारुति": "Maruti",
+            "ટોયોટા": "Toyota", "टोयोटा": "Toyota",
+            "કિયા": "Kia", "किया": "Kia",
+            "બીએમડબલ્યુ": "BMW", "बीएमडब्ल्यू": "BMW"
+        }
+        for ind_k, ind_v in indic_m_map.items():
+            if ind_k in lower:
+                detected_manufacturer = ind_v
                 break
+
+        if not detected_manufacturer:
+            for m in self.MANUFACTURERS:
+                if m.lower() in lower:
+                    detected_manufacturer = m
+                    break
 
         # 7. Extract Body Type
         detected_body_type: Optional[str] = None

@@ -146,7 +146,9 @@ class GroundedLLMProvider(BaseLLMProvider):
         "થાર": "Mahindra Thar", "જિમ્ની": "Maruti Jimny", "નેક્સન": "Tata Nexon",
         "ઓટોમેટિક": "automatic", "ઓફ-રોડિંગ": "off-roading", "सुरक्षित": "safe", "સુરક્ષિત": "safe",
         "xuv 700": "Mahindra XUV700", "xuv700": "Mahindra XUV700", "mahindra xuv700": "Mahindra XUV700",
-        "xuv 400": "Mahindra XUV400", "xuv 300": "Mahindra XUV300", "xuv 3xo": "Mahindra XUV 3XO"
+        "xuv 400": "Mahindra XUV400", "xuv 300": "Mahindra XUV300", "xuv 3xo": "Mahindra XUV 3XO",
+        "tata sierra": "Tata Sierra", "sierra": "Tata Sierra", "sierra ev": "Tata Sierra EV",
+        "ટાટા સિએરા": "Tata Sierra", "સિએરા": "Tata Sierra", "સિયેરા": "Tata Sierra", "सिएरा": "Tata Sierra", "टाटा सिएरा": "Tata Sierra"
     }
 
     MODEL_KNOWLEDGE_BASE = {
@@ -360,11 +362,56 @@ class GroundedLLMProvider(BaseLLMProvider):
                 {"name": "Mahindra Scorpio-N Z8L 4XPLOR (4WD)", "engine": "Sony 12-Speaker Sound, Front Camera, Mechanical Locking Diff 4WD | 6AT", "price_inr": "₹22.50 – ₹24.54 Lakh"},
                 {"name": "Mahindra Scorpio Classic S / S11", "engine": "2.2L Gen-2 mHawk Diesel (132 PS / 300 Nm) | 6-Speed MT", "price_inr": "₹13.62 – ₹17.42 Lakh"}
             ]
+        },
+        "sierra": {
+            "brand": "Tata Sierra & Sierra EV",
+            "country": "India (Tata Motors)",
+            "key_specs": {
+                "Platform & Architecture": "Tata Acti.ev+ Born Electric Dedicated Platform",
+                "Battery Pack Options": "60 kWh – 75 kWh LFP Prismatic Cells",
+                "Claimed Driving Range": "500 – 550 km (ARAI Estimated Range)",
+                "Electric Motor Output": "Single Motor FWD (170 PS) / Dual Motor AWD (280 PS)",
+                "Fast Charging Speed": "10% to 80% in ~29 minutes via 175 kW DC Fast Charger",
+                "Iconic Design Heritage": "Signature 1990s alpine curved rear panoramic glass canopy with modern flush door handles",
+                "Cabin Concept": "Executive rear lounge seating with ultra-wide curved dual screens",
+                "Safety Target": "5-Star Bharat NCAP Dedicated Safety Structure with 6+ Airbags & Level 2 ADAS",
+                "Expected Price Range": "₹25.00 – ₹32.00 Lakh (Estimated Ex-Showroom)",
+                "Launch Timeline": "Late 2025 – Early 2026"
+            },
+            "models": [
+                {"name": "Tata Sierra EV (Single Motor FWD)", "engine": "170 PS Electric Motor | 60 kWh Battery (500 km range)", "price_inr": "₹25.00 – ₹28.00 Lakh (Expected Ex-Showroom)"},
+                {"name": "Tata Sierra EV (Dual Motor AWD Lounge)", "engine": "280 PS Dual Motor AWD | 75 kWh Battery (550 km range)", "price_inr": "₹28.50 – ₹32.00 Lakh (Expected Ex-Showroom)"},
+                {"name": "Tata Sierra ICE Concept (1.5L Turbo-Petrol / 2.0L Diesel)", "engine": "1.5L TGDi Turbo (170 PS) / 2.0L Kryotec Diesel | 6MT / 7DCA", "price_inr": "₹18.00 – ₹24.00 Lakh (Expected Ex-Showroom)"},
+                {"name": "Tata Sierra Classic (1991–2003 Historical Legend)", "engine": "2.0L Peugeot Turbo-Diesel (90 PS / 190 Nm) | 5-Speed Manual 4x4", "price_inr": "₹4.50 – ₹5.50 Lakh (Historical 1990s)"}
+            ]
+        },
+        "tata sierra": {
+            "brand": "Tata Sierra & Sierra EV",
+            "country": "India (Tata Motors)",
+            "key_specs": {
+                "Platform & Architecture": "Tata Acti.ev+ Born Electric Dedicated Platform",
+                "Battery Pack Options": "60 kWh – 75 kWh LFP Prismatic Cells",
+                "Claimed Driving Range": "500 – 550 km (ARAI Estimated Range)",
+                "Electric Motor Output": "Single Motor FWD (170 PS) / Dual Motor AWD (280 PS)",
+                "Fast Charging Speed": "10% to 80% in ~29 minutes via 175 kW DC Fast Charger",
+                "Iconic Design Heritage": "Signature 1990s alpine curved rear panoramic glass canopy with modern flush door handles",
+                "Cabin Concept": "Executive rear lounge seating with ultra-wide curved dual screens",
+                "Safety Target": "5-Star Bharat NCAP Dedicated Safety Structure with 6+ Airbags & Level 2 ADAS",
+                "Expected Price Range": "₹25.00 – ₹32.00 Lakh (Estimated Ex-Showroom)",
+                "Launch Timeline": "Late 2025 – Early 2026"
+            },
+            "models": [
+                {"name": "Tata Sierra EV (Single Motor FWD)", "engine": "170 PS Electric Motor | 60 kWh Battery (500 km range)", "price_inr": "₹25.00 – ₹28.00 Lakh (Expected Ex-Showroom)"},
+                {"name": "Tata Sierra EV (Dual Motor AWD Lounge)", "engine": "280 PS Dual Motor AWD | 75 kWh Battery (550 km range)", "price_inr": "₹28.50 – ₹32.00 Lakh (Expected Ex-Showroom)"},
+                {"name": "Tata Sierra ICE Concept (1.5L Turbo-Petrol / 2.0L Diesel)", "engine": "1.5L TGDi Turbo (170 PS) / 2.0L Kryotec Diesel | 6MT / 7DCA", "price_inr": "₹18.00 – ₹24.00 Lakh (Expected Ex-Showroom)"},
+                {"name": "Tata Sierra Classic (1991–2003 Historical Legend)", "engine": "2.0L Peugeot Turbo-Diesel (90 PS / 190 Nm) | 5-Speed Manual 4x4", "price_inr": "₹4.50 – ₹5.50 Lakh (Historical 1990s)"}
+            ]
         }
     }
 
     # Priority list of specific multi-word car models to match BEFORE generic brand tokens
     SPECIFIC_MODEL_PRIORITY = [
+        "tata sierra ev", "tata sierra", "sierra ev", "sierra",
         "rolls-royce phantom", "phantom", "rolls-royce ghost", "ghost", "rolls-royce cullinan", "cullinan", "rolls-royce spectre",
         "tata nano", "nano", "nexon ev", "tata nexon", "nexon", "tata safari", "safari",
         "tata harrier", "harrier", "tata punch", "punch", "tata tiago", "tiago", "tata altroz", "altroz",
@@ -398,7 +445,9 @@ class GroundedLLMProvider(BaseLLMProvider):
         "karo", "karein", "kaunsi", "konsi", "konsa", "konsha", "kon", "konse", "lo", "loko",
         "ab", "abhi", "now", "aaj", "latest", "new", "launch", "lounch", "launched", "lunched",
         "hogyi", "hai", "he", "hoga", "kya", "kyu", "kaise", "which", "who", "where", "why", "how",
-        "please", "know", "want", "need", "find", "search", "display", "list", "info", "report"
+        "please", "know", "want", "need", "find", "search", "display", "list", "info", "report",
+        # Gujarati Conversational Stop Words
+        "mane", "mara", "mate", "aapo", "apo", "aap", "app", "vishe", "vigat", "vigato", "ni", "no", "nu", "na"
     ]
 
     AUTOMOTIVE_SIGNALS = [
@@ -523,7 +572,7 @@ class GroundedLLMProvider(BaseLLMProvider):
             ("ટોયોટા", "toyota"), ("टोयोटा", "toyota"), ("મારુતિ", "maruti"), ("मारुति", "maruti"),
             ("કિયા", "kia"), ("किया", "kia"), ("થાર", "thar"), ("નેક્સન", "nexon"),
             ("ક્રેટા", "creta"), ("સેલ્ટોસ", "seltos"), ("બ્રેઝા", "brezza"), ("સફારી", "safari"),
-            ("સ્કોર્પિયો", "scorpio"), ("ફોર્ચ્યુનર", "fortuner")
+            ("સ્કોર્પિયો", "scorpio"), ("ફોર્ચ્યુનર", "fortuner"), ("સિએરા", "sierra"), ("સિયેરા", "sierra"), ("सिएरा", "sierra")
         ]
         for indic_term, eng_term in indic_car_tokens:
             p = p.replace(indic_term, eng_term)
@@ -534,22 +583,18 @@ class GroundedLLMProvider(BaseLLMProvider):
 
         # 1. Check priority specific multi-word model list FIRST (e.g. "tata nano" before "tata")
         for m in self.SPECIFIC_MODEL_PRIORITY:
-            if m in p:
+            if re.search(r'\b' + re.escape(m) + r'\b', p):
                 return m
 
-        # 2. Check typo corrections
+        # 2. Check typo corrections with word boundary matching
         for typo, correct in self.TYPO_CORRECTIONS.items():
-            if typo in p:
+            if re.search(r'\b' + re.escape(typo) + r'\b', p):
                 return correct.lower()
 
-        # 3. Check general brands and models (with word boundary regex for short names)
+        # 3. Check general brands and models (with word boundary regex)
         for m in self.KNOWN_BRANDS_AND_MODELS:
-            if len(m) <= 3:
-                if re.search(r'\b' + re.escape(m) + r'\b', p):
-                    return m
-            else:
-                if m in p:
-                    return m
+            if re.search(r'\b' + re.escape(m) + r'\b', p):
+                return m
 
         # Return None if no known car brand or model matched — NEVER fall back to arbitrary tokens!
         return None
@@ -1968,10 +2013,9 @@ class GroundedLLMProvider(BaseLLMProvider):
             return self._generate_category_response("famous", prompt, web_results)
 
         # 5. Rolls-Royce / RR Acronym Query (ONLY when asking specifically about Rolls-Royce brand/lineup alone, NOT when comparing against another car)
-        other_brands = ["bmw", "mercedes", "audi", "bentley", "porsche", "maybach", "ferrari", "lamborghini", "jaguar"]
-        has_other_brand = any(b in p_lower for b in other_brands)
-        _p_words = set(p_lower.split())
-        if not is_comparison and not has_other_brand and ("rr" in _p_words or any(w in p_lower for w in ["rolls royce", "rolls-royce", "rolls royal", "rolls royals"])):
+        other_brands = ["bmw", "mercedes", "audi", "bentley", "porsche", "maybach", "ferrari", "lamborghini", "jaguar", "tata", "mahindra", "hyundai", "toyota", "maruti", "kia", "honda", "ford", "skoda", "volkswagen"]
+        has_other_brand = any(re.search(r'\b' + re.escape(b) + r'\b', p_lower) for b in other_brands)
+        if not is_comparison and not has_other_brand and re.search(r'\b(?:rr|rolls[-\s]?royce|rolls[-\s]?royals?)\b', p_lower):
             return self._generate_category_response("rolls_royce", prompt, web_results)
 
         # 6. Dynamic Car Launch & Category Synthesizer (extracts ANY year dynamically: 2023, 2024, 2025, 2026, 2027, etc.)
@@ -2747,6 +2791,8 @@ class GroundedLLMProvider(BaseLLMProvider):
         # ── Specific model abbreviation corrections ───────────────────────────
         if "nano" in key_term or "nano" in p_lower:
             key_term = "nano"
+        elif "sierra" in key_term or "sierra" in p_lower:
+            key_term = "sierra"
         elif "xuv700" in key_term or "xuv700" in p_lower or "xuv 700" in p_lower:
             key_term = "xuv700"
         elif "thar" in key_term or "thar" in p_lower:

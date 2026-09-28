@@ -125,3 +125,25 @@ def test_scenario_vehicle_media_galleries():
         assert gallery is not None
         assert len(gallery["images"]) >= 1
         assert all("url" in img and "caption" in img for img in gallery["images"])
+
+
+def test_scenario_tata_sierra_gujarati_and_hinglish():
+    """Verify that 'mane Tata Sierra ni details app' returns Tata Sierra and NEVER Rolls-Royce."""
+    llm = get_llm_provider()
+
+    # User's exact prompt from screenshot
+    resp = llm.generate("mane Tata Sierra ni details app", "")
+    assert "Tata Sierra" in resp
+    assert "Rolls-Royce" not in resp
+    assert "Phantom" not in resp
+    assert "Cullinan" not in resp
+
+    # Pure Gujarati script
+    resp_gu = llm.generate("મને ટાટા સિએરા ની વિગતો આપ", "")
+    assert "Tata Sierra" in resp_gu
+    assert "Rolls-Royce" not in resp_gu
+
+    # Rolls Royce must still work correctly
+    resp_rr = llm.generate("Rolls Royce models", "")
+    assert "Rolls-Royce" in resp_rr
+

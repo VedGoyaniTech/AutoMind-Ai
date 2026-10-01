@@ -10,6 +10,7 @@ import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { getCarDetail, saveCar, unsaveCar } from '../api/cars';
 import { CarDetail } from '../types/car';
+import { LiveIntelligenceSection } from '../components/cars/LiveIntelligenceSection';
 
 export const CarDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,7 +18,7 @@ export const CarDetailPage: React.FC = () => {
 
   const [car, setCar] = useState<CarDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'specs' | 'features' | 'safety' | 'sources'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'intelligence' | 'specs' | 'features' | 'safety' | 'sources'>('overview');
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -172,23 +173,40 @@ export const CarDetailPage: React.FC = () => {
 
         {/* Tab Navigation */}
         <div className="border-b border-slate-800 flex items-center gap-6 text-sm font-medium text-slate-400">
-          {(['overview', 'specs', 'features', 'safety', 'sources'] as const).map((tab) => (
+          {(['overview', 'intelligence', 'specs', 'features', 'safety', 'sources'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`pb-3 capitalize transition-all border-b-2 cursor-pointer ${
+              className={`pb-3 capitalize transition-all border-b-2 cursor-pointer flex items-center gap-1.5 ${
                 activeTab === tab
                   ? 'border-indigo-500 text-indigo-400 font-bold'
                   : 'border-transparent hover:text-slate-200'
               }`}
             >
-              {tab}
+              {tab === 'intelligence' ? (
+                <>
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                  Live Intelligence
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                </>
+              ) : (
+                tab
+              )}
             </button>
           ))}
         </div>
 
         {/* Tab Content */}
         <div>
+          {activeTab === 'intelligence' && (
+            <LiveIntelligenceSection
+              make={car.manufacturer_name}
+              model={car.model_name}
+              year={car.model_year}
+              initialCity={car.country === 'India' ? 'Ahmedabad' : 'Ahmedabad'}
+            />
+          )}
+
           {activeTab === 'overview' && (
             <div className="space-y-6">
               <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">

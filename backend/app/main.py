@@ -23,7 +23,12 @@ logger = logging.getLogger("automind.main")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Initializing AutoMind AI Backend...")
-    logger.info("Database schema lifecycle is managed via Alembic migrations.")
+    try:
+        # Create any newly defined tables safely (e.g. intelligence cache & snapshots)
+        Base.metadata.create_all(bind=engine)
+        logger.info("Database schema verified and synced successfully.")
+    except Exception as e:
+        logger.warning(f"Database schema initialization warning: {e}")
     yield
     logger.info("AutoMind AI Backend shutting down.")
 

@@ -76,6 +76,41 @@ def search_cars(
     }
 
 
+@router.get("/intelligence")
+async def get_car_intelligence(
+    make: str = Query(..., description="Vehicle manufacturer name (e.g. Toyota, Hyundai, Tata)"),
+    model: str = Query(..., description="Vehicle model name (e.g. Fortuner, Creta, Nexon)"),
+    year: Optional[int] = Query(None, ge=1980, le=2030, description="Model year"),
+    city: str = Query("Ahmedabad", description="Target city for pricing, weather, and fuel rates"),
+    vin: Optional[str] = Query(None, description="17-character VIN for NHTSA vPIC / Vehicles.dev decoding"),
+    force_refresh: bool = Query(False, description="Force fresh fetch from external providers"),
+    db: Session = Depends(get_db)
+):
+    """
+    Unified Real-Time AI Car Intelligence federating:
+    - Specifications & VIN decoding (Vehicles.dev / NHTSA vPIC)
+    - Indian new-car pricing & statutory taxes (GJ, MH, DL, KA)
+    - Used-car market snapshots & statistics (DataForCars)
+    - Automotive news (NewsAPI)
+    - Live weather telemetry & driving conditions (Open-Meteo)
+    - Fuel rates in India (IndianAPI / APIMitra)
+    - Traffic conditions (INRIX)
+    - Grounded AI executive summary (AutoMind LLM)
+    """
+    from app.services.intelligence import CarIntelligenceService
+    service = CarIntelligenceService()
+    result = await service.get_car_intelligence(
+        make=make,
+        model=model,
+        year=year,
+        city=city,
+        vin=vin,
+        db=db,
+        force_refresh=force_refresh
+    )
+    return result
+
+
 @router.get("/{id}", response_model=CarDetailResponse)
 def get_car_detail(id: int, db: Session = Depends(get_db)):
     repo = CarRepository(db)

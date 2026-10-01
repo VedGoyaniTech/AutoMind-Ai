@@ -15,6 +15,11 @@ from app.models.provenance import (
     EVChargingStation,
     OwnershipCostAssumption,
 )
+from app.models.intelligence import (
+    CarIntelligenceCache,
+    MarketListingSnapshot,
+    MarketStatisticsSnapshot,
+)
 
 __all__ = [
     "Base",
@@ -37,6 +42,9 @@ __all__ = [
     "RecallCampaign",
     "EVChargingStation",
     "OwnershipCostAssumption",
+    "CarIntelligenceCache",
+    "MarketListingSnapshot",
+    "MarketStatisticsSnapshot",
 ]
 
 

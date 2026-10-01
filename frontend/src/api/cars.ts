@@ -30,3 +30,15 @@ export const unsaveCar = async (variant_id: number) => {
   const res = await api.delete(`/saved/${variant_id}`);
   return res.data;
 };
+
+export const getCarIntelligence = async (params: {
+  make: string;
+  model: string;
+  year?: number;
+  city?: string;
+  vin?: string;
+  force_refresh?: boolean;
+}) => {
+  const res = await api.get('/cars/intelligence', { params });
+  return res.data;
+};

@@ -69,6 +69,37 @@ class Settings(BaseSettings):
     # Ingestion Settings
     INGESTION_BATCH_SIZE: int = 1000
 
+    # External Data Provider API Keys & Settings
+    VEHICLES_API_KEY: Optional[str] = None
+    VEHICLES_DEV_BASE_URL: str = "https://api.vehicles.dev"
+    NHTSA_BASE_URL: str = "https://vpic.nhtsa.dot.gov/api"
+
+    DATAFORCARS_API_KEY: Optional[str] = None
+    DATAFORCARS_BASE_URL: str = "https://api.dataforcars.com"
+
+    INDIA_PRICING_API_KEY: Optional[str] = None
+
+    NEWSAPI_KEY: Optional[str] = None
+    NEWSAPI_BASE_URL: str = "https://newsapi.org/v2"
+
+    FUEL_API_KEY: Optional[str] = None
+    INDIAN_API_BASE_URL: str = "https://indianapi.in"
+
+    TRAFFIC_API_KEY: Optional[str] = None
+    INRIX_BASE_URL: str = "https://api.iq.inrix.com"
+
+    OPEN_METEO_BASE_URL: str = "https://api.open-meteo.com/v1/forecast"
+    OPEN_METEO_GEOCODING_URL: str = "https://geocoding-api.open-meteo.com/v1/search"
+
+    # Timeouts & Cache TTLs (seconds)
+    PROVIDER_REQUEST_TIMEOUT_SECONDS: float = 6.0
+    INTELLIGENCE_CACHE_TTL_SECONDS: int = 1800
+    WEATHER_CACHE_TTL_SECONDS: int = 900
+    FUEL_CACHE_TTL_SECONDS: int = 3600
+    NEWS_CACHE_TTL_SECONDS: int = 1800
+    LISTINGS_CACHE_TTL_SECONDS: int = 1800
+    SPECS_CACHE_TTL_SECONDS: int = 86400
+
     # CORS Configuration
     FRONTEND_URL: str = "http://localhost:5173"
     CORS_ALLOWED_ORIGINS: Optional[str] = None

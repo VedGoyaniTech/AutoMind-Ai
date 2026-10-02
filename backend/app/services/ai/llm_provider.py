@@ -3162,19 +3162,19 @@ class ConfigurableAPIProvider(BaseLLMProvider):
     )
 
     def __init__(self):
-        openai_key = os.getenv("OPENAI_API_KEY")
-        self.api_key = os.getenv("LLM_API_KEY") or openai_key or "EMPTY"
-        default_base = "https://api.openai.com/v1" if (openai_key or self.api_key.startswith("sk-")) else "http://localhost:11434/v1"
-        self.api_base = os.getenv("LLM_API_BASE_URL", default_base)
-        default_model = "gpt-4o-mini" if (openai_key or self.api_key.startswith("sk-")) else settings.LLM_MODEL_ID
-        self.model_name = os.getenv("LLM_MODEL_NAME", default_model)
+        self.api_key = settings.LLM_API_KEY or os.getenv("LLM_API_KEY") or settings.OPENAI_API_KEY or os.getenv("OPENAI_API_KEY") or "EMPTY"
+        self.api_base = settings.LLM_API_BASE_URL or os.getenv("LLM_API_BASE_URL", "https://api.groq.com/openai/v1")
+        self.model_name = settings.LLM_MODEL_NAME or os.getenv("LLM_MODEL_NAME", "qwen/qwen3.8-27b")
         self._fallback = LocalAutoMindProvider()
 
     def generate(self, prompt: str, context: str) -> str:
         try:
             import urllib.request
             import json
-            headers = {"Content-Type": "application/json"}
+            headers = {
+                "Content-Type": "application/json",
+                "User-Agent": "AutoMindAI/1.0 (Automotive AI Assistant)"
+            }
             if self.api_key and self.api_key != "EMPTY":
                 headers["Authorization"] = f"Bearer {self.api_key}"
 
@@ -3209,14 +3209,20 @@ class ConfigurableAPIProvider(BaseLLMProvider):
 def get_llm_provider() -> BaseLLMProvider:
     """
     Returns the configured LLM provider according to environment configuration:
-    - 'local' (default): LocalAutoMindProvider (curated deterministic automotive grounding engine)
+    - 'api' / 'groq' / 'openai': ConfigurableAPIProvider (Groq, OpenAI, or compatible endpoint)
     - 'qwen_local': QwenLocalProvider (local PyTorch/HuggingFace weights)
-    - 'api': ConfigurableAPIProvider (OpenAI / vLLM / Ollama endpoint)
+    - 'local' / 'grounded': LocalAutoMindProvider (curated deterministic automotive grounding engine)
     """
-    provider_type = os.getenv("LLM_PROVIDER", settings.LLM_PROVIDER).lower().strip()
-    if provider_type == "qwen_local":
-        return QwenLocalProvider()
-    elif provider_type in ["api", "openai", "vllm", "ollama"]:
+    has_api_key = bool(
+        (settings.LLM_API_KEY and settings.LLM_API_KEY != "EMPTY")
+        or os.getenv("LLM_API_KEY")
+        or settings.OPENAI_API_KEY
+        or os.getenv("OPENAI_API_KEY")
+    )
+
+    if has_api_key:
         return ConfigurableAPIProvider()
+    elif settings.LLM_PROVIDER == "qwen_local" or os.getenv("LLM_PROVIDER") == "qwen_local":
+        return QwenLocalProvider()
     return LocalAutoMindProvider()
 

@@ -49,6 +49,10 @@ class Settings(BaseSettings):
     # AI & LLM Settings
     LLM_PROVIDER: str = "local"
     LLM_MODEL_ID: str = "qwen_lora_v4"
+    LLM_API_KEY: Optional[str] = None
+    LLM_API_BASE_URL: str = "https://api.groq.com/openai/v1"
+    LLM_MODEL_NAME: str = "qwen/qwen3.8-27b"
+    OPENAI_API_KEY: Optional[str] = None
     EMBEDDING_MODEL_ID: str = "all-MiniLM-L6-v2"
 
     # Vector Store Settings

@@ -148,7 +148,8 @@ class GroundedLLMProvider(BaseLLMProvider):
         "xuv 700": "Mahindra XUV700", "xuv700": "Mahindra XUV700", "mahindra xuv700": "Mahindra XUV700",
         "xuv 400": "Mahindra XUV400", "xuv 300": "Mahindra XUV300", "xuv 3xo": "Mahindra XUV 3XO",
         "tata sierra": "Tata Sierra", "sierra": "Tata Sierra", "sierra ev": "Tata Sierra EV",
-        "ટાટા સિએરા": "Tata Sierra", "સિએરા": "Tata Sierra", "સિયેરા": "Tata Sierra", "सिएरा": "Tata Sierra", "टाटा सिएरा": "Tata Sierra"
+        "ટાટા સિએરા": "Tata Sierra", "સિએરા": "Tata Sierra", "સિયેરા": "Tata Sierra", "सिएरा": "Tata Sierra", "टाटा सिएरा": "Tata Sierra",
+        "bantly": "Bentley", "bently": "Bentley", "bentli": "Bentley", "बैंटली": "Bentley", "બેન્ટલી": "Bentley"
     }
 
     MODEL_KNOWLEDGE_BASE = {

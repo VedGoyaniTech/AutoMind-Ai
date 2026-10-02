@@ -3162,9 +3162,12 @@ class ConfigurableAPIProvider(BaseLLMProvider):
     )
 
     def __init__(self):
-        self.api_base = os.getenv("LLM_API_BASE_URL", "http://localhost:11434/v1")
-        self.api_key = os.getenv("LLM_API_KEY", "EMPTY")
-        self.model_name = os.getenv("LLM_MODEL_NAME", settings.LLM_MODEL_ID)
+        openai_key = os.getenv("OPENAI_API_KEY")
+        self.api_key = os.getenv("LLM_API_KEY") or openai_key or "EMPTY"
+        default_base = "https://api.openai.com/v1" if (openai_key or self.api_key.startswith("sk-")) else "http://localhost:11434/v1"
+        self.api_base = os.getenv("LLM_API_BASE_URL", default_base)
+        default_model = "gpt-4o-mini" if (openai_key or self.api_key.startswith("sk-")) else settings.LLM_MODEL_ID
+        self.model_name = os.getenv("LLM_MODEL_NAME", default_model)
         self._fallback = LocalAutoMindProvider()
 
     def generate(self, prompt: str, context: str) -> str:

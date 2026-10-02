@@ -3154,11 +3154,17 @@ class ConfigurableAPIProvider(BaseLLMProvider):
     Uses environment variables (LLM_API_BASE_URL, LLM_API_KEY, LLM_MODEL_NAME) with zero hardcoded keys.
     """
 
-    STRICT_SYSTEM_PROMPT = (
-        "You are AutoMind AI, a grounded automotive intelligence expert.\n"
-        "You must answer strictly from the provided evidence. Do not invent vehicle specifications, "
-        "prices, safety ratings, launch dates, or features. If the retrieved evidence does not support a claim, "
-        "state clearly that the information is unavailable."
+    SYSTEM_PROMPT = (
+        "You are AutoMind AI, an elite automotive research intelligence assistant and car expert.\n"
+        "Your mission is to provide accurate, comprehensive, and helpful automotive information to users.\n\n"
+        "Guidelines:\n"
+        "1. When the user asks for car details, prices, specifications, comparisons, or recommendations, "
+        "provide a clear, structured, and informative breakdown (e.g. Model lineup, Engine specs, Horsepower, "
+        "Transmission, Key Features, and Estimated Ex-Showroom / On-Road pricing in India (₹ Lakh / ₹ Crore) or Global ($ USD) where applicable).\n"
+        "2. Use the provided reference context as primary database evidence. If the specific car or model is not explicitly detailed in the context snippets, seamlessly leverage your comprehensive automotive knowledge to answer the user's question accurately and helpfully.\n"
+        "3. NEVER output robotic refusal messages like 'Information Unavailable', 'Extracted constraints specify is_luxury: False', or 'The provided evidence context is empty'. Always provide a practical, well-structured automotive answer.\n"
+        "4. If the user writes in Hindi, Hinglish, or Gujarati, answer helpfully in friendly Hinglish/Hindi mixed with clear English automotive terms.\n"
+        "5. Use Markdown with emojis, clean tables, and bold headers to make the analysis clear and attractive."
     )
 
     def __init__(self):
@@ -3178,13 +3184,26 @@ class ConfigurableAPIProvider(BaseLLMProvider):
             if self.api_key and self.api_key != "EMPTY":
                 headers["Authorization"] = f"Bearer {self.api_key}"
 
+            # Enrich context with curated ground truth if target brand is in knowledge base
+            p_lower = prompt.lower()
+            for k_brand, k_data in GroundedLLMProvider.MODEL_KNOWLEDGE_BASE.items():
+                if k_brand in p_lower:
+                    brand_info = json.dumps(k_data.get("models") or k_data.get("key_specs") or {})
+                    context = (context or "") + f"\n\nVERIFIED AUTOMIND DATABASE SPECS FOR {k_data.get('brand', k_brand)}:\n{brand_info}"
+                    break
+
+            user_content = f"User Question: {prompt}"
+            if context and context.strip():
+                user_content = f"Reference Context / Database Evidence:\n{context}\n\nUser Question: {prompt}"
+
             payload = {
                 "model": self.model_name,
                 "messages": [
-                    {"role": "system", "content": self.STRICT_SYSTEM_PROMPT},
-                    {"role": "user", "content": f"EVIDENCE CONTEXT:\n{context}\n\nUSER QUESTION: {prompt}"}
+                    {"role": "system", "content": self.SYSTEM_PROMPT},
+                    {"role": "user", "content": user_content}
                 ],
-                "temperature": 0.1
+                "temperature": 0.3,
+                "max_tokens": 800
             }
 
             req = urllib.request.Request(
@@ -3192,7 +3211,7 @@ class ConfigurableAPIProvider(BaseLLMProvider):
                 data=json.dumps(payload).encode("utf-8"),
                 headers=headers
             )
-            with urllib.request.urlopen(req, timeout=10.0) as resp:
+            with urllib.request.urlopen(req, timeout=15.0) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 return data["choices"][0]["message"]["content"]
         except Exception as e:

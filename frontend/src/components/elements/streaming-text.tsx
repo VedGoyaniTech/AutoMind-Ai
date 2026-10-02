@@ -91,6 +91,19 @@ export function StreamingText({
               )}
             </div>
           ),
+          code: ({ node, className, children, ...props }: any) => {
+            const textContent = String(children);
+            if (textContent.includes("Manufacturer Claim") || textContent.includes("manufacturer_claim")) {
+              return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-300">🧪 {children}</span>;
+            }
+            if (textContent.includes("Independently Measured") || textContent.includes("independently_measured") || textContent.includes("Officially Recognized") || textContent.includes("officially_recognized_record")) {
+              return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-300">✅ {children}</span>;
+            }
+            if (textContent.includes("Estimated") || textContent.includes("estimated")) {
+              return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-50 text-blue-800 border border-blue-300">📊 {children}</span>;
+            }
+            return <code className="px-1.5 py-0.5 bg-[#F2EFE9] text-[#7A3E1D] rounded font-mono text-xs" {...props}>{children}</code>;
+          },
         }}
       >
         {cleanText}

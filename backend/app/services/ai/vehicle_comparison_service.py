@@ -332,6 +332,90 @@ VERIFIED_VEHICLE_DATABASE: Dict[str, Dict[str, Any]] = {
         "safety": "Mahindra INGLO Dedicated EV Architecture, Level 2+ ADAS",
         "key_highlights": "Aero-sculpted sports coupe body, fighter jet cockpit driver enclosure, semi-active suspension",
         "verdict_point": "Best for razor-sharp sports coupe aerodynamics, driver-centric cockpit, and agile RWD balance."
+    },
+    "bentley continental gt": {
+        "canonical_name": "Bentley Continental GT (V8 / Speed)",
+        "brand": "Bentley",
+        "segment": "Ultra-Luxury Grand Tourer Coupe",
+        "price_range": "₹5.23 – ₹6.00 Crore (Ex-Showroom India)",
+        "engine": "4.0L Twin-Turbo V8 (542 HP / 770 Nm) / 6.0L Twin-Turbo W12 Speed (650 HP / 900 Nm)",
+        "transmission": "8-Speed Dual-Clutch Automatic (AWD)",
+        "mileage": "7.8 – 9.2 km/l",
+        "safety": "Bentley Active Safeguard Suite, 8 Airbags, Night Vision, Head-Up Display",
+        "key_highlights": "Rotating Dashboard Display (Analog/Touchscreen/Veneer), Handcrafted Mulliner leather, 318 km/h top speed",
+        "verdict_point": "Best for effortless cross-continental grand touring agility, twin-turbo V8 rumble, and peerless British craftsmanship."
+    },
+    "bentley flying spur": {
+        "canonical_name": "Bentley Flying Spur (V8 / Hybrid)",
+        "brand": "Bentley",
+        "segment": "Super-Luxury Executive Limousine",
+        "price_range": "₹5.25 – ₹7.60 Crore (Ex-Showroom India)",
+        "engine": "2.9L V6 PHEV (536 HP / 750 Nm) / 4.0L Twin-Turbo V8 (542 HP / 770 Nm)",
+        "transmission": "8-Speed Dual-Clutch Automatic (All-Wheel Steering & AWD)",
+        "mileage": "10.2 km/l (PHEV) / 8.0 km/l (V8)",
+        "safety": "Bentley Safeguard Plus, 8 Airbags, 360-degree Top View Camera",
+        "key_highlights": "All-wheel steering for city maneuverability, Touchscreen Remote for rear passengers, three-chamber air suspension",
+        "verdict_point": "Best for executive chauffeur elegance combined with intoxicating driver performance and electric-hybrid urban silence."
+    },
+    "bentley bentayga": {
+        "canonical_name": "Bentley Bentayga (V8 / EWB)",
+        "brand": "Bentley",
+        "segment": "Super-Luxury SUV",
+        "price_range": "₹4.10 – ₹5.00 Crore (Ex-Showroom India)",
+        "engine": "4.0L Twin-Turbo V8 (542 HP / 770 Nm)",
+        "transmission": "8-Speed Automatic with Permanent AWD & Torsen Differential",
+        "mileage": "8.5 km/l",
+        "safety": "Bentley Touring & City Specification, 8 Airbags, Active Roll Control (48V)",
+        "key_highlights": "Airline Seat Specification in EWB (Extended Wheelbase), 48V active anti-roll bars, handcrafted Naim audio",
+        "verdict_point": "Best for supreme road presence, commanding ride height, and go-anywhere super-luxury family travel."
+    },
+    "ferrari 296 gtb": {
+        "canonical_name": "Ferrari 296 GTB",
+        "brand": "Ferrari",
+        "segment": "Mid-Rear-Engined Plug-in Hybrid Supercar",
+        "price_range": "₹5.40 – ₹6.00 Crore (Ex-Showroom India)",
+        "engine": "3.0L 120-degree Twin-Turbo V6 + Electric Motor (830 cv / 740 Nm)",
+        "transmission": "8-Speed Dual-Clutch F1 Transmission",
+        "mileage": "8.0 km/l (Hybrid cycle)",
+        "safety": "Ferrari Side Slip Control (eSSC), 6 Airbags, ABS Evo",
+        "key_highlights": "0–100 km/h in 2.9s, 8,500 rpm screaming redline, 25 km all-electric silent city drive mode",
+        "verdict_point": "Best for visceral Italian mid-engine handling sharpness, acoustic 'piccolo V12' scream, and instantaneous hybrid torque."
+    },
+    "bugatti chiron super sport 300+": {
+        "canonical_name": "Bugatti Chiron Super Sport 300+",
+        "brand": "Bugatti",
+        "segment": "Record-Breaking Hypercar",
+        "price_range": "~$3.90 Million USD (~₹32.5 Crore ex-factory before import duties)",
+        "engine": "8.0L Quad-Turbo W16 (1,600 PS / 1,600 Nm)",
+        "transmission": "7-Speed Dual-Clutch Automatic (Permanent AWD)",
+        "mileage": "Not available in dataset",
+        "safety": "Full Carbon-Fiber Monocoque, Michelin Pilot Sport Cup 2 bespoke reinforced tires",
+        "key_highlights": "Longtail aerodynamic carbon bodywork, independently measured 490.48 km/h (304.77 mph) top speed at Ehra-Lessien",
+        "verdict_point": "Best for historical record engineering as the first production-derived hypercar to break the 300 mph speed barrier."
+    },
+    "ssc tuatara": {
+        "canonical_name": "SSC Tuatara",
+        "brand": "SSC North America",
+        "segment": "Bespoke American Hypercar",
+        "price_range": "~$1.90 Million USD (~₹16.0 Crore ex-factory before import duties)",
+        "engine": "5.9L Flat-Plane Crank Twin-Turbo V8 (1,750 HP on E85 / 1,350 HP on 91 Octane)",
+        "transmission": "C-NAT 7-Speed Automated Manual with Sub-100ms Shifting",
+        "mileage": "Not available in dataset",
+        "safety": "Full Aerospace-Grade Carbon Monocoque",
+        "key_highlights": "Independently measured two-way average 455.3 km/h (282.9 mph) at Johnny Bohmer Proving Grounds (Racelogic verified)",
+        "verdict_point": "Best for verified two-way production speed performance and ultra-sleek aerospace-derived aerodynamics."
+    },
+    "koenigsegg agera rs": {
+        "canonical_name": "Koenigsegg Agera RS",
+        "brand": "Koenigsegg",
+        "segment": "World-Record Production Hypercar",
+        "price_range": "~$2.50 Million USD (Historical / Collector Value $5M–$10M+)",
+        "engine": "5.0L Twin-Turbo V8 1MW Upgrade (1,360 HP / 1,371 Nm)",
+        "transmission": "7-Speed Paddle-Shift with Electronic Differential",
+        "mileage": "Not available in dataset",
+        "safety": "Pre-preg Carbon fiber/kevlar monocoque with honeycomb core",
+        "key_highlights": "Officially recognized Guinness World Record: two-way average 447.19 km/h (277.87 mph) on Route 160 Nevada",
+        "verdict_point": "Best for officially certified two-way public road production top-speed record validation."
     }
 }
 
@@ -456,11 +540,88 @@ MODEL_ALIASES: Dict[str, str] = {
     "koenigsegg": "koenigsegg jesko absolut",
     "venom f5": "hennessey venom f5",
     "hennessey venom f5": "hennessey venom f5",
-    "hennessey venom": "hennessey venom f5"
+    "hennessey venom": "hennessey venom f5",
+
+    # Bentley Models
+    "bentley continental gt": "bentley continental gt",
+    "bentley continental": "bentley continental gt",
+    "continental gt": "bentley continental gt",
+    "continental": "bentley continental gt",
+    "bently continental": "bentley continental gt",
+    "bentley flying spur": "bentley flying spur",
+    "flying spur": "bentley flying spur",
+    "bently flying spur": "bentley flying spur",
+    "bentley bentayga": "bentley bentayga",
+    "bentayga": "bentley bentayga",
+    "bently bentayga": "bentley bentayga",
+
+    # Ferrari Models
+    "ferrari 296 gtb": "ferrari 296 gtb",
+    "ferrari 296": "ferrari 296 gtb",
+    "296 gtb": "ferrari 296 gtb",
+    "296gtb": "ferrari 296 gtb",
+
+    # Hypercar Records
+    "bugatti chiron super sport 300+": "bugatti chiron super sport 300+",
+    "bugatti chiron": "bugatti chiron super sport 300+",
+    "chiron super sport 300+": "bugatti chiron super sport 300+",
+    "chiron 300+": "bugatti chiron super sport 300+",
+    "chiron": "bugatti chiron super sport 300+",
+    "ssc tuatara": "ssc tuatara",
+    "tuatara": "ssc tuatara",
+    "koenigsegg agera rs": "koenigsegg agera rs",
+    "agera rs": "koenigsegg agera rs",
+    "agera": "koenigsegg agera rs"
 }
 
 # Canonical Brands with their models for BRAND_ONLY clarification
 BRAND_CATALOG: Dict[str, Dict[str, Any]] = {
+    "bentley": {
+        "brand_name": "Bentley",
+        "aliases": ["bentley", "bently", "bantly", "bentli", "બેન્ટલી", "बैंटली", "બેટલી"],
+        "models": [
+            "Bentley Continental GT",
+            "Bentley Flying Spur",
+            "Bentley Bentayga"
+        ]
+    },
+    "ferrari": {
+        "brand_name": "Ferrari",
+        "aliases": ["ferrari", "ferari", "ફેરાંરી", "फेरारी"],
+        "models": [
+            "Ferrari 296 GTB",
+            "Ferrari SF90 Stradale",
+            "Ferrari Roma"
+        ]
+    },
+    "lamborghini": {
+        "brand_name": "Lamborghini",
+        "aliases": ["lamborghini", "lamborgini", "lambo", "લેમ્બોર્ગિની", "लेम्बोर्गिनी"],
+        "models": [
+            "Lamborghini Urus",
+            "Lamborghini Revuelto",
+            "Lamborghini Huracan"
+        ]
+    },
+    "porsche": {
+        "brand_name": "Porsche",
+        "aliases": ["porsche", "porche", "porsh", "પોર્શ", "पोर्श"],
+        "models": [
+            "Porsche 911",
+            "Porsche Cayenne",
+            "Porsche Panamera",
+            "Porsche Taycan"
+        ]
+    },
+    "bugatti": {
+        "brand_name": "Bugatti",
+        "aliases": ["bugatti", "bugati", "બુગાટી", "बुगाटी"],
+        "models": [
+            "Bugatti Chiron Super Sport 300+",
+            "Bugatti Tourbillon",
+            "Bugatti Bolide"
+        ]
+    },
     "rolls-royce": {
         "brand_name": "Rolls-Royce",
         "aliases": ["rolls royce", "rolls-royce", "rolls", "royce", "rolls royals", "rolls-royals", "rolls royal", "rolls-royal", "rollsroyals", "rollsroyal", "royals", "rr"],

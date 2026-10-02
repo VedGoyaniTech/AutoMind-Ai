@@ -2000,10 +2000,33 @@ class GroundedLLMProvider(BaseLLMProvider):
         is_comparison = (
             comparison_service.detect_comparison_intent(prompt)
             or bool(re.search(r'\b(?:vs|versus|v/s|compare|comparison|cpmarsion|cpmarison|comarsion|comparision|compairison|compared\s+to|differ(?:ence)?|farak|farq|antar|tulna|sarxamni)\b', p_lower))
-            or any(w in p_lower for w in ["अंतर", "तुलना", "તફાવત", "સરખામણી", "માંથી કઈ", "से कौन", "farak", "farq", "difference", "cpmarsion", "cpmarison", "comarsion"])
+            or any(w in p_lower for w in ["अंतर", "तुलना", "તફાવત", "સરખામણી", "માંથી કઈ", "સે કોન", "से कौन", "farak", "farq", "difference", "cpmarsion", "cpmarison", "comarsion"])
         )
         if is_comparison:
             return self._generate_versus_comparison_response(prompt, web_results)
+
+        # 2a. Fastest Cars & Top Speed Records (Strict Factual Verification)
+        if any(w in p_lower for w in ["fastest car", "fastest cars", "top speed record", "speed record", "fastest vehicle", "duniya ki sabse fast", "world's fastest"]):
+            from app.services.ai.claim_validator import claim_validation_service
+            return claim_validation_service.generate_speed_ranking_table()
+
+        # 2b. Indian CBU Import / Customs Duty calculation
+        if any(w in p_lower for w in ["import car to india", "import duty", "cbu duty", "customs duty on car", "private import", "import cost in india"]):
+            from app.services.ai.claim_validator import claim_validation_service
+            cbu = claim_validation_service.calculate_indian_cbu_import_cost(200000)
+            return (
+                "## 🚢 Indian CBU Car Import Duty Structure & Statutory Cost Breakdown\n\n"
+                f"- **Base CIF Benchmark:** ${cbu.cif_foreign:,.2f} USD (~₹{cbu.cif_inr/100000.0:.2f} Lakh)\n"
+                f"- **Basic Customs Duty (BCD @ {int(cbu.bcd_rate*100)}%):** ₹{cbu.bcd_amount_inr/100000.0:.2f} Lakh\n"
+                f"- **Social Welfare Surcharge (SWS @ 10% of BCD):** ₹{cbu.sws_amount_inr/100000.0:.2f} Lakh\n"
+                f"- **IGST & Compensation Cess (~50% on CIF+BCD+SWS):** ₹{cbu.igst_cess_amount_inr/100000.0:.2f} Lakh\n"
+                f"- **Landed Cost (Pre-RTO):** ₹{cbu.landed_cost_pre_rto_inr/100000.0:.2f} Lakh (~2.1x CIF)\n"
+                f"- **State Road Tax / Registration (RTO ~15%):** ₹{cbu.rto_registration_amount_inr/100000.0:.2f} Lakh\n"
+                f"- **Estimated Total On-Road Import Cost:** **₹{cbu.estimated_total_on_road_inr/100000.0:.2f} Lakh (~₹{cbu.estimated_total_on_road_inr/10000000.0:.2f} Crore)**\n\n"
+                f"> [!NOTE]\n"
+                f"> **Verification Status:** `{cbu.status.value}`\n"
+                f"> {cbu.disclaimer}"
+            )
 
         # 3. Image Request Check (e.g. "super car image", "ferrari photo", "show images of rolls royce")
         if any(w in p_lower for w in ["image", "images", "photo", "photos", "picture", "pictures", "pic", "pics"]):
@@ -3150,21 +3173,33 @@ class QwenLocalProvider(BaseLLMProvider):
 
 class ConfigurableAPIProvider(BaseLLMProvider):
     """
-    Configurable API-based LLM Provider (e.g. OpenAI compatible, vLLM endpoint, or local Ollama).
+    Configurable API-based LLM Provider (e.g. Groq, OpenAI compatible, vLLM endpoint, or local Ollama).
     Uses environment variables (LLM_API_BASE_URL, LLM_API_KEY, LLM_MODEL_NAME) with zero hardcoded keys.
     """
 
     SYSTEM_PROMPT = (
         "You are AutoMind AI, an elite automotive research intelligence assistant and car expert.\n"
-        "Your mission is to provide accurate, comprehensive, and helpful automotive information to users.\n\n"
-        "Guidelines:\n"
-        "1. When the user asks for car details, prices, specifications, comparisons, or recommendations, "
-        "provide a clear, structured, and informative breakdown (e.g. Model lineup, Engine specs, Horsepower, "
-        "Transmission, Key Features, and Estimated Ex-Showroom / On-Road pricing in India (₹ Lakh / ₹ Crore) or Global ($ USD) where applicable).\n"
-        "2. Use the provided reference context as primary database evidence. If the specific car or model is not explicitly detailed in the context snippets, seamlessly leverage your comprehensive automotive knowledge to answer the user's question accurately and helpfully.\n"
-        "3. NEVER output robotic refusal messages like 'Information Unavailable', 'Extracted constraints specify is_luxury: False', or 'The provided evidence context is empty'. Always provide a practical, well-structured automotive answer.\n"
-        "4. If the user writes in Hindi, Hinglish, or Gujarati, answer helpfully in friendly Hinglish/Hindi mixed with clear English automotive terms.\n"
-        "5. Use Markdown with emojis, clean tables, and bold headers to make the analysis clear and attractive."
+        "Your mission is to provide strictly accurate, comprehensive, and helpful automotive information.\n\n"
+        "FACTUAL ACCURACY & VERIFICATION DIRECTIVES:\n"
+        "1. Never invent vehicle specifications, engine details, prices, performance records, safety ratings, or sources.\n"
+        "2. PERFORMANCE & SPEED RECORDS:\n"
+        "   - Strictly distinguish manufacturer claims/simulations from independently measured and officially recognized records.\n"
+        "   - Manufacturer claims (e.g. Koenigsegg Jesko Absolut 531 km/h theoretical simulation, Bugatti Bolide track claim) MUST be clearly labeled as 'Manufacturer Claim' or 'Simulation Projection', not proven physical records.\n"
+        "   - Officially recognized production records require two-way verified runs (e.g. Koenigsegg Agera RS at 447.19 km/h, SSC Tuatara at 455.3 km/h).\n"
+        "   - Bugatti Chiron Super Sport 300+ at 490.48 km/h was an independently measured one-way pre-production record certified by TÜV Rheinland.\n"
+        "   - Always clearly separate top speed (aerodynamic/gearing metric) from 0–100 km/h acceleration sprint (traction/torque metric). Never combine them into a single ranking.\n"
+        "3. LUXURY VEHICLE COMPARISONS:\n"
+        "   - Present comparisons across distinct criteria: Craftsmanship & Bespoke Materials, Ride Comfort & Suspension, Powertrain Refinement & Dynamics, Technology & Digital Cockpit, and Exclusivity & Pricing.\n"
+        "   - DO NOT award an arbitrary single-winner numerical score (e.g. 9.8 vs 9.6). Instead, explain the distinct character and ideal buyer profile for each car.\n"
+        "4. INDIAN MARKET AVAILABILITY & IMPORT ESTIMATES:\n"
+        "   - Clearly state whether a vehicle is officially sold through authorized Indian dealer networks (CBU) or requires private import.\n"
+        "   - For private imports, provide the statutory CBU breakdown: CIF value, Basic Customs Duty (100% or 70%), Social Welfare Surcharge (10% of BCD), IGST + Cess (~50% on CIF+BCD+SWS), and State RTO (12%–20%). Always label the landed cost as an illustrative estimate.\n"
+        "5. LANGUAGE PRESERVATION:\n"
+        "   - If the user writes in Hindi, Hinglish, or Gujarati, answer helpfully in friendly Hinglish/Hindi mixed with clear English automotive terms.\n"
+        "6. CITATIONS & SOURCES:\n"
+        "   - Link claims to retrieved sources using [SRC-N] notation. Never fabricate URLs or cite internal database IDs as links.\n"
+        "7. STRUCTURE:\n"
+        "   - Use clean Markdown with bold headers, emojis, and comparison tables."
     )
 
     def __init__(self):
@@ -3172,20 +3207,42 @@ class ConfigurableAPIProvider(BaseLLMProvider):
         self.api_base = settings.LLM_API_BASE_URL or os.getenv("LLM_API_BASE_URL", "https://api.groq.com/openai/v1")
         self.model_name = settings.LLM_MODEL_NAME or os.getenv("LLM_MODEL_NAME", "qwen/qwen3.8-27b")
         self._fallback = LocalAutoMindProvider()
+        self._engine = self._fallback._engine
 
     def generate(self, prompt: str, context: str) -> str:
         try:
             import urllib.request
             import json
-            headers = {
-                "Content-Type": "application/json",
-                "User-Agent": "AutoMindAI/1.0 (Automotive AI Assistant)"
-            }
-            if self.api_key and self.api_key != "EMPTY":
-                headers["Authorization"] = f"Bearer {self.api_key}"
+            import time
+            from app.services.ai.claim_validator import claim_validation_service
+
+            p_lower = prompt.lower()
+
+            # 1. Deterministic Versus Comparison Service (Strict ground truth, no hallucinations)
+            if (
+                comparison_service.detect_comparison_intent(prompt)
+                or bool(re.search(r'\b(?:vs|versus|v/s|compare|comparison|difference|farak|farq|antar|tulna|sarxamni)\b', p_lower))
+                or any(w in p_lower for w in ["अंतर", "तुलना", "તફાવત", "સરખામણી", "માંથી કઈ", "से कौन"])
+            ):
+                return self._fallback.generate(prompt, context)
+
+            # 2. Year-wise and new car launch queries (Verified launches database)
+            target_years = self._engine._extract_all_target_years(prompt)
+            if target_years or self._engine._is_new_car_launch_query(prompt) or ("1842" in prompt):
+                return self._fallback.generate(prompt, context)
+
+            # 3. Fastest Cars & Top Speed Records (Strict claim vs measured separation)
+            if any(w in p_lower for w in ["fastest car", "fastest cars", "top speed record", "speed record", "fastest vehicle", "world's fastest"]):
+                return self._fallback.generate(prompt, context)
+
+            # 4. Indian CBU Import / Customs Duty calculation (Statutory formula)
+            if any(w in p_lower for w in ["import car to india", "import duty", "cbu duty", "customs duty on car", "private import", "import cost in india"]):
+                return self._fallback.generate(prompt, context)
+
+            if context and "No verified automotive records" in context and not any(k in p_lower for k in GroundedLLMProvider.MODEL_KNOWLEDGE_BASE):
+                return self._fallback.generate(prompt, context)
 
             # Enrich context with curated ground truth if target brand is in knowledge base
-            p_lower = prompt.lower()
             for k_brand, k_data in GroundedLLMProvider.MODEL_KNOWLEDGE_BASE.items():
                 if k_brand in p_lower:
                     brand_info = json.dumps(k_data.get("models") or k_data.get("key_specs") or {})
@@ -3211,11 +3268,25 @@ class ConfigurableAPIProvider(BaseLLMProvider):
                 data=json.dumps(payload).encode("utf-8"),
                 headers=headers
             )
-            with urllib.request.urlopen(req, timeout=15.0) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                return data["choices"][0]["message"]["content"]
+
+            # Retry once on transient rate limits (429) or network hiccups
+            last_err = None
+            for attempt in range(2):
+                try:
+                    with urllib.request.urlopen(req, timeout=15.0) as resp:
+                        data = json.loads(resp.read().decode("utf-8"))
+                        return data["choices"][0]["message"]["content"]
+                except Exception as api_err:
+                    last_err = api_err
+                    if "429" in str(api_err) and attempt == 0:
+                        time.sleep(1.0)
+                        continue
+                    break
+
+            logger.warning(f"[ConfigurableAPIProvider] API unavailable ({last_err}). Using curated local engine fallback.")
+            return self._fallback.generate(prompt, context)
         except Exception as e:
-            logger.warning(f"[ConfigurableAPIProvider] API unavailable ({e}). Using curated local engine fallback.")
+            logger.warning(f"[ConfigurableAPIProvider] Execution error ({e}). Using curated local engine fallback.")
             return self._fallback.generate(prompt, context)
 
     def stream(self, prompt: str, context: str) -> Generator[str, None, None]:

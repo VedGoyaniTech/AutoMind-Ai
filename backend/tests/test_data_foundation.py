@@ -318,7 +318,7 @@ def test_knowledge_document_metadata_mandatory():
 def test_training_export_excludes_held_out_and_tweeteval():
     """Training datasets must exclude held-out evaluation sets, TweetEval NLP corpora, and unverified data."""
     backend_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    project_root = os.path.dirname(backend_root)
+    project_root = backend_root if os.path.exists(os.path.join(backend_root, "ml")) else os.path.dirname(backend_root)
 
     manifest_path = os.path.join(project_root, "ml", "datasets", "approved", "data_manifest_v1.json")
     assert os.path.exists(manifest_path), f"Manifest missing at {manifest_path}"

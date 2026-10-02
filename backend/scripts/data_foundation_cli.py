@@ -64,11 +64,18 @@ def calculate_sha256(content: str) -> str:
 # 1. AUDIT TRAINING DATA
 # -----------------------------------------------------------------------------
 def audit_training_data(output_md: Optional[str] = None, output_json: Optional[str] = None) -> Dict[str, Any]:
-    project_root = os.path.dirname(BASE_DIR)
-    search_dirs = [
-        os.path.join(project_root, "backend", "data"),
-        os.path.join(project_root, "ml", "datasets")
-    ]
+    if os.path.exists(os.path.join(BASE_DIR, "ml")):
+        project_root = BASE_DIR
+        search_dirs = [
+            os.path.join(BASE_DIR, "data"),
+            os.path.join(BASE_DIR, "ml", "datasets")
+        ]
+    else:
+        project_root = os.path.dirname(BASE_DIR)
+        search_dirs = [
+            os.path.join(project_root, "backend", "data"),
+            os.path.join(project_root, "ml", "datasets")
+        ]
     
     files_to_audit = []
     for d in search_dirs:
@@ -263,6 +270,7 @@ def audit_training_data(output_md: Optional[str] = None, output_json: Optional[s
         
     # Also write duplicate copy to ml/datasets/reports/
     secondary_md = os.path.join(project_root, "ml", "datasets", "reports", "DATASET_AUDIT_REPORT.md")
+    os.makedirs(os.path.dirname(secondary_md), exist_ok=True)
     with open(secondary_md, "w", encoding="utf-8") as f:
         f.write("\n".join(md_lines))
         

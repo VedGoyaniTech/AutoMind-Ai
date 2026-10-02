@@ -1,6 +1,6 @@
 # 📊 AutoMind AI — Comprehensive Training Dataset Audit Report
 
-**Audit Date:** 2026-09-10 09:23:47 UTC  
+**Audit Date:** 2026-10-02 04:51:42 UTC  
 **Audited Files:** 30  
 **Total JSONL Lines:** 3733 (across all version splits)  
 **Duplicate Content Hash Groups:** 588  
@@ -21,14 +21,14 @@
 
 | File | Lines | Valid JSON | Contaminated | Provenance % | Recommendation |
 | :--- | :---: | :---: | :---: | :---: | :--- |
-| `backend/data/finetune_dataset.jsonl` | 8 | 8 | 0 | 0.0% | **legacy_experiment_archive** |
-| `backend/data/fixtures/training/clarification_abstention_fixture.jsonl` | 2 | 2 | 0 | 0.0% | **fixture_only** |
-| `backend/data/fixtures/training/evidence_bound_answer_fixture.jsonl` | 2 | 2 | 0 | 0.0% | **fixture_only** |
-| `backend/data/fixtures/training/held_out_evaluation_fixture.jsonl` | 2 | 2 | 0 | 0.0% | **fixture_only** |
-| `backend/data/fixtures/training/intent_tool_routing_fixture.jsonl` | 3 | 3 | 0 | 100.0% | **fixture_only** |
-| `backend/data/fixtures/training/multilingual_automotive_fixture.jsonl` | 2 | 2 | 0 | 0.0% | **fixture_only** |
-| `backend/data/fixtures/training/safety_prompt_injection_fixture.jsonl` | 2 | 2 | 0 | 0.0% | **fixture_only** |
-| `backend/data/fixtures/training/vehicle_entity_resolution_fixture.jsonl` | 3 | 3 | 0 | 0.0% | **fixture_only** |
+| `data/finetune_dataset.jsonl` | 8 | 8 | 0 | 0.0% | **legacy_experiment_archive** |
+| `data/fixtures/training/clarification_abstention_fixture.jsonl` | 2 | 2 | 0 | 0.0% | **fixture_only** |
+| `data/fixtures/training/evidence_bound_answer_fixture.jsonl` | 2 | 2 | 0 | 0.0% | **fixture_only** |
+| `data/fixtures/training/held_out_evaluation_fixture.jsonl` | 2 | 2 | 0 | 0.0% | **fixture_only** |
+| `data/fixtures/training/intent_tool_routing_fixture.jsonl` | 3 | 3 | 0 | 100.0% | **fixture_only** |
+| `data/fixtures/training/multilingual_automotive_fixture.jsonl` | 2 | 2 | 0 | 0.0% | **fixture_only** |
+| `data/fixtures/training/safety_prompt_injection_fixture.jsonl` | 2 | 2 | 0 | 0.0% | **fixture_only** |
+| `data/fixtures/training/vehicle_entity_resolution_fixture.jsonl` | 3 | 3 | 0 | 0.0% | **fixture_only** |
 | `ml/datasets/cleaned/master_cleaned_catalog.jsonl` | 268 | 268 | 4 | 0.0% | **quarantine_candidate** |
 | `ml/datasets/combined_cleaned_dataset.jsonl` | 307 | 307 | 4 | 0.0% | **quarantine_candidate** |
 | `ml/datasets/darkB_electric_vehicles_qa_dataset.jsonl` | 278 | 278 | 3 | 0.0% | **quarantine_candidate** |

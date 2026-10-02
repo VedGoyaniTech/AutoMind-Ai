@@ -7,7 +7,10 @@ class QueryAnalyzer:
 
     MANUFACTURERS = [
         "Tata", "Hyundai", "Kia", "Mahindra", "Maruti", "Toyota", 
-        "Honda", "Volkswagen", "Skoda", "BMW", "Mercedes-Benz", "Audi", "MG"
+        "Honda", "Volkswagen", "Skoda", "BMW", "Mercedes-Benz", "Audi", "MG",
+        "Bentley", "Rolls-Royce", "Ferrari", "Lamborghini", "Bugatti", "Porsche",
+        "Aston Martin", "McLaren", "Koenigsegg", "Pagani", "Maybach", "Maserati",
+        "Lexus", "Jaguar", "Land Rover", "Volvo", "BYD", "Nissan", "Renault", "Tesla"
     ]
     
     BODY_TYPES = ["SUV", "Sedan", "Hatchback", "MUV", "Coupe", "EV", "Cross-over"]
@@ -26,6 +29,21 @@ class QueryAnalyzer:
         lower = norm_text.lower()
         lower = re.sub(r'\bxuv\s*([0-9]|3xo|pro)', r'xuv\1', lower)
         lower = re.sub(r'\bi\s*([0-9]{2})', r'i\1', lower)
+        # Brand typo normalizations
+        brand_typos = {
+            r'\b(?:bently|bantly|bentli)\b': 'bentley',
+            r'\b(?:rolls\s*royce|rolls\s*royals?|rollsroyce|rr)\b': 'rolls-royce',
+            r'\b(?:lamborgini|lambor)\b': 'lamborghini',
+            r'\b(?:porche|porsh)\b': 'porsche',
+            r'\b(?:ferari|ferrari)\b': 'ferrari',
+            r'\b(?:bugati)\b': 'bugatti',
+            r'\b(?:mercedez|mercides|benz)\b': 'mercedes-benz',
+            r'\b(?:volksvagon|volkswagan|vw)\b': 'volkswagen',
+            r'\b(?:mahindra\s+and\s+mahindra|m&m)\b': 'mahindra',
+            r'\b(?:maruti\s+suzuki)\b': 'maruti'
+        }
+        for pattern, replacement in brand_typos.items():
+            lower = re.sub(pattern, replacement, lower)
 
         # 1. Price constraint parsing
         price_max: Optional[float] = None
@@ -88,7 +106,13 @@ class QueryAnalyzer:
             "મારુતિ": "Maruti", "मारुति": "Maruti",
             "ટોયોટા": "Toyota", "टोयोटा": "Toyota",
             "કિયા": "Kia", "किया": "Kia",
-            "બીએમડબલ્યુ": "BMW", "बीएमडब्ल्यू": "BMW"
+            "બીએમડબલ્યુ": "BMW", "बीएमडब्ल्यू": "BMW",
+            "બેન્ટલી": "Bentley", "બેન્ટલે": "Bentley", "बैंटली": "Bentley", "बेंटले": "Bentley",
+            "રોલ્સ રોયસ": "Rolls-Royce", "रोल्स रॉयस": "Rolls-Royce",
+            "ફેરાંરી": "Ferrari", "फेरारी": "Ferrari",
+            "પોર્શ": "Porsche", "પોશે": "Porsche", "पोर्श": "Porsche",
+            "લેમ્બોર્ગિની": "Lamborghini", "लेम्बोर्गिनी": "Lamborghini",
+            "બુગાટી": "Bugatti", "बुगाटी": "Bugatti"
         }
         for ind_k, ind_v in indic_m_map.items():
             if ind_k in lower:
@@ -129,8 +153,15 @@ class QueryAnalyzer:
             detected_fuel = "Hybrid"
 
         # 9. Luxury & Supercar detection
-        is_luxury = any(w in lower for w in ["luxury", "luxry", "luxurious", "premium", "exotic", "supercar", "expensive", "sports car", "लग्जरी", "લક્ઝરી"])
-        if is_luxury and not price_min and not price_max:
+        luxury_brands = [
+            "bentley", "rolls-royce", "rolls royce", "ferrari", "lamborghini", "bugatti",
+            "porsche", "aston martin", "mclaren", "koenigsegg", "pagani", "maybach",
+            "maserati", "lexus", "jaguar", "land rover", "range rover", "lucid", "rimac"
+        ]
+        is_luxury = any(w in lower for w in ["luxury", "luxry", "luxurious", "premium", "exotic", "supercar", "expensive", "sports car", "लग्जरी", "લક્ઝરી"]) or any(b in lower for b in luxury_brands)
+        if detected_manufacturer and detected_manufacturer.lower() in [b.lower() for b in luxury_brands]:
+            is_luxury = True
+        if is_luxury and not price_min and not price_max and any(w in lower for w in ["luxury car", "supercar", "luxury suv", "luxury sedan"]):
             price_min = 2500000.0
 
         # 10. Year Extraction (e.g. 2005, 2024, 2026, or "is saal" / "abhi")
@@ -216,7 +247,7 @@ class QueryAnalyzer:
                 "min_mileage": min_mileage,
                 "seating_min": seating_min,
                 "min_safety_rating": min_safety_rating,
-                "is_luxury": is_luxury,
+                "is_luxury": True if is_luxury else None,
                 "requested_year": requested_year,
                 "market": market,
                 "category": category_name,

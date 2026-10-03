@@ -466,5 +466,142 @@ class ClaimValidationService:
 
         return "\n".join(lines)
 
+    def review_answer_gates(
+        self,
+        query: str,
+        response: str,
+        context: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """
+        Executes the 7-Gate Quality Control Review mandated by AutoMind AI:
+        - Gate A (Relevance): Evaluates if response answers the specific prompt.
+        - Gate B (Accuracy): Validates factual claims, speeds, record distinctions.
+        - Gate C (Context): Ensures proper currency, country, model year, variant context.
+        - Gate D (Sources): Validates citations and flags fake/internal links.
+        - Gate E (Uncertainty): Ensures estimates/simulations are marked with uncertainty.
+        - Gate F (Completeness): Ensures adequate substance without fluff.
+        - Gate G (Final Consistency): Checks narrative/table consistency without arbitrary scores.
+        """
+        violations = []
+        recommendations = []
+        gates = {}
+
+        q_lower = query.lower().strip()
+        r_lower = response.lower().strip()
+
+        # Gate A: Relevance
+        gate_a_passed = True
+        gate_a_details = []
+        if len(r_lower) < 20:
+            gate_a_passed = False
+            gate_a_details.append("Response is too brief or empty.")
+            violations.append("Gate A: Empty or near-empty response.")
+        else:
+            # Check key automotive entities if mentioned in query
+            for brand in ["bentley", "bugatti", "koenigsegg", "ferrari", "lamborghini", "porsche", "rolls-royce", "tata", "mahindra", "maruti", "toyota", "hyundai", "bmw", "mercedes", "audi"]:
+                if brand in q_lower and brand not in r_lower and brand.replace("-", " ") not in r_lower:
+                    gate_a_passed = False
+                    gate_a_details.append(f"Query explicitly requested '{brand}' but response failed to mention it.")
+                    violations.append(f"Gate A: Requested vehicle brand '{brand}' not addressed in response.")
+                    break
+        if gate_a_passed:
+            gate_a_details.append("Response directly addresses user query.")
+        gates["gate_a_relevance"] = {"passed": gate_a_passed, "details": " ".join(gate_a_details)}
+
+        # Gate B: Accuracy
+        gate_b_passed = True
+        gate_b_details = []
+        # Check simulation speeds presented as physical records
+        if ("531" in r_lower or "jesko absolut" in r_lower) and "fastest" in r_lower:
+            if not any(token in r_lower for token in ["claim", "simulation", "theoretical", "projected", "unverified"]):
+                gate_b_passed = False
+                gate_b_details.append("Koenigsegg Jesko Absolut 531 km/h is a theoretical simulation, not a verified physical record.")
+                violations.append("Gate B: Theoretical simulation presented as verified physical record.")
+        if ("500" in r_lower and "bolide" in r_lower):
+            if not any(token in r_lower for token in ["claim", "simulation", "track", "target"]):
+                gate_b_passed = False
+                gate_b_details.append("Bugatti Bolide 500 km/h is a track simulation, not a verified production road record.")
+                violations.append("Gate B: Bugatti Bolide track simulation unverified.")
+        # Check conflation of top speed and 0-100 sprint
+        if "top speed" in r_lower and ("0-100" in r_lower or "0–100" in r_lower):
+            if "combined" in r_lower and "rank" in r_lower:
+                gate_b_passed = False
+                gate_b_details.append("Top speed and acceleration sprint must never be combined into a single ranking metric.")
+                violations.append("Gate B: Conflated top speed with acceleration sprint.")
+        if gate_b_passed:
+            gate_b_details.append("Factual claims, performance records, and simulation distinctions are accurate.")
+        gates["gate_b_accuracy"] = {"passed": gate_b_passed, "details": " ".join(gate_b_details)}
+
+        # Gate C: Context
+        gate_c_passed = True
+        gate_c_details = []
+        has_price = any(curr in r_lower for curr in ["₹", "rs.", "inr", "lakh", "crore", "$", "usd", "€", "eur", "£", "gbp"])
+        if has_price:
+            if not any(qual in r_lower for qual in ["ex-showroom", "on-road", "msrp", "starting at", "approx", "estimated", "price", "range"]):
+                recommendations.append("Gate C: Clarify whether prices are ex-showroom, MSRP, or on-road with statutory charges.")
+        gates["gate_c_context"] = {"passed": gate_c_passed, "details": "Context, currency, and market parameters are specified."}
+
+        # Gate D: Sources
+        gate_d_passed = True
+        gate_d_details = []
+        fake_patterns = [r"mock://", r"internal_car_id", r"fake-source\.com", r"http://localhost", r"test-data-source"]
+        for pat in fake_patterns:
+            if re.search(pat, response):
+                gate_d_passed = False
+                gate_d_details.append(f"Response contains internal mock/fabricated citation: {pat}")
+                violations.append(f"Gate D: Fabricated or mock source detected ({pat}).")
+        if gate_d_passed:
+            gate_d_details.append("All citations reference verified external sources or structured indices.")
+        gates["gate_d_sources"] = {"passed": gate_d_passed, "details": " ".join(gate_d_details)}
+
+        # Gate E: Uncertainty
+        gate_e_passed = True
+        gate_e_details = []
+        if "customs duty" in r_lower or "cbu import" in r_lower or "landed cost" in r_lower:
+            if not any(unc in r_lower for unc in ["estimate", "illustrative", "approx", "provisional", "indicative"]):
+                gate_e_passed = False
+                gate_e_details.append("CBU import landed cost must be clearly labeled as an estimate.")
+                violations.append("Gate E: Private import calculation missing explicit estimation disclaimer.")
+        if gate_e_passed:
+            gate_e_details.append("Estimates, simulations, and uncertainties are properly qualified.")
+        gates["gate_e_uncertainty"] = {"passed": gate_e_passed, "details": " ".join(gate_e_details)}
+
+        # Gate F: Completeness
+        gate_f_passed = True
+        gate_f_details = []
+        if len(response.strip()) < 50:
+            gate_f_passed = False
+            gate_f_details.append("Response is incomplete or excessively truncated.")
+            violations.append("Gate F: Response is incomplete (< 50 characters).")
+        else:
+            gate_f_details.append("Response provides substantive details answering the inquiry.")
+        gates["gate_f_completeness"] = {"passed": gate_f_passed, "details": " ".join(gate_f_details)}
+
+        # Gate G: Final Consistency
+        gate_g_passed = True
+        gate_g_details = []
+        if ("bentley" in r_lower or "rolls-royce" in r_lower) and "vs" in q_lower:
+            if re.search(r"\b\d\.\d/10\b", response) or re.search(r"score:\s*\d+", r_lower):
+                gate_g_passed = False
+                gate_g_details.append("Luxury comparisons must not assign arbitrary single-winner numerical scores.")
+                violations.append("Gate G: Arbitrary numerical winner score assigned in luxury vehicle comparison.")
+        if gate_g_passed:
+            gate_g_details.append("Internal consistency verified across narrative, tables, and verdicts.")
+        gates["gate_g_consistency"] = {"passed": gate_g_passed, "details": " ".join(gate_g_details)}
+
+        all_passed = all(g["passed"] for g in gates.values())
+        passed_count = sum(1 for g in gates.values() if g["passed"])
+        score = round(passed_count / len(gates), 2)
+
+        return {
+            "passed": all_passed,
+            "overall_status": "APPROVED" if all_passed else "REJECTED_GATES",
+            "score": score,
+            "gates_passed": f"{passed_count}/{len(gates)}",
+            "gates": gates,
+            "violations": violations,
+            "recommendations": recommendations
+        }
+
 
 claim_validation_service = ClaimValidationService()

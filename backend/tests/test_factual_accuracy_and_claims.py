@@ -268,3 +268,59 @@ def test_scenario_12_context_builder_structured_output():
     assert "Maximum Budget: ₹600.00 Lakh" in ctx
     assert "launch_status: any" not in ctx
     assert "market: India" not in ctx
+
+
+# ---------------------------------------------------------------------------
+# Test Scenario 13: 7-Gate Quality Control Review
+# ---------------------------------------------------------------------------
+def test_scenario_13_seven_gate_quality_control_review():
+    """Validates the 7-Gate Answer Review engine: Gate A (Relevance) through Gate G (Consistency)."""
+    # 1. Valid compliant response
+    good_query = "What is the top speed of Koenigsegg Jesko Absolut vs Bugatti Chiron Super Sport 300+?"
+    good_response = (
+        "## Top Speed Comparison\n\n"
+        "1. **Koenigsegg Jesko Absolut**: 531 km/h (330 mph) - `Manufacturer Claim` (CFD computer simulation projection).\n"
+        "2. **Bugatti Chiron Super Sport 300+**: 490.48 km/h (304.77 mph) - `Independently Measured` (One-way certified by TÜV Rheinland).\n\n"
+        "Sources:\n"
+        "- [SRC-1] Bugatti Official Press Release: https://www.bugatti.com/news\n"
+        "- [SRC-2] Koenigsegg Media: https://www.koenigsegg.com/model/jesko-absolut"
+    )
+    result = claim_validation_service.review_answer_gates(good_query, good_response)
+    assert result["passed"] is True
+    assert result["score"] == 1.0
+    assert result["gates"]["gate_a_relevance"]["passed"] is True
+    assert result["gates"]["gate_b_accuracy"]["passed"] is True
+    assert result["gates"]["gate_d_sources"]["passed"] is True
+    assert result["gates"]["gate_f_completeness"]["passed"] is True
+    assert result["gates"]["gate_g_consistency"]["passed"] is True
+
+    # 2. Non-compliant response with unverified simulation presented as physical record
+    bad_response = (
+        "The fastest car in the world is the Koenigsegg Jesko Absolut reaching 531 km/h in physical testing."
+    )
+    bad_result = claim_validation_service.review_answer_gates("fastest car", bad_response)
+    assert bad_result["passed"] is False
+    assert bad_result["gates"]["gate_b_accuracy"]["passed"] is False
+    assert "Gate B" in bad_result["violations"][0]
+
+    # 3. Non-compliant response with fake mock URL
+    fake_url_response = (
+        "The Bentley Continental GT is powered by a 4.0L V8 twin-turbo engine. "
+        "Source: [Mock Data](mock://internal_car_id_88291)"
+    )
+    mock_result = claim_validation_service.review_answer_gates("Bentley Continental GT", fake_url_response)
+    assert mock_result["passed"] is False
+    assert mock_result["gates"]["gate_d_sources"]["passed"] is False
+    assert "Gate D" in mock_result["violations"][0]
+
+    # 4. Non-compliant response with arbitrary single-winner numeric score in luxury comparison
+    arbitrary_score_response = (
+        "Comparing Bentley Continental GT vs Rolls-Royce Ghost. "
+        "The Bentley Continental GT is sporty, while Rolls-Royce Ghost is plush. "
+        "Score: Bentley Continental GT 9.8/10, Rolls-Royce Ghost 9.6/10. Bentley wins."
+    )
+    score_result = claim_validation_service.review_answer_gates("Bentley vs Rolls-Royce", arbitrary_score_response)
+    assert score_result["passed"] is False
+    assert score_result["gates"]["gate_g_consistency"]["passed"] is False
+    assert "Gate G" in score_result["violations"][0]
+

@@ -49,6 +49,7 @@ ml/models/quantized/
 node_modules/
 dist/
 dist-ssr/
+frontend/old_dist_ignore/
 *.local
 .pnpm-debug.log*
 yarn-debug.log*

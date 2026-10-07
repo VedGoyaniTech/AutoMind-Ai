@@ -176,12 +176,17 @@ export const ChatPage: React.FC = () => {
         }
       } catch (proxyErr: any) {
         if (proxyErr.name === 'AbortError') throw proxyErr;
-        response = await fetch('http://localhost:8000/api/v1/chat/stream', {
-          method: 'POST',
-          headers: headersDict,
-          body: payloadBody,
-          signal: abortCtrl.signal,
-        });
+        // In local development without a reverse proxy, fallback to direct port
+        if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+          response = await fetch('http://localhost:8000/api/v1/chat/stream', {
+            method: 'POST',
+            headers: headersDict,
+            body: payloadBody,
+            signal: abortCtrl.signal,
+          });
+        } else {
+          throw proxyErr;
+        }
       }
 
       if (!response.ok) {

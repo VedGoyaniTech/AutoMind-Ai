@@ -21,11 +21,11 @@ export const Button: React.FC<ButtonProps> = ({
   const baseStyles = 'inline-flex items-center justify-center font-medium transition-all duration-200 rounded-xl focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer';
 
   const variantStyles = {
-    primary: 'bg-[#C96A2B] hover:bg-[#B05A22] text-white shadow-sm border border-[#C96A2B]',
-    secondary: 'bg-[#EFECE5] hover:bg-[#E8E4DC] text-[#0D0D0D] border border-[#E2DDD6]',
-    outline: 'border border-[#E2DDD6] hover:border-[#C8C2BA] text-[#0D0D0D] bg-white hover:bg-[#F7F4ED]',
-    ghost: 'text-[#6B6560] hover:text-[#0D0D0D] hover:bg-[#EFECE5]',
-    danger: 'bg-red-600 hover:bg-red-700 text-white shadow-sm',
+    primary: 'bg-[#722F37] hover:bg-[#58242A] text-white shadow-sm border border-[#722F37]',
+    secondary: 'bg-[#DFD2BA] hover:bg-[#D7C8AD] text-[#1A1614] border border-[#B7A89A]',
+    outline: 'border border-[#B7A89A] hover:border-[#9E8F81] text-[#1A1614] bg-[#FAF7F2] hover:bg-[#E8DCC6]',
+    ghost: 'text-[#5C524A] hover:text-[#1A1614] hover:bg-[#DFD2BA]',
+    danger: 'bg-red-700 hover:bg-red-800 text-white shadow-sm',
   };
 
   const sizeStyles = {

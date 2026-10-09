@@ -60,32 +60,32 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewChat }) => {
         collapsed ? 'w-20' : 'w-64'
       }`}
       style={{
-        background: '#EFECE5',
-        borderRight: '1px solid #E2DDD6',
-        color: '#0D0D0D'
+        background: '#DFD2BA',
+        borderRight: '1px solid #B7A89A',
+        color: '#1A1614'
       }}
     >
       {/* Collapse Toggle Button */}
       <button
         onClick={() => setCollapsed(!collapsed)}
         className="absolute -right-3.5 top-7 p-1.5 rounded-full shadow-sm z-40 transition-colors"
-        style={{ background: '#FFFFFF', border: '1px solid #E2DDD6', color: '#6B6560' }}
+        style={{ background: '#FAF7F2', border: '1px solid #B7A89A', color: '#5C524A' }}
       >
         {collapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
       </button>
 
       {/* Top Header & Logo */}
       <div>
-        <div className="p-4 flex items-center gap-3" style={{ borderBottom: '1px solid #E2DDD6' }}>
-          <div className="p-2 rounded-xl text-white shrink-0 shadow-sm" style={{ background: '#C96A2B' }}>
+        <div className="p-4 flex items-center gap-3" style={{ borderBottom: '1px solid #B7A89A' }}>
+          <div className="p-2 rounded-xl text-white shrink-0 shadow-sm" style={{ background: '#722F37' }}>
             <Car className="w-5 h-5" />
           </div>
           {!collapsed && (
             <div>
-              <h1 className="text-base font-bold tracking-tight flex items-center gap-1.5" style={{ color: '#0D0D0D' }}>
-                AutoMind <span className="font-mono text-xs px-1.5 py-0.5 rounded" style={{ background: '#F7F4ED', border: '1px solid #E2DDD6', color: '#C96A2B' }}>AI</span>
+              <h1 className="text-base font-bold tracking-tight flex items-center gap-1.5" style={{ color: '#1A1614' }}>
+                AutoMind <span className="font-mono text-xs px-1.5 py-0.5 rounded" style={{ background: '#FAF7F2', border: '1px solid #B7A89A', color: '#722F37' }}>AI</span>
               </h1>
-              <p className="text-[10px]" style={{ color: '#6B6560' }}>Car Research Intelligence</p>
+              <p className="text-[10px]" style={{ color: '#5C524A' }}>Car Research Intelligence</p>
             </div>
           )}
         </div>
@@ -97,10 +97,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewChat }) => {
               if (onNewChat) onNewChat();
               navigate('/app');
             }}
-            className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all cursor-pointer shadow-sm ${
+            className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all cursor-pointer shadow-sm hover:brightness-110 ${
               collapsed ? 'justify-center px-0' : ''
             }`}
-            style={{ background: '#C96A2B', color: '#FFFFFF' }}
+            style={{ background: '#722F37', color: '#FFFFFF' }}
           >
             <Plus className="w-4 h-4 shrink-0" />
             {!collapsed && <span>New Car Research</span>}
@@ -118,7 +118,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewChat }) => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full rounded-lg pl-8 pr-3 py-1.5 text-xs outline-none"
-                style={{ background: '#FFFFFF', border: '1px solid #E2DDD6', color: '#0D0D0D' }}
+                style={{ background: '#FAF7F2', border: '1px solid #B7A89A', color: '#1A1614' }}
               />
             </div>
           </div>
@@ -137,9 +137,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewChat }) => {
               }`
             }
             style={({ isActive }) => ({
-              background: isActive ? '#FFFFFF' : 'transparent',
-              color: isActive ? '#C96A2B' : '#4A4540',
-              border: isActive ? '1px solid #E2DDD6' : '1px solid transparent'
+              background: isActive ? '#FAF7F2' : 'transparent',
+              color: isActive ? '#722F37' : '#5C524A',
+              border: isActive ? '1px solid #B7A89A' : '1px solid transparent'
             })}
           >
             <Sparkles className="w-4 h-4 shrink-0" />
@@ -154,9 +154,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewChat }) => {
               }`
             }
             style={({ isActive }) => ({
-              background: isActive ? '#FFFFFF' : 'transparent',
-              color: isActive ? '#C96A2B' : '#4A4540',
-              border: isActive ? '1px solid #E2DDD6' : '1px solid transparent'
+              background: isActive ? '#FAF7F2' : 'transparent',
+              color: isActive ? '#722F37' : '#5C524A',
+              border: isActive ? '1px solid #B7A89A' : '1px solid transparent'
             })}
           >
             <Bookmark className="w-4 h-4 shrink-0" />
@@ -171,9 +171,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewChat }) => {
               }`
             }
             style={({ isActive }) => ({
-              background: isActive ? '#FFFFFF' : 'transparent',
-              color: isActive ? '#C96A2B' : '#4A4540',
-              border: isActive ? '1px solid #E2DDD6' : '1px solid transparent'
+              background: isActive ? '#FAF7F2' : 'transparent',
+              color: isActive ? '#722F37' : '#5C524A',
+              border: isActive ? '1px solid #B7A89A' : '1px solid transparent'
             })}
           >
             <Scale className="w-4 h-4 shrink-0" />
@@ -184,12 +184,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewChat }) => {
         {/* Recent Conversations List */}
         {!collapsed && (
           <div className="mt-4 px-3">
-            <div className="text-[10px] font-bold uppercase tracking-wider px-2 mb-1" style={{ color: '#9C9590' }}>
+            <div className="text-[10px] font-bold uppercase tracking-wider px-2 mb-1" style={{ color: '#857A70' }}>
               Recent Conversations
             </div>
             <div className="max-h-48 overflow-y-auto space-y-0.5 pr-1">
               {filteredConversations.length === 0 ? (
-                <p className="text-[11px] px-2 py-1" style={{ color: '#9C9590' }}>No chats found.</p>
+                <p className="text-[11px] px-2 py-1" style={{ color: '#857A70' }}>No chats found.</p>
               ) : (
                 filteredConversations.map((c) => (
                   <NavLink
@@ -201,9 +201,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewChat }) => {
                       }`
                     }
                     style={({ isActive }) => ({
-                      background: isActive ? '#FFFFFF' : 'transparent',
-                      color: isActive ? '#0D0D0D' : '#6B6560',
-                      border: isActive ? '1px solid #E2DDD6' : '1px solid transparent'
+                      background: isActive ? '#FAF7F2' : 'transparent',
+                      color: isActive ? '#1A1614' : '#5C524A',
+                      border: isActive ? '1px solid #B7A89A' : '1px solid transparent'
                     })}
                   >
                     <div className="flex items-center gap-2 truncate">
@@ -225,7 +225,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewChat }) => {
       </div>
 
       {/* Footer User Profile & Controls */}
-      <div className="p-3 space-y-1" style={{ borderTop: '1px solid #E2DDD6' }}>
+      <div className="p-3 space-y-1" style={{ borderTop: '1px solid #B7A89A' }}>
         {user?.is_admin && (
           <NavLink
             to="/admin/data"
@@ -235,12 +235,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewChat }) => {
               }`
             }
             style={({ isActive }) => ({
-              background: isActive ? '#FFFFFF' : 'transparent',
-              color: isActive ? '#C96A2B' : '#4A4540',
-              border: isActive ? '1px solid #E2DDD6' : '1px solid transparent'
+              background: isActive ? '#FAF7F2' : 'transparent',
+              color: isActive ? '#722F37' : '#5C524A',
+              border: isActive ? '1px solid #B7A89A' : '1px solid transparent'
             })}
           >
-            <Database className="w-4 h-4 shrink-0" style={{ color: '#C96A2B' }} />
+            <Database className="w-4 h-4 shrink-0" style={{ color: '#722F37' }} />
             {!collapsed && <span>Admin Ingestion</span>}
           </NavLink>
         )}
@@ -253,24 +253,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ onNewChat }) => {
             }`
           }
           style={({ isActive }) => ({
-            background: isActive ? '#FFFFFF' : 'transparent',
-            color: isActive ? '#C96A2B' : '#4A4540',
-            border: isActive ? '1px solid #E2DDD6' : '1px solid transparent'
+            background: isActive ? '#FAF7F2' : 'transparent',
+            color: isActive ? '#722F37' : '#5C524A',
+            border: isActive ? '1px solid #B7A89A' : '1px solid transparent'
           })}
         >
           <Settings className="w-4 h-4 shrink-0" />
           {!collapsed && <span>Settings</span>}
         </NavLink>
 
-        <div className="pt-2 flex items-center justify-between" style={{ borderTop: '1px solid #E2DDD6' }}>
+        <div className="pt-2 flex items-center justify-between" style={{ borderTop: '1px solid #B7A89A' }}>
           <div className="flex items-center gap-2.5 truncate">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: '#0D0D0D' }}>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ background: '#722F37' }}>
               {user?.full_name?.charAt(0) || 'U'}
             </div>
             {!collapsed && (
               <div className="truncate">
-                <p className="text-xs font-semibold truncate" style={{ color: '#0D0D0D' }}>{user?.full_name}</p>
-                <p className="text-[10px] truncate" style={{ color: '#6B6560' }}>{user?.email}</p>
+                <p className="text-xs font-semibold truncate" style={{ color: '#1A1614' }}>{user?.full_name}</p>
+                <p className="text-[10px] truncate" style={{ color: '#5C524A' }}>{user?.email}</p>
               </div>
             )}
           </div>

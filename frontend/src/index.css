@@ -6,21 +6,25 @@
 
 /* ── Design Tokens ─────────────────────────────────────────── */
 :root {
-  --bg-main:       #F7F4ED;
-  --bg-surface:    #FFFFFF;
-  --bg-muted:      #EFECE5;
-  --bg-hover:      #E8E4DC;
-  --text-primary:  #0D0D0D;
-  --text-secondary:#6B6560;
-  --text-muted:    #9C9590;
-  --accent:        #C96A2B;
-  --accent-hover:  #B05A22;
+  --bg-main:       #E8DCC6; /* MochaCream */
+  --bg-surface:    #FAF7F2; /* Warm Soft Surface */
+  --bg-muted:      #DFD2BA; /* Warm Mocha Muted */
+  --bg-hover:      #D7C8AD; /* Mocha Hover */
+  --text-primary:  #1A1614; /* Deep Espresso */
+  --text-secondary:#5C524A; /* Muted Espresso */
+  --text-muted:    #857A70; /* Cosmic Muted */
+  --accent:        #722F37; /* DeepBurgundy */
+  --accent-hover:  #58242A; /* Darker DeepBurgundy */
+  --accent-light:  #8E3E47;
   --accent-blue:   #2563EB;
-  --border:        #E2DDD6;
-  --border-strong: #C8C2BA;
-  --shadow-sm:     0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md:     0 4px 12px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
-  --shadow-lg:     0 8px 24px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.05);
+  --border:        #B7A89A; /* CosmicLatte */
+  --border-strong: #9E8F81; /* Darker CosmicLatte */
+  --color-cosmic:  #B7A89A; /* CosmicLatte */
+  --color-mocha:   #E8DCC6; /* MochaCream */
+  --color-burgundy:#722F37; /* DeepBurgundy */
+  --shadow-sm:     0 1px 3px rgba(31,25,22,0.06), 0 1px 2px rgba(31,25,22,0.04);
+  --shadow-md:     0 4px 12px rgba(31,25,22,0.08), 0 2px 6px rgba(31,25,22,0.04);
+  --shadow-lg:     0 8px 24px rgba(31,25,22,0.12), 0 4px 12px rgba(31,25,22,0.06);
 }
 
 /* ── Base ──────────────────────────────────────────────────── */
@@ -122,7 +126,7 @@
   padding: 0.1rem 0.35rem;
   font-size: 0.8rem;
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  color: #C96A2B;
+  color: var(--accent);
 }
 
 .chat-prose pre {
@@ -136,7 +140,7 @@
 .chat-prose pre code {
   background: none;
   border: none;
-  color: #E8E4DC;
+  color: #E8DCC6;
   padding: 0;
   font-size: 0.8rem;
 }
@@ -177,13 +181,13 @@
 }
 
 .chat-prose th {
-  background: #F7F4ED;
+  background: #E8DCC6;
   font-weight: 600;
   padding: 0.5rem 0.75rem;
   border-bottom: 1px solid var(--border);
   border-right: 1px solid var(--border);
   text-align: left;
-  color: #0D0D0D;
+  color: var(--text-primary);
 }
 
 .chat-prose th:last-child {
@@ -207,7 +211,7 @@
 }
 
 .chat-prose tr:nth-child(even) td {
-  background: #FAF8F5;
+  background: #FAF7F2;
 }
 
 /* ── Thinking Bubble Animation ─────────────────────────────── */

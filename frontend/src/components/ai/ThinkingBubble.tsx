@@ -35,20 +35,20 @@ export const ThinkingBubble: React.FC<ThinkingBubbleProps> = ({
     >
       {/* Avatar */}
       <div
-        style={{ background: '#F0ECE5', border: '1px solid #E2DDD6', minWidth: 32, height: 32 }}
+        style={{ background: '#DFD2BA', border: '1px solid #B7A89A', minWidth: 32, height: 32 }}
         className="rounded-xl flex items-center justify-center shrink-0"
       >
         <svg width="15" height="15" viewBox="0 0 20 20" fill="none">
-          <circle cx="10" cy="10" r="8" stroke="#C96A2B" strokeWidth="1.5" />
-          <circle cx="10" cy="10" r="3" fill="#C96A2B" opacity="0.7" />
+          <circle cx="10" cy="10" r="8" stroke="#722F37" strokeWidth="1.5" />
+          <circle cx="10" cy="10" r="3" fill="#722F37" opacity="0.7" />
         </svg>
       </div>
 
       {/* Bubble */}
       <div
         style={{
-          background: '#FFFFFF',
-          border: '1px solid #E2DDD6',
+          background: '#FAF7F2',
+          border: '1px solid #B7A89A',
           borderRadius: 12,
           padding: '10px 14px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
@@ -75,7 +75,7 @@ export const ThinkingBubble: React.FC<ThinkingBubbleProps> = ({
             style={{
               fontSize: '0.8rem',
               fontWeight: 500,
-              color: hasStartedStreaming ? '#6B6560' : undefined,
+              color: hasStartedStreaming ? '#5C524A' : undefined,
               letterSpacing: '0.01em',
             }}
           >
@@ -83,7 +83,7 @@ export const ThinkingBubble: React.FC<ThinkingBubbleProps> = ({
           </span>
 
           {/* Expand toggle */}
-          <span style={{ marginLeft: 'auto', color: '#9C9590' }}>
+          <span style={{ marginLeft: 'auto', color: '#857A70' }}>
             {expanded
               ? <ChevronDown size={13} />
               : <ChevronRight size={13} />
@@ -105,9 +105,9 @@ export const ThinkingBubble: React.FC<ThinkingBubbleProps> = ({
                 style={{
                   marginTop: 8,
                   paddingTop: 8,
-                  borderTop: '1px solid #E2DDD6',
+                  borderTop: '1px solid #B7A89A',
                   fontSize: '0.75rem',
-                  color: '#9C9590',
+                  color: '#857A70',
                   lineHeight: 1.5,
                 }}
               >
@@ -130,11 +130,11 @@ export const ThinkingBubble: React.FC<ThinkingBubbleProps> = ({
                         {isDone
                           ? <span style={{ color: '#22C55E', fontSize: 10 }}>✓</span>
                           : isActive
-                          ? <span style={{ color: '#C96A2B', fontSize: 10 }}>›</span>
-                          : <span style={{ color: '#E2DDD6', fontSize: 10 }}>○</span>
+                          ? <span style={{ color: '#722F37', fontSize: 10 }}>›</span>
+                          : <span style={{ color: '#B7A89A', fontSize: 10 }}>○</span>
                         }
                       </span>
-                      <span style={{ color: isActive ? '#0D0D0D' : isDone ? '#9C9590' : '#C8C2BA' }}>
+                      <span style={{ color: isActive ? '#1A1614' : isDone ? '#5C524A' : '#857A70' }}>
                         {label}
                       </span>
                     </div>
@@ -146,10 +146,10 @@ export const ThinkingBubble: React.FC<ThinkingBubbleProps> = ({
                     style={{
                       marginTop: 6,
                       padding: '5px 8px',
-                      background: '#F7F4ED',
+                      background: '#E8DCC6',
                       borderRadius: 6,
                       fontSize: '0.7rem',
-                      color: '#6B6560',
+                      color: '#5C524A',
                       fontFamily: 'monospace',
                     }}
                   >

@@ -357,7 +357,7 @@ export const ChatPage: React.FC = () => {
 
   return (
     <AppLayout>
-      <div className="flex-1 flex flex-col h-full overflow-hidden relative" style={{ background: '#F7F4ED' }}>
+      <div className="flex-1 flex flex-col h-full overflow-hidden relative" style={{ background: '#E8DCC6' }}>
         {/* Main Chat Messages Container */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
           {messages.length === 0 && !isStreaming ? (
@@ -380,12 +380,12 @@ export const ChatPage: React.FC = () => {
                 <div
                   className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 shadow-sm"
                   style={{
-                    background: msg.role === 'user' ? '#0D0D0D' : '#EFECE5',
-                    color: msg.role === 'user' ? '#FFFFFF' : '#C96A2B',
-                    border: msg.role === 'user' ? 'none' : '1px solid #E2DDD6'
+                    background: msg.role === 'user' ? '#722F37' : '#DFD2BA',
+                    color: '#FFFFFF',
+                    border: msg.role === 'user' ? 'none' : '1px solid #B7A89A'
                   }}
                 >
-                  {msg.role === 'user' ? 'U' : <Sparkles className="w-3.5 h-3.5" />}
+                  {msg.role === 'user' ? 'U' : <Sparkles className="w-3.5 h-3.5" style={{ color: '#722F37' }} />}
                 </div>
 
                 {/* Bubble Container */}
@@ -393,21 +393,21 @@ export const ChatPage: React.FC = () => {
                   <div
                     className="p-4 sm:p-5 rounded-2xl shadow-sm"
                     style={{
-                      background: msg.role === 'user' ? '#0D0D0D' : '#FFFFFF',
-                      color: msg.role === 'user' ? '#FFFFFF' : '#0D0D0D',
-                      border: msg.role === 'user' ? 'none' : '1px solid #E2DDD6',
+                      background: msg.role === 'user' ? '#722F37' : '#FAF7F2',
+                      color: msg.role === 'user' ? '#FFFFFF' : '#1A1614',
+                      border: msg.role === 'user' ? 'none' : '1px solid #B7A89A',
                     }}
                   >
                     {/* Header for Assistant Messages */}
                     {msg.role === 'assistant' && (
-                      <div className="flex items-center justify-between mb-3 pb-2" style={{ borderBottom: '1px solid #E2DDD6' }}>
-                        <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: '#C96A2B' }}>
+                      <div className="flex items-center justify-between mb-3 pb-2" style={{ borderBottom: '1px solid #B7A89A' }}>
+                        <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: '#722F37' }}>
                           AutoMind AI Analysis
                         </span>
                         <button
                           onClick={() => handleCopy(msg.content, idx)}
                           className="transition-colors"
-                          style={{ color: '#9C9590' }}
+                          style={{ color: '#857A70' }}
                           title="Copy Answer"
                         >
                           {copiedIdx === idx ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
@@ -466,7 +466,7 @@ export const ChatPage: React.FC = () => {
                 <div className="flex gap-3.5 max-w-4xl">
                   <div
                     className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 shadow-sm"
-                    style={{ background: '#EFECE5', color: '#C96A2B', border: '1px solid #E2DDD6' }}
+                    style={{ background: '#DFD2BA', color: '#722F37', border: '1px solid #B7A89A' }}
                   >
                     <Sparkles className="w-3.5 h-3.5" />
                   </div>
@@ -474,7 +474,7 @@ export const ChatPage: React.FC = () => {
                   <div className="flex-1 space-y-4">
                     <div
                       className="p-4 sm:p-5 rounded-2xl shadow-sm"
-                      style={{ background: '#FFFFFF', border: '1px solid #E2DDD6', color: '#0D0D0D' }}
+                      style={{ background: '#FAF7F2', border: '1px solid #B7A89A', color: '#1A1614' }}
                     >
                       {activePricingQuote && <PricingQuoteCard quote={activePricingQuote} />}
                       {activeGallery && <VehicleGalleryCard gallery={activeGallery} />}
@@ -507,11 +507,11 @@ export const ChatPage: React.FC = () => {
         </div>
 
         {/* Floating Input Composer Footer */}
-        <div className="p-4" style={{ background: 'rgba(247,244,237,0.95)', backdropFilter: 'blur(12px)', borderTop: '1px solid #E2DDD6' }}>
+        <div className="p-4" style={{ background: 'rgba(232,220,198,0.95)', backdropFilter: 'blur(12px)', borderTop: '1px solid #B7A89A' }}>
           <div className="max-w-4xl mx-auto relative">
             <div
               className="rounded-full p-2 ps-4 pe-2.5 shadow-sm flex items-center justify-between gap-2.5"
-              style={{ background: '#FFFFFF', border: '1px solid #E2DDD6' }}
+              style={{ background: '#FAF7F2', border: '1px solid #B7A89A' }}
             >
               <VoiceInputButton
                 onTranscript={(text) => setInputPrompt(text)}
@@ -525,13 +525,13 @@ export const ChatPage: React.FC = () => {
                 onKeyDown={handleKeyDown}
                 placeholder="Ask anything about cars (English, हिंदी, ગુજરાતી)..."
                 className="flex-1 bg-transparent text-sm outline-none resize-none"
-                style={{ color: '#0D0D0D' }}
+                style={{ color: '#1A1614' }}
               />
 
               {isStreaming ? (
                 <button
                   onClick={handleStopStream}
-                  className="flex size-8 items-center justify-center rounded-full text-white transition-colors shrink-0"
+                  className="flex size-8 items-center justify-center rounded-full text-white transition-colors shrink-0 cursor-pointer"
                   style={{ background: '#EF4444' }}
                 >
                   <Square className="size-3.5" />
@@ -540,8 +540,8 @@ export const ChatPage: React.FC = () => {
                 <button
                   onClick={() => sendChat(inputPrompt)}
                   disabled={!inputPrompt.trim()}
-                  className="flex size-8 items-center justify-center rounded-full text-white transition-colors disabled:opacity-40 shrink-0 cursor-pointer"
-                  style={{ background: '#0D0D0D' }}
+                  className="flex size-8 items-center justify-center rounded-full text-white transition-colors disabled:opacity-40 shrink-0 cursor-pointer hover:brightness-110"
+                  style={{ background: '#722F37' }}
                 >
                   <ArrowUpIcon className="size-4" />
                 </button>

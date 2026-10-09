@@ -18,11 +18,11 @@ export function EmptyState({
     <div
       className={`flex w-full max-w-lg flex-col items-center gap-6 mx-auto py-12 ${className || ''}`}
     >
-      <div className="p-3.5 rounded-2xl shadow-sm" style={{ background: '#EFECE5', border: '1px solid #E2DDD6', color: '#C96A2B' }}>
+      <div className="p-3.5 rounded-2xl shadow-sm" style={{ background: '#DFD2BA', border: '1px solid #B7A89A', color: '#722F37' }}>
         <Car className="w-7 h-7" />
       </div>
 
-      <h2 className="fade-in slide-in-from-bottom-1 animate-in fill-mode-both text-center text-2xl font-bold tracking-tight duration-500" style={{ color: '#0D0D0D' }}>
+      <h2 className="fade-in slide-in-from-bottom-1 animate-in fill-mode-both text-center text-2xl font-bold tracking-tight duration-500" style={{ color: '#1A1614' }}>
         {greeting}
       </h2>
 
@@ -32,12 +32,12 @@ export function EmptyState({
             key={suggestion}
             type="button"
             onClick={() => onSelectSuggestion(suggestion)}
-            className="fade-in slide-in-from-bottom-2 animate-in fill-mode-both rounded-full px-4 py-2 text-xs font-medium transition-all duration-300 outline-none hover:-translate-y-px active:scale-[0.96] shadow-sm cursor-pointer"
+            className="fade-in slide-in-from-bottom-2 animate-in fill-mode-both rounded-full px-4 py-2 text-xs font-medium transition-all duration-300 outline-none hover:-translate-y-px active:scale-[0.96] shadow-sm cursor-pointer hover:bg-[#DFD2BA]"
             style={{
               animationDelay: `${120 + i * 70}ms`,
-              background: '#FFFFFF',
-              border: '1px solid #E2DDD6',
-              color: '#0D0D0D'
+              background: '#FAF7F2',
+              border: '1px solid #B7A89A',
+              color: '#1A1614'
             }}
           >
             {suggestion}

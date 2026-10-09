@@ -155,25 +155,25 @@ export const LiveIntelligenceSection: React.FC<LiveIntelligenceSectionProps> = (
   return (
     <div className="space-y-6">
       {/* Control Bar: Location & Sync Status */}
-      <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+      <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-[#B7A89A] flex flex-wrap items-center justify-between gap-4 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
+          <div className="p-2 rounded-xl bg-[#DFD2BA] text-[#722F37]">
             <Compass className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+            <h3 className="text-sm font-bold text-[#1A1614] flex items-center gap-2">
               Real-Time Intelligence & Market Telemetry
               {data.metadata?.is_cached ? (
-                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-sky-500/10 text-sky-700 border border-sky-500/30">
                   Cached ({data.metadata.cached_at ? new Date(data.metadata.cached_at).toLocaleTimeString() : 'Recent'})
                 </span>
               ) : (
-                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-700 border border-emerald-500/30">
                   Live Response
                 </span>
               )}
             </h3>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#5C524A]">
               Federated telemetry across Open-Meteo, NHTSA, NewsAPI, and AutoMind statutory tax engines.
             </p>
           </div>
@@ -181,15 +181,15 @@ export const LiveIntelligenceSection: React.FC<LiveIntelligenceSectionProps> = (
 
         <div className="flex items-center gap-3">
           {/* City Selector */}
-          <div className="flex items-center gap-1.5 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
-            <MapPin className="w-3.5 h-3.5 text-slate-400" />
+          <div className="flex items-center gap-1.5 bg-[#DFD2BA] px-3 py-1.5 rounded-xl border border-[#B7A89A]">
+            <MapPin className="w-3.5 h-3.5 text-[#5C524A]" />
             <select
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="bg-transparent text-xs text-white focus:outline-none cursor-pointer"
+              className="bg-transparent text-xs text-[#1A1614] focus:outline-none cursor-pointer"
             >
               {CITIES.map((c) => (
-                <option key={c} value={c} className="bg-slate-900 text-white">
+                <option key={c} value={c} className="bg-[#FAF7F2] text-[#1A1614]">
                   {c}
                 </option>
               ))}
@@ -210,19 +210,19 @@ export const LiveIntelligenceSection: React.FC<LiveIntelligenceSectionProps> = (
       </div>
 
       {/* AI Grounded Executive Summary */}
-      <div className="p-6 rounded-2xl bg-gradient-to-br from-indigo-950/40 via-slate-900/60 to-purple-950/30 border border-indigo-500/20 relative overflow-hidden">
+      <div className="p-6 rounded-2xl bg-[#FAF7F2] border border-[#B7A89A] shadow-sm relative overflow-hidden">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-indigo-400" />
-            <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-300">
+            <Sparkles className="w-4 h-4 text-[#722F37]" />
+            <h4 className="text-xs font-bold uppercase tracking-wider text-[#722F37]">
               Grounded AI Intelligence Briefing
             </h4>
           </div>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#DFD2BA] text-[#722F37] border border-[#B7A89A]">
             Strict Fact Grounding • Zero Hallucination Guarantee
           </span>
         </div>
-        <div className="prose prose-invert prose-xs max-w-none text-slate-200 text-xs leading-relaxed space-y-3 whitespace-pre-line">
+        <div className="prose prose-xs max-w-none text-[#1A1614] text-xs leading-relaxed space-y-3 whitespace-pre-line">
           {data.ai_analysis?.summary}
         </div>
       </div>
@@ -230,11 +230,11 @@ export const LiveIntelligenceSection: React.FC<LiveIntelligenceSectionProps> = (
       {/* Real-Time Environmental & Fuel Telemetry */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Weather Card */}
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+        <div className="p-5 rounded-2xl bg-[#FAF7F2] border border-[#B7A89A] space-y-3 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <CloudSun className="w-4 h-4 text-amber-400" />
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+              <CloudSun className="w-4 h-4 text-amber-600" />
+              <h4 className="text-xs font-bold text-[#1A1614] uppercase tracking-wider">
                 Live Weather & Driving Conditions
               </h4>
             </div>
@@ -245,45 +245,45 @@ export const LiveIntelligenceSection: React.FC<LiveIntelligenceSectionProps> = (
             <div className="space-y-3">
               <div className="flex items-baseline justify-between">
                 <div>
-                  <span className="text-2xl font-black text-white">
+                  <span className="text-2xl font-black text-[#1A1614]">
                     {weather.temperature_celsius}°C
                   </span>
-                  <span className="text-xs text-slate-400 ml-2">
+                  <span className="text-xs text-[#5C524A] ml-2">
                     (Feels like {weather.feels_like_celsius}°C)
                   </span>
                 </div>
-                <span className="text-xs font-semibold text-slate-300 px-2 py-1 rounded-lg bg-slate-800">
+                <span className="text-xs font-semibold text-[#1A1614] px-2 py-1 rounded-lg bg-[#DFD2BA]">
                   {weather.weather_condition}
                 </span>
               </div>
 
-              <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/80 text-[11px] text-slate-300">
-                <span className="text-amber-400 font-bold">Driving Assessment: </span>
+              <div className="p-2.5 rounded-xl bg-[#DFD2BA] border border-[#B7A89A] text-[11px] text-[#1A1614]">
+                <span className="text-[#722F37] font-bold">Driving Assessment: </span>
                 {weather.driving_conditions}
               </div>
 
-              <div className="grid grid-cols-3 gap-2 text-[10px] text-slate-400 pt-1">
-                <div>Wind: <span className="text-slate-200 font-semibold">{weather.wind_speed_kmh} km/h</span></div>
-                <div>Humidity: <span className="text-slate-200 font-semibold">{weather.relative_humidity_percent}%</span></div>
-                <div>Rain: <span className="text-slate-200 font-semibold">{weather.precipitation_mm} mm</span></div>
+              <div className="grid grid-cols-3 gap-2 text-[10px] text-[#5C524A] pt-1">
+                <div>Wind: <span className="text-[#1A1614] font-semibold">{weather.wind_speed_kmh} km/h</span></div>
+                <div>Humidity: <span className="text-[#1A1614] font-semibold">{weather.relative_humidity_percent}%</span></div>
+                <div>Rain: <span className="text-[#1A1614] font-semibold">{weather.precipitation_mm} mm</span></div>
               </div>
             </div>
           ) : (
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#5C524A]">
               {weather?.error || 'Weather telemetry unavailable for this location.'}
             </p>
           )}
-          <div className="text-[10px] text-slate-400 border-t border-slate-800/60 pt-2">
+          <div className="text-[10px] text-[#5C524A] border-t border-[#B7A89A] pt-2">
             Source: Open-Meteo Open API ({weather?.city || city})
           </div>
         </div>
 
         {/* Fuel Prices Card */}
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+        <div className="p-5 rounded-2xl bg-[#FAF7F2] border border-[#B7A89A] space-y-3 shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Fuel className="w-4 h-4 text-emerald-400" />
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+              <Fuel className="w-4 h-4 text-emerald-700" />
+              <h4 className="text-xs font-bold text-[#1A1614] uppercase tracking-wider">
                 Fuel Prices in {city}
               </h4>
             </div>
@@ -292,28 +292,28 @@ export const LiveIntelligenceSection: React.FC<LiveIntelligenceSectionProps> = (
 
           {fuel?.status === 'live' && (fuel.petrol || fuel.diesel) ? (
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
-                <span className="text-[10px] text-slate-400 font-semibold uppercase">Petrol</span>
-                <div className="text-xl font-bold text-emerald-400 mt-1">
-                  ₹{fuel.petrol?.price} <span className="text-xs text-slate-400 font-normal">/L</span>
+              <div className="p-3 rounded-xl bg-[#DFD2BA] border border-[#B7A89A]">
+                <span className="text-[10px] text-[#5C524A] font-semibold uppercase">Petrol</span>
+                <div className="text-xl font-bold text-emerald-700 mt-1">
+                  ₹{fuel.petrol?.price} <span className="text-xs text-[#5C524A] font-normal">/L</span>
                 </div>
               </div>
-              <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800">
-                <span className="text-[10px] text-slate-400 font-semibold uppercase">Diesel</span>
-                <div className="text-xl font-bold text-sky-400 mt-1">
-                  ₹{fuel.diesel?.price} <span className="text-xs text-slate-400 font-normal">/L</span>
+              <div className="p-3 rounded-xl bg-[#DFD2BA] border border-[#B7A89A]">
+                <span className="text-[10px] text-[#5C524A] font-semibold uppercase">Diesel</span>
+                <div className="text-xl font-bold text-[#722F37] mt-1">
+                  ₹{fuel.diesel?.price} <span className="text-xs text-[#5C524A] font-normal">/L</span>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-800/60 text-xs text-slate-400 space-y-1">
-              <p className="font-semibold text-slate-300">Live Pump Feeds Pending</p>
+            <div className="p-3 rounded-xl bg-[#DFD2BA] border border-[#B7A89A] text-xs text-[#5C524A] space-y-1">
+              <p className="font-semibold text-[#1A1614]">Live Pump Feeds Pending</p>
               <p className="text-[11px] leading-relaxed">
                 {fuel?.note || 'FUEL_API_KEY is not configured in .env. Configure credentials from IndianAPI or APIMitra to activate daily live fuel telemetry.'}
               </p>
             </div>
           )}
-          <div className="text-[10px] text-slate-400 border-t border-slate-800/60 pt-2">
+          <div className="text-[10px] text-[#5C524A] border-t border-[#B7A89A] pt-2">
             Provider: {fuel?.provider || 'Indian API / API Mitra'}
           </div>
         </div>
@@ -321,14 +321,14 @@ export const LiveIntelligenceSection: React.FC<LiveIntelligenceSectionProps> = (
 
       {/* Indian Statutory On-Road Price Breakdown */}
       {pricing && (
-        <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
+        <div className="p-6 rounded-2xl bg-[#FAF7F2] border border-[#B7A89A] space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-emerald-400" />
+              <h4 className="text-sm font-bold text-[#1A1614] flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-emerald-700" />
                 Statutory On-Road Pricing & Taxes ({city}, {pricing.state_code})
               </h4>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-[#5C524A]">
                 Calculated via AutoMind Verified Motor Vehicle Tax Engine ({pricing.state_code} Motor Vehicle Act)
               </p>
             </div>
@@ -337,57 +337,57 @@ export const LiveIntelligenceSection: React.FC<LiveIntelligenceSectionProps> = (
 
           {quote && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800">
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">Ex-Showroom Price</span>
-                <div className="text-base font-bold text-white mt-1">
+              <div className="p-3.5 rounded-xl bg-[#DFD2BA] border border-[#B7A89A]">
+                <span className="text-[10px] text-[#5C524A] uppercase font-semibold">Ex-Showroom Price</span>
+                <div className="text-base font-bold text-[#1A1614] mt-1">
                   ₹{quote.exShowroomPrice?.toLocaleString('en-IN')}
                 </div>
-                <span className="text-[10px] text-slate-400">Base Retail</span>
+                <span className="text-[10px] text-[#5C524A]">Base Retail</span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800">
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">RTO Road Tax</span>
-                <div className="text-base font-bold text-amber-400 mt-1">
+              <div className="p-3.5 rounded-xl bg-[#DFD2BA] border border-[#B7A89A]">
+                <span className="text-[10px] text-[#5C524A] uppercase font-semibold">RTO Road Tax</span>
+                <div className="text-base font-bold text-amber-700 mt-1">
                   ₹{quote.rtoTax?.toLocaleString('en-IN')}
                 </div>
-                <span className="text-[10px] text-slate-400">{pricing.state_code} State Slab</span>
+                <span className="text-[10px] text-[#5C524A]">{pricing.state_code} State Slab</span>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800">
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">Insurance & FASTag</span>
-                <div className="text-base font-bold text-sky-400 mt-1">
+              <div className="p-3.5 rounded-xl bg-[#DFD2BA] border border-[#B7A89A]">
+                <span className="text-[10px] text-[#5C524A] uppercase font-semibold">Insurance & FASTag</span>
+                <div className="text-base font-bold text-sky-700 mt-1">
                   ₹{((quote.insurance || 0) + (quote.fastag || 0)).toLocaleString('en-IN')}
                 </div>
-                <span className="text-[10px] text-slate-400">1-Yr Own + 3-Yr Third Party</span>
+                <span className="text-[10px] text-[#5C524A]">1-Yr Own + 3-Yr Third Party</span>
               </div>
 
               <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
-                <span className="text-[10px] text-emerald-400 uppercase font-bold">Estimated On-Road</span>
-                <div className="text-base font-extrabold text-emerald-300 mt-1">
+                <span className="text-[10px] text-emerald-700 uppercase font-bold">Estimated On-Road</span>
+                <div className="text-base font-extrabold text-emerald-800 mt-1">
                   ₹{quote.onRoadPrice?.toLocaleString('en-IN')}
                 </div>
-                <span className="text-[10px] text-emerald-400/80">Inclusive of all duties</span>
+                <span className="text-[10px] text-emerald-700/80">Inclusive of all duties</span>
               </div>
             </div>
           )}
 
           {/* EMI Options */}
           {pricing.emi_options && pricing.emi_options.length > 0 && (
-            <div className="p-3 rounded-xl bg-slate-950/50 border border-slate-800/60 text-xs text-slate-300 flex items-center justify-between">
+            <div className="p-3 rounded-xl bg-[#DFD2BA] border border-[#B7A89A] text-xs text-[#1A1614] flex items-center justify-between">
               <span>
                 Indicative 5-Year Loan EMI @ {pricing.emi_options[0].interestRate}% p.a. (20% Down Payment):
               </span>
-              <span className="font-bold text-white text-sm">
+              <span className="font-bold text-[#722F37] text-sm">
                 ₹{pricing.emi_options[0].monthlyEMI?.toLocaleString('en-IN')}/month
               </span>
             </div>
           )}
 
           {/* Commercial Provider Audit Notice */}
-          <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 text-[11px] text-slate-400 flex items-start gap-2">
-            <Info className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+          <div className="p-3 rounded-xl bg-[#DFD2BA] border border-[#B7A89A] text-[11px] text-[#5C524A] flex items-start gap-2">
+            <Info className="w-4 h-4 text-[#5C524A] shrink-0 mt-0.5" />
             <div>
-              <span className="font-semibold text-slate-300">Third-Party Pricing Provider Audit: </span>
+              <span className="font-semibold text-[#1A1614]">Third-Party Pricing Provider Audit: </span>
               IDSPay (Fintech/BBPS) and MyNewCar do not offer open unauthenticated programmatic endpoints. Both require commercial enterprise onboarding. AutoMind uses genuine statutory motor vehicle tax schedules to guarantee accuracy without relying on unverified scrapers.
             </div>
           </div>
@@ -395,14 +395,14 @@ export const LiveIntelligenceSection: React.FC<LiveIntelligenceSectionProps> = (
       )}
 
       {/* Used Car Market Snapshot & Statistics */}
-      <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
+      <div className="p-6 rounded-2xl bg-[#FAF7F2] border border-[#B7A89A] space-y-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
-            <h4 className="text-sm font-bold text-white flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-indigo-400" />
+            <h4 className="text-sm font-bold text-[#1A1614] flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-[#722F37]" />
               Used Vehicle Market Data & Aggregate Statistics
             </h4>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-[#5C524A]">
               Provider: {market?.provider || 'DataForCars'} • Geographic Coverage: {market?.geographic_coverage || 'North America (USD)'}
             </p>
           </div>
@@ -410,8 +410,8 @@ export const LiveIntelligenceSection: React.FC<LiveIntelligenceSectionProps> = (
         </div>
 
         {/* Currency & Geographic Boundary Notice */}
-        <div className="p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-300 flex items-start gap-2">
-          <ShieldAlert className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+        <div className="p-3 rounded-xl bg-[#DFD2BA] border border-[#B7A89A] text-xs text-[#1A1614] flex items-start gap-2">
+          <ShieldAlert className="w-4 h-4 text-[#722F37] shrink-0 mt-0.5" />
           <p>
             <span className="font-bold">Market Separation Notice: </span>
             DataForCars provides North American used-vehicle market listings denominated in <strong>USD ($)</strong>. These are strictly segregated and not represented as Indian INR used prices. A dedicated partner interface is prepared for licensed Indian listing feeds.
@@ -421,39 +421,39 @@ export const LiveIntelligenceSection: React.FC<LiveIntelligenceSectionProps> = (
         {market?.statistics && market.statistics.listing_count > 0 ? (
           <div className="space-y-4">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">Active Listings</span>
-                <div className="text-lg font-bold text-white mt-1">
+              <div className="p-3 rounded-xl bg-[#DFD2BA] border border-[#B7A89A]">
+                <span className="text-[10px] text-[#5C524A] uppercase font-semibold">Active Listings</span>
+                <div className="text-lg font-bold text-[#1A1614] mt-1">
                   {market.statistics.listing_count}
                 </div>
               </div>
-              <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">Median Asking</span>
-                <div className="text-lg font-bold text-emerald-400 mt-1">
+              <div className="p-3 rounded-xl bg-[#DFD2BA] border border-[#B7A89A]">
+                <span className="text-[10px] text-[#5C524A] uppercase font-semibold">Median Asking</span>
+                <div className="text-lg font-bold text-emerald-700 mt-1">
                   ${market.statistics.median_price?.toLocaleString()}
                 </div>
               </div>
-              <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">Price Range</span>
-                <div className="text-sm font-bold text-slate-200 mt-1">
+              <div className="p-3 rounded-xl bg-[#DFD2BA] border border-[#B7A89A]">
+                <span className="text-[10px] text-[#5C524A] uppercase font-semibold">Price Range</span>
+                <div className="text-sm font-bold text-[#1A1614] mt-1">
                   ${market.statistics.min_price?.toLocaleString()} - ${market.statistics.max_price?.toLocaleString()}
                 </div>
               </div>
-              <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">Avg Mileage</span>
-                <div className="text-lg font-bold text-sky-400 mt-1">
+              <div className="p-3 rounded-xl bg-[#DFD2BA] border border-[#B7A89A]">
+                <span className="text-[10px] text-[#5C524A] uppercase font-semibold">Avg Mileage</span>
+                <div className="text-lg font-bold text-sky-700 mt-1">
                   {market.statistics.avg_mileage ? `${Math.round(market.statistics.avg_mileage).toLocaleString()} mi` : 'N/A'}
                 </div>
               </div>
             </div>
 
-            <p className="text-[11px] text-slate-400 italic">
+            <p className="text-[11px] text-[#5C524A] italic">
               {market.statistics.disclaimer}
             </p>
           </div>
         ) : (
-          <div className="p-4 rounded-xl bg-slate-950/50 border border-slate-800/60 text-xs text-slate-400">
-            <p className="font-semibold text-slate-300">Live Snapshot Status</p>
+          <div className="p-4 rounded-xl bg-[#DFD2BA] border border-[#B7A89A] text-xs text-[#5C524A]">
+            <p className="font-semibold text-[#1A1614]">Live Snapshot Status</p>
             <p className="mt-1 leading-relaxed">
               {market?.note || 'No active listings observed for this specific model configuration. DATAFORCARS_API_KEY can be added in .env to enable live North American used-market snapshots.'}
             </p>
@@ -462,11 +462,11 @@ export const LiveIntelligenceSection: React.FC<LiveIntelligenceSectionProps> = (
       </div>
 
       {/* Automotive News Feed */}
-      <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4">
+      <div className="p-6 rounded-2xl bg-[#FAF7F2] border border-[#B7A89A] space-y-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Newspaper className="w-4 h-4 text-purple-400" />
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+            <Newspaper className="w-4 h-4 text-[#722F37]" />
+            <h4 className="text-xs font-bold text-[#1A1614] uppercase tracking-wider">
               Relevant Automotive News & Updates
             </h4>
           </div>
@@ -481,19 +481,19 @@ export const LiveIntelligenceSection: React.FC<LiveIntelligenceSectionProps> = (
                 href={art.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-slate-700 transition-colors block group"
+                className="p-3.5 rounded-xl bg-[#DFD2BA] border border-[#B7A89A] hover:border-[#722F37] transition-colors block group"
               >
-                <h5 className="text-xs font-bold text-white group-hover:text-indigo-300 transition-colors line-clamp-2">
+                <h5 className="text-xs font-bold text-[#1A1614] group-hover:text-[#722F37] transition-colors line-clamp-2">
                   {art.title}
                 </h5>
                 {art.description && (
-                  <p className="text-[11px] text-slate-400 line-clamp-2 mt-1">
+                  <p className="text-[11px] text-[#5C524A] line-clamp-2 mt-1">
                     {art.description}
                   </p>
                 )}
-                <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/60 text-[10px] text-slate-400">
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-[#B7A89A] text-[10px] text-[#5C524A]">
                   <span>{art.source}</span>
-                  <span className="inline-flex items-center gap-1 text-indigo-400">
+                  <span className="inline-flex items-center gap-1 text-[#722F37]">
                     Read <ExternalLink className="w-2.5 h-2.5" />
                   </span>
                 </div>
@@ -501,60 +501,60 @@ export const LiveIntelligenceSection: React.FC<LiveIntelligenceSectionProps> = (
             ))}
           </div>
         ) : (
-          <div className="p-3.5 rounded-xl bg-slate-950/50 border border-slate-800/60 text-xs text-slate-400">
+          <div className="p-3.5 rounded-xl bg-[#DFD2BA] border border-[#B7A89A] text-xs text-[#5C524A]">
             {news?.note || 'No recent automotive news articles found for this vehicle.'}
           </div>
         )}
       </div>
 
       {/* Traffic & Telemetry Status */}
-      <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-2">
+      <div className="p-5 rounded-2xl bg-[#FAF7F2] border border-[#B7A89A] space-y-2 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Activity className="w-4 h-4 text-sky-400" />
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+            <Activity className="w-4 h-4 text-sky-700" />
+            <h4 className="text-xs font-bold text-[#1A1614] uppercase tracking-wider">
               Traffic & Urban Congestion Telemetry
             </h4>
           </div>
           {renderStatusBadge(traffic?.status)}
         </div>
-        <p className="text-xs text-slate-400 leading-relaxed">
+        <p className="text-xs text-[#5C524A] leading-relaxed">
           {traffic?.note || 'INRIX enterprise telemetry is currently optional and requires an enterprise data contract for Indian urban corridors.'}
         </p>
       </div>
 
       {/* Data Source Provenance & Freshness Attribution */}
-      <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-3">
-        <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+      <div className="p-5 rounded-2xl bg-[#FAF7F2] border border-[#B7A89A] space-y-3 shadow-sm">
+        <h4 className="text-xs font-bold text-[#1A1614] uppercase tracking-wider">
           Federated Data Attribution & Freshness Metadata
         </h4>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-[11px] text-slate-400">
-          <div className="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
-            <span className="text-slate-300 font-semibold block">Vehicle Specs:</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 text-[11px] text-[#5C524A]">
+          <div className="p-2.5 rounded-lg bg-[#DFD2BA] border border-[#B7A89A]">
+            <span className="text-[#1A1614] font-semibold block">Vehicle Specs:</span>
             {data.metadata.data_sources?.specifications?.provider || 'NHTSA vPIC / Vehicles.dev'}
           </div>
-          <div className="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
-            <span className="text-slate-300 font-semibold block">Pricing Engine:</span>
+          <div className="p-2.5 rounded-lg bg-[#DFD2BA] border border-[#B7A89A]">
+            <span className="text-[#1A1614] font-semibold block">Pricing Engine:</span>
             AutoMind Motor Vehicle Act Engine ({pricing?.state_code})
           </div>
-          <div className="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
-            <span className="text-slate-300 font-semibold block">Used Market Data:</span>
+          <div className="p-2.5 rounded-lg bg-[#DFD2BA] border border-[#B7A89A]">
+            <span className="text-[#1A1614] font-semibold block">Used Market Data:</span>
             DataForCars API (North America USD)
           </div>
-          <div className="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
-            <span className="text-slate-300 font-semibold block">Weather Telemetry:</span>
+          <div className="p-2.5 rounded-lg bg-[#DFD2BA] border border-[#B7A89A]">
+            <span className="text-[#1A1614] font-semibold block">Weather Telemetry:</span>
             Open-Meteo Global Open API
           </div>
-          <div className="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
-            <span className="text-slate-300 font-semibold block">Fuel Rate Provider:</span>
+          <div className="p-2.5 rounded-lg bg-[#DFD2BA] border border-[#B7A89A]">
+            <span className="text-[#1A1614] font-semibold block">Fuel Rate Provider:</span>
             IndianAPI / APIMitra Feeds
           </div>
-          <div className="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
-            <span className="text-slate-300 font-semibold block">News Provider:</span>
+          <div className="p-2.5 rounded-lg bg-[#DFD2BA] border border-[#B7A89A]">
+            <span className="text-[#1A1614] font-semibold block">News Provider:</span>
             NewsAPI Everything Endpoint
           </div>
         </div>
-        <div className="text-[10px] text-slate-400 text-right pt-1">
+        <div className="text-[10px] text-[#5C524A] text-right pt-1">
           Fetched: {new Date(data.metadata.fetched_at).toUTCString()}
         </div>
       </div>

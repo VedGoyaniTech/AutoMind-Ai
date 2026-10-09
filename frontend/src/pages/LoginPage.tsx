@@ -75,18 +75,18 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row selection:bg-amber-500/20" style={{ background: '#F7F4ED', color: '#0D0D0D' }}>
+    <div className="min-h-screen flex flex-col md:flex-row selection:bg-[#722F37]/20" style={{ background: '#E8DCC6', color: '#1A1614' }}>
       {/* Left Split: Animated AI / Automotive Visualization */}
       <div
         className="md:w-1/2 p-8 lg:p-12 flex flex-col justify-between relative overflow-hidden"
-        style={{ background: '#EFECE5', borderRight: '1px solid #E2DDD6' }}
+        style={{ background: '#DFD2BA', borderRight: '1px solid #B7A89A' }}
       >
         {/* Top Logo */}
         <Link to="/" className="flex items-center gap-2.5 z-10">
-          <div className="p-2 rounded-xl text-white shadow-sm" style={{ background: '#C96A2B' }}>
+          <div className="p-2 rounded-xl text-white shadow-sm" style={{ background: '#722F37' }}>
             <Car className="w-5 h-5" />
           </div>
-          <span className="text-xl font-bold" style={{ color: '#0D0D0D' }}>AutoMind AI</span>
+          <span className="text-xl font-bold" style={{ color: '#1A1614' }}>AutoMind AI</span>
         </Link>
 
         {/* Center Animated Visualizer */}
@@ -95,50 +95,50 @@ export const LoginPage: React.FC = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="p-6 rounded-2xl shadow-sm relative"
-            style={{ background: '#FFFFFF', border: '1px solid #E2DDD6' }}
+            style={{ background: '#FAF7F2', border: '1px solid #B7A89A' }}
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 rounded-lg" style={{ background: '#F7F4ED', color: '#C96A2B' }}>
+              <div className="p-2 rounded-lg" style={{ background: '#E8DCC6', color: '#722F37' }}>
                 <Sparkles className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold" style={{ color: '#0D0D0D' }}>Automotive Neural Engine</h4>
-                <p className="text-xs" style={{ color: '#6B6560' }}>Indexing 1M+ car models & verified sources</p>
+                <h4 className="text-sm font-bold" style={{ color: '#1A1614' }}>Automotive Neural Engine</h4>
+                <p className="text-xs" style={{ color: '#5C524A' }}>Indexing 1M+ car models & verified sources</p>
               </div>
             </div>
 
-            <div className="space-y-2 text-xs font-mono p-3 rounded-xl" style={{ background: '#F7F4ED', border: '1px solid #E2DDD6', color: '#0D0D0D' }}>
-              <p style={{ color: '#C96A2B' }}>&gt; Query: "SUV under ₹20 Lakh with 6 airbags"</p>
+            <div className="space-y-2 text-xs font-mono p-3 rounded-xl" style={{ background: '#E8DCC6', border: '1px solid #B7A89A', color: '#1A1614' }}>
+              <p style={{ color: '#722F37' }}>&gt; Query: "SUV under ₹20 Lakh with 6 airbags"</p>
               <p className="text-emerald-700">&gt; Matched 14 candidate models via hybrid RAG</p>
-              <p style={{ color: '#6B6560' }}>&gt; Citing 5 verified sources...</p>
+              <p style={{ color: '#5C524A' }}>&gt; Citing 5 verified sources...</p>
             </div>
           </motion.div>
 
-          <h2 className="mt-8 text-2xl font-bold leading-tight" style={{ color: '#0D0D0D' }}>
+          <h2 className="mt-8 text-2xl font-bold leading-tight" style={{ color: '#1A1614' }}>
             Research cars with grounded AI intelligence.
           </h2>
-          <p className="text-sm mt-2" style={{ color: '#6B6560' }}>
+          <p className="text-sm mt-2" style={{ color: '#5C524A' }}>
             Log in to access personalized recommendations, vehicle comparison matrices, and saved car lists.
           </p>
         </div>
 
         {/* Bottom Tagline */}
-        <div className="text-xs flex items-center gap-2 z-10" style={{ color: '#6B6560' }}>
+        <div className="text-xs flex items-center gap-2 z-10" style={{ color: '#5C524A' }}>
           <ShieldCheck className="w-4 h-4 text-emerald-600" />
           <span>AES-256 Encrypted & Secure JWT Session</span>
         </div>
       </div>
 
       {/* Right Split: Login Card */}
-      <div className="md:w-1/2 p-8 lg:p-16 flex items-center justify-center" style={{ background: '#F7F4ED' }}>
+      <div className="md:w-1/2 p-8 lg:p-16 flex items-center justify-center" style={{ background: '#E8DCC6' }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md space-y-6"
         >
           <div>
-            <h2 className="text-2xl font-bold" style={{ color: '#0D0D0D' }}>Welcome back</h2>
-            <p className="text-sm mt-1" style={{ color: '#6B6560' }}>Sign in to continue your automotive research</p>
+            <h2 className="text-2xl font-bold" style={{ color: '#1A1614' }}>Welcome back</h2>
+            <p className="text-sm mt-1" style={{ color: '#5C524A' }}>Sign in to continue your automotive research</p>
           </div>
 
           <AnimatePresence>
@@ -159,7 +159,7 @@ export const LoginPage: React.FC = () => {
                   type="button"
                   onClick={handleDemoLogin}
                   className="text-xs underline font-semibold block pt-1 cursor-pointer"
-                  style={{ color: '#C96A2B' }}
+                  style={{ color: '#722F37' }}
                 >
                   Click here to enter with Instant Demo Mode
                 </button>
@@ -204,7 +204,7 @@ export const LoginPage: React.FC = () => {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3.5 top-[34px] transition-colors"
-                style={{ color: '#9C9590' }}
+                style={{ color: '#857A70' }}
                 title={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -212,7 +212,7 @@ export const LoginPage: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-between text-xs">
-              <label className="flex items-center gap-2 cursor-pointer select-none" style={{ color: '#6B6560' }}>
+              <label className="flex items-center gap-2 cursor-pointer select-none" style={{ color: '#5C524A' }}>
                 <input
                   type="checkbox"
                   checked={rememberMe}
@@ -221,22 +221,22 @@ export const LoginPage: React.FC = () => {
                 />
                 <span>Remember me</span>
               </label>
-              <a href="#" className="font-medium hover:underline" style={{ color: '#C96A2B' }}>Forgot password?</a>
+              <a href="#" className="font-medium hover:underline" style={{ color: '#722F37' }}>Forgot password?</a>
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-2 py-3 px-4 rounded-xl font-medium text-sm text-white transition-all shadow-sm disabled:opacity-50 cursor-pointer"
-              style={{ background: '#C96A2B' }}
+              className="w-full mt-2 py-3 px-4 rounded-xl font-medium text-sm text-white transition-all shadow-sm disabled:opacity-50 cursor-pointer hover:bg-[#58242A]"
+              style={{ background: '#722F37' }}
             >
               {isLoading ? 'Verifying Credentials...' : 'Sign In'}
             </button>
           </form>
 
-          <div className="text-center text-xs" style={{ color: '#6B6560' }}>
+          <div className="text-center text-xs" style={{ color: '#5C524A' }}>
             Don't have an account?{' '}
-            <Link to="/register" className="font-semibold hover:underline" style={{ color: '#C96A2B' }}>
+            <Link to="/register" className="font-semibold hover:underline" style={{ color: '#722F37' }}>
               Create Account
             </Link>
           </div>

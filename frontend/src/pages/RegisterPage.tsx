@@ -88,23 +88,24 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col md:flex-row text-slate-100 selection:bg-indigo-500/30">
+    <div className="min-h-screen flex flex-col md:flex-row selection:bg-[#722F37]/20" style={{ background: '#E8DCC6', color: '#1A1614' }}>
       {/* Left Split */}
-      <div className="md:w-1/2 p-8 lg:p-12 bg-slate-950 flex flex-col justify-between relative overflow-hidden border-r border-slate-800/80">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-600/15 blur-[120px] rounded-full pointer-events-none" />
-
+      <div
+        className="md:w-1/2 p-8 lg:p-12 flex flex-col justify-between relative overflow-hidden"
+        style={{ background: '#DFD2BA', borderRight: '1px solid #B7A89A' }}
+      >
         <Link to="/" className="flex items-center gap-2.5 z-10">
-          <div className="p-2 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 shadow-md text-white">
+          <div className="p-2 rounded-xl text-white shadow-sm" style={{ background: '#722F37' }}>
             <Car className="w-5 h-5" />
           </div>
-          <span className="text-xl font-extrabold text-white">AutoMind AI</span>
+          <span className="text-xl font-bold" style={{ color: '#1A1614' }}>AutoMind AI</span>
         </Link>
 
         <div className="my-12 z-10 max-w-md">
-          <h2 className="text-3xl font-extrabold text-white leading-tight">
+          <h2 className="text-3xl font-extrabold leading-tight" style={{ color: '#1A1614' }}>
             Join the future of intelligent car research.
           </h2>
-          <p className="text-sm text-slate-400 mt-3 leading-relaxed">
+          <p className="text-sm mt-3 leading-relaxed" style={{ color: '#5C524A' }}>
             Create your account to unlock full automotive vector search, side-by-side spec comparison matrix, and top 5 verified website sources.
           </p>
 
@@ -114,8 +115,8 @@ export const RegisterPage: React.FC = () => {
               'Grounded answer generation with verified sources',
               'Side-by-side multi-car comparison matrix',
             ].map((item, idx) => (
-              <div key={idx} className="flex items-center gap-2.5 text-xs text-slate-300">
-                <div className="p-1 rounded-full bg-emerald-500/20 text-emerald-400">
+              <div key={idx} className="flex items-center gap-2.5 text-xs" style={{ color: '#1A1614' }}>
+                <div className="p-1 rounded-full bg-emerald-500/20 text-emerald-700">
                   <Check className="w-3.5 h-3.5" />
                 </div>
                 <span>{item}</span>
@@ -124,22 +125,22 @@ export const RegisterPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="text-xs text-slate-500 flex items-center gap-2 z-10">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" />
+        <div className="text-xs flex items-center gap-2 z-10" style={{ color: '#5C524A' }}>
+          <ShieldCheck className="w-4 h-4 text-emerald-600" />
           <span>Zero Spam & Password Hashed with Bcrypt</span>
         </div>
       </div>
 
       {/* Right Split: Register Card */}
-      <div className="md:w-1/2 p-8 lg:p-16 flex items-center justify-center bg-slate-900/30">
+      <div className="md:w-1/2 p-8 lg:p-16 flex items-center justify-center" style={{ background: '#E8DCC6' }}>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-md space-y-6"
         >
           <div>
-            <h2 className="text-2xl font-bold text-white">Create Account</h2>
-            <p className="text-sm text-slate-400 mt-1">Get instant access to AutoMind AI</p>
+            <h2 className="text-2xl font-bold" style={{ color: '#1A1614' }}>Create Account</h2>
+            <p className="text-sm mt-1" style={{ color: '#5C524A' }}>Get instant access to AutoMind AI</p>
           </div>
 
           <AnimatePresence>
@@ -148,10 +149,14 @@ export const RegisterPage: React.FC = () => {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-medium flex items-center gap-2"
+                className="p-3.5 rounded-xl text-xs font-medium space-y-2"
+                style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B' }}
               >
-                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                <span>{error}</span>
+                <div className="flex items-center gap-2 font-bold" style={{ color: '#DC2626' }}>
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>Registration Notice</span>
+                </div>
+                <p>{error}</p>
               </motion.div>
             )}
 
@@ -159,9 +164,10 @@ export const RegisterPage: React.FC = () => {
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-medium flex items-center gap-2"
+                className="p-3.5 rounded-xl text-xs font-medium flex items-center gap-2"
+                style={{ background: '#ECFDF5', border: '1px solid #6EE7B7', color: '#065F46' }}
               >
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span>{successMessage}</span>
               </motion.div>
             )}
@@ -201,7 +207,8 @@ export const RegisterPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-[34px] text-slate-400 hover:text-slate-200 transition-colors"
+                className="absolute right-3.5 top-[34px] transition-colors"
+                style={{ color: '#857A70' }}
                 title={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -209,13 +216,13 @@ export const RegisterPage: React.FC = () => {
 
               {password && (
                 <div className="flex items-center gap-2 pt-1">
-                  <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: '#DFD2BA' }}>
                     <div
                       className={`h-full ${strength.color} transition-all duration-300`}
                       style={{ width: `${(strength.score / 3) * 100}%` }}
                     />
                   </div>
-                  <span className="text-[10px] font-semibold text-slate-400">{strength.text}</span>
+                  <span className="text-[10px] font-semibold" style={{ color: '#5C524A' }}>{strength.text}</span>
                 </div>
               )}
             </div>
@@ -242,9 +249,9 @@ export const RegisterPage: React.FC = () => {
             </Button>
           </form>
 
-          <div className="text-center text-xs text-slate-400">
+          <div className="text-center text-xs" style={{ color: '#5C524A' }}>
             Already have an account?{' '}
-            <Link to="/register" onClick={() => navigate('/login')} className="text-indigo-400 font-semibold hover:text-indigo-300">
+            <Link to="/login" className="font-semibold hover:underline" style={{ color: '#722F37' }}>
               Sign In
             </Link>
           </div>

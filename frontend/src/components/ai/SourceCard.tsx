@@ -10,14 +10,14 @@ export const SourceCardComponent: React.FC<SourceCardProps> = ({ source }) => {
   return (
     <div
       className="p-3.5 rounded-xl transition-all duration-200 shadow-sm"
-      style={{ background: '#FFFFFF', border: '1px solid #E2DDD6' }}
+      style={{ background: '#FAF7F2', border: '1px solid #B7A89A' }}
     >
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-1.5">
-          <div className="p-1 rounded" style={{ background: '#F7F4ED', color: '#C96A2B' }}>
+          <div className="p-1 rounded" style={{ background: '#E8DCC6', color: '#722F37' }}>
             <Globe className="w-3.5 h-3.5" />
           </div>
-          <span className="text-xs font-semibold" style={{ color: '#0D0D0D' }}>
+          <span className="text-xs font-semibold" style={{ color: '#1A1614' }}>
             {source.website}
           </span>
         </div>
@@ -28,15 +28,15 @@ export const SourceCardComponent: React.FC<SourceCardProps> = ({ source }) => {
         </div>
       </div>
 
-      <h5 className="text-xs font-bold line-clamp-1 mb-1" style={{ color: '#0D0D0D' }}>
+      <h5 className="text-xs font-bold line-clamp-1 mb-1" style={{ color: '#1A1614' }}>
         {source.title}
       </h5>
 
-      <p className="text-[11px] line-clamp-2 leading-relaxed" style={{ color: '#6B6560' }}>
+      <p className="text-[11px] line-clamp-2 leading-relaxed" style={{ color: '#5C524A' }}>
         {source.reason}
       </p>
 
-      <div className="mt-2 text-[10px] font-mono tracking-tight truncate" style={{ color: '#9C9590' }}>
+      <div className="mt-2 text-[10px] font-mono tracking-tight truncate" style={{ color: '#857A70' }}>
         {source.domain}
       </div>
     </div>

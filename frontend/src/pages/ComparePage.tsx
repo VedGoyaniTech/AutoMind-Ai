@@ -66,13 +66,13 @@ export const ComparePage: React.FC = () => {
     <AppLayout>
       <div className="p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-8">
         {/* Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#B7A89A] pb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white flex items-center gap-2">
-              <Scale className="w-7 h-7 text-indigo-400" />
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1A1614] flex items-center gap-2">
+              <Scale className="w-7 h-7 text-[#722F37]" />
               Multi-Vehicle Comparison Matrix
             </h1>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            <p className="text-xs sm:text-sm text-[#5C524A] mt-1">
               Compare up to 4 vehicles side-by-side across pricing, powertrain specs, mileage, and safety features.
             </p>
           </div>
@@ -91,7 +91,7 @@ export const ComparePage: React.FC = () => {
 
         {/* Add Car Dropdown / Controls */}
         <div className="flex items-center justify-between">
-          <span className="text-xs text-slate-400 font-medium">Comparing {comparedCars.length} of 4 models</span>
+          <span className="text-xs text-[#5C524A] font-medium">Comparing {comparedCars.length} of 4 models</span>
 
           {selectedIds.length < 4 && (
             <div className="relative">
@@ -105,17 +105,17 @@ export const ComparePage: React.FC = () => {
               </Button>
 
               {adding && (
-                <div className="absolute right-0 top-10 w-72 max-h-64 overflow-y-auto bg-slate-900 border border-slate-800 rounded-xl shadow-2xl p-2 z-50">
-                  <div className="text-[10px] font-bold text-slate-500 uppercase px-2 mb-1">Select Model:</div>
+                <div className="absolute right-0 top-10 w-72 max-h-64 overflow-y-auto bg-[#FAF7F2] border border-[#B7A89A] rounded-xl shadow-2xl p-2 z-50">
+                  <div className="text-[10px] font-bold text-[#5C524A] uppercase px-2 mb-1">Select Model:</div>
                   {availableCars.map((c) => (
                     <button
                       key={c.id}
                       onClick={() => addCar(c.id)}
                       disabled={selectedIds.includes(c.id)}
-                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-indigo-600/20 text-slate-200 disabled:opacity-40 flex items-center justify-between"
+                      className="w-full text-left px-2.5 py-1.5 rounded-lg text-xs hover:bg-[#DFD2BA] text-[#1A1614] disabled:opacity-40 flex items-center justify-between cursor-pointer"
                     >
                       <span>{c.manufacturer_name} {c.model_name}</span>
-                      <span className="text-[10px] text-slate-400">₹{(c.ex_showroom_price / 100000).toFixed(1)}L</span>
+                      <span className="text-[10px] font-semibold text-[#722F37]">₹{(c.ex_showroom_price / 100000).toFixed(1)}L</span>
                     </button>
                   ))}
                 </div>
@@ -126,42 +126,42 @@ export const ComparePage: React.FC = () => {
 
         {/* Responsive Matrix Table */}
         {loading ? (
-          <div className="p-12 text-center text-slate-400">Loading comparison metrics...</div>
+          <div className="p-12 text-center text-[#5C524A]">Loading comparison metrics...</div>
         ) : comparedCars.length === 0 ? (
-          <div className="p-12 text-center text-slate-400 border border-slate-800 rounded-2xl bg-slate-900/40">
+          <div className="p-12 text-center text-[#5C524A] border border-[#B7A89A] rounded-2xl bg-[#FAF7F2]">
             <p>No vehicles selected for comparison.</p>
             <Button variant="primary" size="sm" className="mt-4" onClick={() => setSelectedIds([1, 2])}>
               Compare Nexon vs Creta Demo
             </Button>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/80 shadow-2xl">
+          <div className="overflow-x-auto rounded-2xl border border-[#B7A89A] bg-[#FAF7F2] shadow-sm">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-slate-800 bg-slate-950/80">
-                  <th className="p-4 w-48 text-slate-400 font-bold uppercase tracking-wider">Specifications</th>
+                <tr className="border-b border-[#B7A89A] bg-[#E8DCC6]">
+                  <th className="p-4 w-48 text-[#1A1614] font-bold uppercase tracking-wider">Specifications</th>
                   {comparedCars.map((car) => (
-                    <th key={car.id} className="p-4 min-w-[220px] text-slate-100 font-bold border-l border-slate-800/80 relative">
+                    <th key={car.id} className="p-4 min-w-[220px] text-[#1A1614] font-bold border-l border-[#B7A89A] relative">
                       <button
                         onClick={() => removeCar(car.id)}
-                        className="absolute top-3 right-3 text-slate-500 hover:text-rose-400 p-1"
+                        className="absolute top-3 right-3 text-[#857A70] hover:text-[#722F37] p-1 cursor-pointer"
                         title="Remove"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
-                      <div className="text-indigo-400 uppercase text-[10px] font-semibold">{car.manufacturer_name}</div>
-                      <div className="text-base font-extrabold text-white">{car.model_name}</div>
-                      <div className="text-[11px] text-slate-400 font-normal truncate">{car.variant_name}</div>
+                      <div className="text-[#722F37] uppercase text-[10px] font-semibold">{car.manufacturer_name}</div>
+                      <div className="text-base font-extrabold text-[#1A1614]">{car.model_name}</div>
+                      <div className="text-[11px] text-[#5C524A] font-normal truncate">{car.variant_name}</div>
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-[#B7A89A]">
                 {/* Price Row */}
                 <tr>
-                  <td className="p-4 font-bold text-slate-300 bg-slate-950/40">Price (Ex-Showroom)</td>
+                  <td className="p-4 font-bold text-[#1A1614] bg-[#DFD2BA]">Price (Ex-Showroom)</td>
                   {comparedCars.map((car) => (
-                    <td key={car.id} className="p-4 border-l border-slate-800/80 font-black text-indigo-300 text-sm">
+                    <td key={car.id} className="p-4 border-l border-[#B7A89A] font-black text-[#722F37] text-sm">
                       ₹{(car.ex_showroom_price / 100000).toFixed(2)} Lakh
                     </td>
                   ))}
@@ -169,9 +169,9 @@ export const ComparePage: React.FC = () => {
 
                 {/* Fuel & Transmission */}
                 <tr>
-                  <td className="p-4 font-bold text-slate-300 bg-slate-950/40">Fuel & Transmission</td>
+                  <td className="p-4 font-bold text-[#1A1614] bg-[#DFD2BA]">Fuel & Transmission</td>
                   {comparedCars.map((car) => (
-                    <td key={car.id} className="p-4 border-l border-slate-800/80 font-medium text-slate-200">
+                    <td key={car.id} className="p-4 border-l border-[#B7A89A] font-medium text-[#1A1614]">
                       {car.fuel_type} • {car.transmission}
                     </td>
                   ))}
@@ -179,9 +179,9 @@ export const ComparePage: React.FC = () => {
 
                 {/* Engine Power */}
                 <tr>
-                  <td className="p-4 font-bold text-slate-300 bg-slate-950/40">Horsepower</td>
+                  <td className="p-4 font-bold text-[#1A1614] bg-[#DFD2BA]">Horsepower</td>
                   {comparedCars.map((car) => (
-                    <td key={car.id} className="p-4 border-l border-slate-800/80 font-medium text-slate-200">
+                    <td key={car.id} className="p-4 border-l border-[#B7A89A] font-medium text-[#1A1614]">
                       {car.horsepower || '120'} bhp
                     </td>
                   ))}
@@ -189,9 +189,9 @@ export const ComparePage: React.FC = () => {
 
                 {/* Mileage / EV Range */}
                 <tr>
-                  <td className="p-4 font-bold text-slate-300 bg-slate-950/40">Mileage / Range</td>
+                  <td className="p-4 font-bold text-[#1A1614] bg-[#DFD2BA]">Mileage / Range</td>
                   {comparedCars.map((car) => (
-                    <td key={car.id} className="p-4 border-l border-slate-800/80 font-bold text-emerald-400">
+                    <td key={car.id} className="p-4 border-l border-[#B7A89A] font-bold text-emerald-700">
                       {car.fuel_type === 'EV' ? `${car.electric_range || 450} km Range` : `${car.combined_mileage || 18} km/l`}
                     </td>
                   ))}
@@ -199,9 +199,9 @@ export const ComparePage: React.FC = () => {
 
                 {/* Airbags */}
                 <tr>
-                  <td className="p-4 font-bold text-slate-300 bg-slate-950/40">Airbags</td>
+                  <td className="p-4 font-bold text-[#1A1614] bg-[#DFD2BA]">Airbags</td>
                   {comparedCars.map((car) => (
-                    <td key={car.id} className="p-4 border-l border-slate-800/80 font-medium text-slate-200">
+                    <td key={car.id} className="p-4 border-l border-[#B7A89A] font-medium text-[#1A1614]">
                       {car.airbags} Airbags
                     </td>
                   ))}
@@ -209,9 +209,9 @@ export const ComparePage: React.FC = () => {
 
                 {/* Safety Rating */}
                 <tr>
-                  <td className="p-4 font-bold text-slate-300 bg-slate-950/40">GNCAP Safety Rating</td>
+                  <td className="p-4 font-bold text-[#1A1614] bg-[#DFD2BA]">GNCAP Safety Rating</td>
                   {comparedCars.map((car) => (
-                    <td key={car.id} className="p-4 border-l border-slate-800/80 font-bold text-amber-400">
+                    <td key={car.id} className="p-4 border-l border-[#B7A89A] font-bold text-amber-700">
                       {car.safety_rating || 5.0} Stars
                     </td>
                   ))}
@@ -219,9 +219,9 @@ export const ComparePage: React.FC = () => {
 
                 {/* Seating Capacity */}
                 <tr>
-                  <td className="p-4 font-bold text-slate-300 bg-slate-950/40">Seating Capacity</td>
+                  <td className="p-4 font-bold text-[#1A1614] bg-[#DFD2BA]">Seating Capacity</td>
                   {comparedCars.map((car) => (
-                    <td key={car.id} className="p-4 border-l border-slate-800/80 font-medium text-slate-200">
+                    <td key={car.id} className="p-4 border-l border-[#B7A89A] font-medium text-[#1A1614]">
                       {car.seating_capacity} Seats
                     </td>
                   ))}
@@ -229,9 +229,9 @@ export const ComparePage: React.FC = () => {
 
                 {/* Boot Space */}
                 <tr>
-                  <td className="p-4 font-bold text-slate-300 bg-slate-950/40">Boot Capacity</td>
+                  <td className="p-4 font-bold text-[#1A1614] bg-[#DFD2BA]">Boot Capacity</td>
                   {comparedCars.map((car) => (
-                    <td key={car.id} className="p-4 border-l border-slate-800/80 font-medium text-slate-200">
+                    <td key={car.id} className="p-4 border-l border-[#B7A89A] font-medium text-[#1A1614]">
                       {car.boot_space || 382} Liters
                     </td>
                   ))}

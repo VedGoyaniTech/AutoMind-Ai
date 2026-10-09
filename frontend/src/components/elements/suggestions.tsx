@@ -36,9 +36,9 @@ export function Suggestions({
           }`}
           style={{
             animationDelay: `${index * 70}ms`,
-            background: selectedSuggestion === suggestion ? '#0D0D0D' : '#FFFFFF',
-            color: selectedSuggestion === suggestion ? '#FFFFFF' : '#0D0D0D',
-            border: '1px solid #E2DDD6'
+            background: selectedSuggestion === suggestion ? '#722F37' : '#FAF7F2',
+            color: selectedSuggestion === suggestion ? '#FFFFFF' : '#1A1614',
+            border: '1px solid #B7A89A'
           }}
         >
           {suggestion}

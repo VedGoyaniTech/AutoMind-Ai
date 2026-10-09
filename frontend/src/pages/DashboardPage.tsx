@@ -32,18 +32,18 @@ export const DashboardPage: React.FC = () => {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6"
-          style={{ borderBottom: '1px solid #E2DDD6' }}
+          style={{ borderBottom: '1px solid #B7A89A' }}
         >
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: '#0D0D0D' }}>
-              Welcome back, <span style={{ color: '#C96A2B' }}>{user?.full_name || 'Researcher'}</span>
+            <h1 className="text-2xl sm:text-3xl font-bold" style={{ color: '#1A1614' }}>
+              Welcome back, <span style={{ color: '#722F37' }}>{user?.full_name || 'Researcher'}</span>
             </h1>
-            <p className="text-xs sm:text-sm mt-1" style={{ color: '#6B6560' }}>
+            <p className="text-xs sm:text-sm mt-1" style={{ color: '#5C524A' }}>
               Ask anything about vehicle specifications, prices, mileage, safety, or request source recommendations.
             </p>
           </div>
 
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold w-fit" style={{ background: '#EFECE5', border: '1px solid #E2DDD6', color: '#C96A2B' }}>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold w-fit" style={{ background: '#DFD2BA', border: '1px solid #B7A89A', color: '#722F37' }}>
             <Sparkles className="w-4 h-4" />
             <span>Hybrid RAG Engine Online</span>
           </div>
@@ -56,17 +56,17 @@ export const DashboardPage: React.FC = () => {
           transition={{ delay: 0.1 }}
           onSubmit={handleSend}
           className="relative rounded-2xl p-3 shadow-sm"
-          style={{ background: '#FFFFFF', border: '1px solid #E2DDD6' }}
+          style={{ background: '#FAF7F2', border: '1px solid #B7A89A' }}
         >
           <div className="relative flex items-center">
-            <Sparkles className="w-5 h-5 absolute left-3.5" style={{ color: '#C96A2B' }} />
+            <Sparkles className="w-5 h-5 absolute left-3.5" style={{ color: '#722F37' }} />
             <input
               type="text"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Ask anything about cars (e.g., Best SUVs under ₹20 lakh with 6 airbags)..."
               className="w-full bg-transparent pl-11 pr-24 py-3.5 text-sm sm:text-base outline-none"
-              style={{ color: '#0D0D0D' }}
+              style={{ color: '#1A1614' }}
             />
             <Button
               type="submit"
@@ -82,8 +82,8 @@ export const DashboardPage: React.FC = () => {
 
         {/* Suggested Prompt Cards */}
         <div>
-          <h3 className="text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2" style={{ color: '#6B6560' }}>
-            <Compass className="w-4 h-4" style={{ color: '#C96A2B' }} />
+          <h3 className="text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2" style={{ color: '#5C524A' }}>
+            <Compass className="w-4 h-4" style={{ color: '#722F37' }} />
             Popular Research Prompts
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -93,13 +93,13 @@ export const DashboardPage: React.FC = () => {
                 whileHover={{ scale: 1.01 }}
                 onClick={() => navigate(`/app?q=${encodeURIComponent(item.title)}`)}
                 className="p-4 rounded-2xl transition-all cursor-pointer shadow-sm flex flex-col justify-between"
-                style={{ background: '#FFFFFF', border: '1px solid #E2DDD6' }}
+                style={{ background: '#FAF7F2', border: '1px solid #B7A89A' }}
               >
                 <div>
-                  <h4 className="text-sm font-bold mb-1" style={{ color: '#0D0D0D' }}>{item.title}</h4>
-                  <p className="text-xs leading-relaxed" style={{ color: '#6B6560' }}>{item.desc}</p>
+                  <h4 className="text-sm font-bold mb-1" style={{ color: '#1A1614' }}>{item.title}</h4>
+                  <p className="text-xs leading-relaxed" style={{ color: '#5C524A' }}>{item.desc}</p>
                 </div>
-                <div className="mt-4 flex items-center gap-1 text-xs font-semibold group" style={{ color: '#C96A2B' }}>
+                <div className="mt-4 flex items-center gap-1 text-xs font-semibold group" style={{ color: '#722F37' }}>
                   <span>Start Research</span>
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                 </div>
@@ -109,56 +109,56 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* Quick Navigation Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4" style={{ borderTop: '1px solid #E2DDD6' }}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4" style={{ borderTop: '1px solid #B7A89A' }}>
           <div
             onClick={() => navigate('/saved')}
             className="p-5 rounded-2xl transition-all cursor-pointer flex items-center justify-between shadow-sm"
-            style={{ background: '#FFFFFF', border: '1px solid #E2DDD6' }}
+            style={{ background: '#FAF7F2', border: '1px solid #B7A89A' }}
           >
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl" style={{ background: '#F7F4ED', color: '#C96A2B' }}>
+              <div className="p-3 rounded-xl" style={{ background: '#E8DCC6', color: '#722F37' }}>
                 <Bookmark className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold" style={{ color: '#0D0D0D' }}>Saved Vehicles</h4>
-                <p className="text-xs" style={{ color: '#6B6560' }}>View bookmarked cars</p>
+                <h4 className="text-sm font-bold" style={{ color: '#1A1614' }}>Saved Vehicles</h4>
+                <p className="text-xs" style={{ color: '#5C524A' }}>View bookmarked cars</p>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4" style={{ color: '#9C9590' }} />
+            <ArrowRight className="w-4 h-4" style={{ color: '#857A70' }} />
           </div>
 
           <div
             onClick={() => navigate('/compare')}
             className="p-5 rounded-2xl transition-all cursor-pointer flex items-center justify-between shadow-sm"
-            style={{ background: '#FFFFFF', border: '1px solid #E2DDD6' }}
+            style={{ background: '#FAF7F2', border: '1px solid #B7A89A' }}
           >
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl" style={{ background: '#F7F4ED', color: '#C96A2B' }}>
+              <div className="p-3 rounded-xl" style={{ background: '#E8DCC6', color: '#722F37' }}>
                 <Scale className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold" style={{ color: '#0D0D0D' }}>Compare Models</h4>
-                <p className="text-xs" style={{ color: '#6B6560' }}>Side-by-side spec matrix</p>
+                <h4 className="text-sm font-bold" style={{ color: '#1A1614' }}>Compare Models</h4>
+                <p className="text-xs" style={{ color: '#5C524A' }}>Side-by-side spec matrix</p>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4" style={{ color: '#9C9590' }} />
+            <ArrowRight className="w-4 h-4" style={{ color: '#857A70' }} />
           </div>
 
           <div
             onClick={() => navigate('/app')}
             className="p-5 rounded-2xl transition-all cursor-pointer flex items-center justify-between shadow-sm"
-            style={{ background: '#FFFFFF', border: '1px solid #E2DDD6' }}
+            style={{ background: '#FAF7F2', border: '1px solid #B7A89A' }}
           >
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl" style={{ background: '#F7F4ED', color: '#C96A2B' }}>
+              <div className="p-3 rounded-xl" style={{ background: '#E8DCC6', color: '#722F37' }}>
                 <MessageSquare className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-sm font-bold" style={{ color: '#0D0D0D' }}>New AI Session</h4>
-                <p className="text-xs" style={{ color: '#6B6560' }}>Start fresh research</p>
+                <h4 className="text-sm font-bold" style={{ color: '#1A1614' }}>New AI Session</h4>
+                <p className="text-xs" style={{ color: '#5C524A' }}>Start fresh research</p>
               </div>
             </div>
-            <ArrowRight className="w-4 h-4" style={{ color: '#9C9590' }} />
+            <ArrowRight className="w-4 h-4" style={{ color: '#857A70' }} />
           </div>
         </div>
       </div>

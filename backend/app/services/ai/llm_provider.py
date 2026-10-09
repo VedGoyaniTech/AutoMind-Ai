@@ -3343,9 +3343,19 @@ class ConfigurableAPIProvider(BaseLLMProvider):
                         continue
                     break
 
+            if getattr(settings, "ADITYA_API_KEY", None) or os.getenv("ADITYA_API_KEY"):
+                logger.info(f"[ConfigurableAPIProvider] Primary API unavailable ({last_err}). Falling back to Aditya Lab AI.")
+                aditya = AdityaProvider()
+                return aditya.generate(prompt, context)
+
             logger.warning(f"[ConfigurableAPIProvider] API unavailable ({last_err}). Using curated local engine fallback.")
             return self._fallback.generate(prompt, context)
         except Exception as e:
+            if getattr(settings, "ADITYA_API_KEY", None) or os.getenv("ADITYA_API_KEY"):
+                logger.info(f"[ConfigurableAPIProvider] Primary API execution error ({e}). Falling back to Aditya Lab AI.")
+                aditya = AdityaProvider()
+                return aditya.generate(prompt, context)
+
             logger.warning(f"[ConfigurableAPIProvider] Execution error ({e}). Using curated local engine fallback.")
             return self._fallback.generate(prompt, context)
 
@@ -3354,15 +3364,155 @@ class ConfigurableAPIProvider(BaseLLMProvider):
         yield full
 
 
+class AdityaProvider(BaseLLMProvider):
+    """
+    AutoMind AI — Aditya Lab LLM Provider
+    Leverages Aditya Lab's state-of-the-art Indic and multilingual LLM (aditya-latest).
+    Supports direct generation and streaming completions with full automotive grounding fallback.
+    """
+
+    SYSTEM_PROMPT = ConfigurableAPIProvider.SYSTEM_PROMPT
+
+    def __init__(self):
+        self.api_key = getattr(settings, "ADITYA_API_KEY", None) or os.getenv("ADITYA_API_KEY")
+        self.model = getattr(settings, "ADITYA_MODEL", "aditya-latest") or os.getenv("ADITYA_MODEL", "aditya-latest")
+        self._fallback = LocalAutoMindProvider()
+        self._engine = self._fallback._engine
+        self._client = None
+        if self.api_key:
+            try:
+                from adityalab import Aditya
+                self._client = Aditya(api_key=self.api_key)
+            except Exception as e:
+                logger.warning(f"[AdityaProvider] Failed to initialize Aditya client: {e}")
+
+    def generate(self, prompt: str, context: str) -> str:
+        try:
+            if not self._client:
+                return self._fallback.generate(prompt, context)
+
+            import json
+            import time
+            from app.services.ai.claim_validator import claim_validation_service
+
+            p_lower = prompt.lower()
+
+            # 1. Deterministic Versus Comparison Service (Strict ground truth, no hallucinations)
+            if (
+                comparison_service.detect_comparison_intent(prompt)
+                or bool(re.search(r'\b(?:vs|versus|v/s|compare|comparison|difference|farak|farq|antar|tulna|sarxamni)\b', p_lower))
+                or any(w in p_lower for w in ["अंतर", "तुलना", "તફાવત", "સરખામણી", "માંથી કઈ", "से कौन"])
+            ):
+                return self._fallback.generate(prompt, context)
+
+            # 2. Year-wise and new car launch queries (Verified launches database)
+            target_years = self._engine._extract_all_target_years(prompt)
+            if target_years or self._engine._is_new_car_launch_query(prompt) or ("1842" in prompt):
+                return self._fallback.generate(prompt, context)
+
+            # 3. Fastest Cars & Top Speed Records (Strict claim vs measured separation)
+            if any(w in p_lower for w in ["fastest car", "fastest cars", "top speed record", "speed record", "fastest vehicle", "world's fastest"]):
+                return self._fallback.generate(prompt, context)
+
+            # 4. Indian CBU Import / Customs Duty calculation (Statutory formula)
+            if any(w in p_lower for w in ["import car to india", "import duty", "cbu duty", "customs duty on car", "private import", "import cost in india"]):
+                return self._fallback.generate(prompt, context)
+
+            if context and "No verified automotive records" in context and not any(k in p_lower for k in GroundedLLMProvider.MODEL_KNOWLEDGE_BASE):
+                return self._fallback.generate(prompt, context)
+
+            # Enrich context with curated ground truth if target brand is in knowledge base
+            for k_brand, k_data in GroundedLLMProvider.MODEL_KNOWLEDGE_BASE.items():
+                if k_brand in p_lower:
+                    brand_info = json.dumps(k_data.get("models") or k_data.get("key_specs") or {})
+                    context = (context or "") + f"\n\nVERIFIED AUTOMIND DATABASE SPECS FOR {k_data.get('brand', k_brand)}:\n{brand_info}"
+                    break
+
+            user_content = f"User Question: {prompt}"
+            if context and context.strip():
+                user_content = f"Reference Context / Database Evidence:\n{context}\n\nUser Question: {prompt}"
+
+            messages = [
+                {"role": "system", "content": self.SYSTEM_PROMPT},
+                {"role": "user", "content": user_content}
+            ]
+
+            reply = self._client.chat.completions.create(
+                model=self.model,
+                messages=messages
+            )
+            text = getattr(reply, "text", None)
+            if text:
+                return text
+            if isinstance(reply, dict) and "text" in reply:
+                return reply["text"]
+            return str(reply)
+        except Exception as e:
+            logger.warning(f"[AdityaProvider] Generation failed ({e}). Falling back to local engine.")
+            return self._fallback.generate(prompt, context)
+
+    def stream(self, prompt: str, context: str) -> Generator[str, None, None]:
+        try:
+            if not self._client:
+                yield self._fallback.generate(prompt, context)
+                return
+
+            p_lower = prompt.lower()
+            # Fast-path for deterministic services
+            if (
+                comparison_service.detect_comparison_intent(prompt)
+                or bool(re.search(r'\b(?:vs|versus|v/s|compare|comparison|difference|farak|farq|antar|tulna|sarxamni)\b', p_lower))
+                or any(w in p_lower for w in ["fastest car", "top speed record", "import car to india", "cbu duty"])
+            ):
+                yield self._fallback.generate(prompt, context)
+                return
+
+            user_content = f"User Question: {prompt}"
+            if context and context.strip():
+                user_content = f"Reference Context / Database Evidence:\n{context}\n\nUser Question: {prompt}"
+
+            messages = [
+                {"role": "system", "content": self.SYSTEM_PROMPT},
+                {"role": "user", "content": user_content}
+            ]
+
+            stream = self._client.chat.completions.create(
+                model=self.model,
+                messages=messages,
+                stream=True
+            )
+            emitted = False
+            for chunk in stream:
+                choices = chunk.get("choices") if isinstance(chunk, dict) else getattr(chunk, "choices", [])
+                if choices and len(choices) > 0:
+                    delta = choices[0].get("delta") if isinstance(choices[0], dict) else getattr(choices[0], "delta", {})
+                    text = delta.get("content") if isinstance(delta, dict) else getattr(delta, "content", "")
+                    if text:
+                        emitted = True
+                        yield text
+
+            if not emitted:
+                yield self.generate(prompt, context)
+        except Exception as e:
+            logger.warning(f"[AdityaProvider] Streaming error ({e}). Yielding fallback.")
+            yield self._fallback.generate(prompt, context)
+
+
 # ── Provider factory ─────────────────────────────────────────────────────────
 
 def get_llm_provider() -> BaseLLMProvider:
     """
     Returns the configured LLM provider according to environment configuration:
+    - 'aditya' / 'adityalab': AdityaProvider (Aditya Lab Indic / Multilingual LLM)
     - 'api' / 'groq' / 'openai': ConfigurableAPIProvider (Groq, OpenAI, or compatible endpoint)
     - 'qwen_local': QwenLocalProvider (local PyTorch/HuggingFace weights)
     - 'local' / 'grounded': LocalAutoMindProvider (curated deterministic automotive grounding engine)
     """
+    provider_type = (settings.LLM_PROVIDER or os.getenv("LLM_PROVIDER", "")).lower()
+
+    if provider_type in ("aditya", "adityalab"):
+        return AdityaProvider()
+
     has_api_key = bool(
         (settings.LLM_API_KEY and settings.LLM_API_KEY != "EMPTY")
         or os.getenv("LLM_API_KEY")
@@ -3372,6 +3522,8 @@ def get_llm_provider() -> BaseLLMProvider:
 
     if has_api_key:
         return ConfigurableAPIProvider()
+    elif getattr(settings, "ADITYA_API_KEY", None) or os.getenv("ADITYA_API_KEY"):
+        return AdityaProvider()
     elif settings.LLM_PROVIDER == "qwen_local" or os.getenv("LLM_PROVIDER") == "qwen_local":
         return QwenLocalProvider()
     return LocalAutoMindProvider()

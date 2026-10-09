@@ -53,6 +53,8 @@ class Settings(BaseSettings):
     LLM_API_BASE_URL: str = "https://api.groq.com/openai/v1"
     LLM_MODEL_NAME: str = "qwen/qwen3.8-27b"
     OPENAI_API_KEY: Optional[str] = None
+    ADITYA_API_KEY: Optional[str] = None
+    ADITYA_MODEL: str = "aditya-latest"
     EMBEDDING_MODEL_ID: str = "all-MiniLM-L6-v2"
 
     # Vector Store Settings

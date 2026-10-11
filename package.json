@@ -1,0 +1,7 @@
+{
+  "name": "automind-ai",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix frontend install && npm --prefix frontend run build"
+  }
+}

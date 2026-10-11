@@ -13,8 +13,13 @@ def create_db_engine(db_url: str):
     else:
         engine_kwargs["pool_size"] = 10
         engine_kwargs["max_overflow"] = 20
-        engine_kwargs["pool_recycle"] = 3600
-        engine_kwargs["connect_args"] = {"connect_timeout": 5}
+        engine_kwargs["pool_recycle"] = 300
+        engine_kwargs["connect_args"] = {
+            "connect_timeout": 10,
+            "read_timeout": 30,
+            "write_timeout": 30,
+            "charset": "utf8mb4",
+        }
 
     eng = create_engine(db_url, **engine_kwargs)
     
@@ -49,10 +54,14 @@ class Base(DeclarativeBase):
     pass
 
 def get_db():
-    """Dependency for providing database sessions."""
+    """Dependency for providing database sessions with automated rollback on error."""
     db = SessionLocal()
     try:
         yield db
+    except Exception:
+        db.rollback()
+        raise
     finally:
         db.close()
+
 

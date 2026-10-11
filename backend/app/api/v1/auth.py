@@ -2,7 +2,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError, OperationalError
 from app.db.session import get_db
 from app.schemas.user import (
     UserCreate, UserLogin, UserResponse, Token, 
@@ -84,16 +84,32 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
     full_name = user_in.full_name.strip()
 
     repo = UserRepository(db)
-    existing = repo.get_by_email(normalized_email)
-    if existing:
-        raise HTTPException(status_code=400, detail="An account with this email address already exists.")
 
     try:
+        existing = repo.get_by_email(normalized_email)
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="An account with this email address already exists."
+            )
+
         user = repo.create(
             full_name=full_name,
             email=normalized_email,
             password=user_in.password
         )
+        access_token = create_access_token(user.id)
+        user_resp = UserResponse.model_validate(user)
+
+        return RegisterResponse(
+            success=True,
+            message="Account created successfully.",
+            access_token=access_token,
+            token_type="Bearer",
+            user=user_resp
+        )
+    except HTTPException:
+        raise
     except IntegrityError as ie:
         db.rollback()
         logger.warning(f"Registration integrity conflict for '{normalized_email}': {ie}")
@@ -101,12 +117,12 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="An account with this email address already exists."
         )
-    except SQLAlchemyError as se:
+    except (OperationalError, SQLAlchemyError) as se:
         db.rollback()
         logger.error(f"Database error during registration for '{normalized_email}': {se}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Database service temporarily unavailable. Please try again in a few moments."
+            detail="Database service is temporarily unavailable. Please try again."
         )
     except Exception as e:
         db.rollback()
@@ -116,16 +132,6 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
             detail="Unable to complete registration. Please try again."
         )
 
-    access_token = create_access_token(user.id)
-    user_resp = UserResponse.model_validate(user)
-
-    return RegisterResponse(
-        success=True,
-        message="Account created successfully.",
-        access_token=access_token,
-        token_type="Bearer",
-        user=user_resp
-    )
 
 @router.post("/login", response_model=Token)
 def login(credentials: UserLogin, db: Session = Depends(get_db)):

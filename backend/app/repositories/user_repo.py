@@ -25,13 +25,13 @@ class UserRepository:
                 hashed_password=hashed_password,
                 is_admin=is_admin
             )
+            # Create default preferences linked atomically
+            user.preference = UserPreference(
+                answer_detail="Balanced",
+                units="Metric",
+                currency="INR"
+            )
             self.db.add(user)
-            self.db.commit()
-            self.db.refresh(user)
-
-            # Create default preferences
-            pref = UserPreference(user_id=user.id)
-            self.db.add(pref)
             self.db.commit()
             self.db.refresh(user)
             return user

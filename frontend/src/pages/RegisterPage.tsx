@@ -80,7 +80,18 @@ export const RegisterPage: React.FC = () => {
       if (err.code === 'ERR_NETWORK' || !err.response) {
         setError('Cannot connect to backend server at http://localhost:8000. Please ensure the FastAPI backend is running.');
       } else {
-        setError(err.response?.data?.detail || 'Failed to create account.');
+        const detail = err.response?.data?.detail;
+        if (typeof detail === 'string') {
+          setError(detail);
+        } else if (Array.isArray(detail) && detail.length > 0) {
+          setError(detail[0].msg || 'Validation failed. Please check your inputs.');
+        } else if (typeof detail === 'object' && detail?.msg) {
+          setError(detail.msg);
+        } else if (err.response?.data?.message) {
+          setError(err.response.data.message);
+        } else {
+          setError('Failed to create account. Please try again.');
+        }
       }
     } finally {
       setIsLoading(false);

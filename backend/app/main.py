@@ -1,6 +1,9 @@
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from sqlalchemy.exc import SQLAlchemyError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -48,10 +51,37 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global Exception Handler
+# Exception Handlers
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail}
+    )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    errors = exc.errors()
+    msg = errors[0].get("msg", "Validation error") if errors else "Invalid request data."
+    if "Value error, " in msg:
+        msg = msg.replace("Value error, ", "")
+    logger.warning(f"Validation error on {request.url}: {msg}")
+    return JSONResponse(
+        status_code=422,
+        content={"detail": msg, "errors": errors}
+    )
+
+@app.exception_handler(SQLAlchemyError)
+async def database_exception_handler(request: Request, exc: SQLAlchemyError):
+    logger.error(f"Database error on {request.url}: {exc}", exc_info=True)
+    return JSONResponse(
+        status_code=503,
+        content={"detail": "Database service is temporarily unavailable. Please try again."}
+    )
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    if isinstance(exc, HTTPException):
+    if isinstance(exc, (HTTPException, StarletteHTTPException)):
         return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
     logger.error(f"Unhandled Exception on {request.url}: {exc}", exc_info=True)
     return JSONResponse(

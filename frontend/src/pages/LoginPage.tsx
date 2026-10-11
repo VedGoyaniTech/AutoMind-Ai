@@ -52,7 +52,16 @@ export const LoginPage: React.FC = () => {
       if (err.code === 'ERR_NETWORK' || !err.response) {
         setError('Cannot connect to backend server at http://localhost:8000. Please ensure the FastAPI backend is running.');
       } else {
-        setError(err.response?.data?.detail || 'Incorrect email or password.');
+        const detail = err.response?.data?.detail;
+        if (typeof detail === 'string') {
+          setError(detail);
+        } else if (Array.isArray(detail) && detail.length > 0) {
+          setError(detail[0].msg || 'Validation failed. Please check your credentials.');
+        } else if (typeof detail === 'object' && detail?.msg) {
+          setError(detail.msg);
+        } else {
+          setError('Incorrect email or password.');
+        }
       }
     } finally {
       setIsLoading(false);

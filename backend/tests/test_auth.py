@@ -95,3 +95,73 @@ def test_valid_token_authenticated_endpoint(client):
     assert me_resp.status_code == 200
     assert me_resp.json()["email"] == "test@automind.ai"
 
+def test_register_success(client):
+    response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "full_name": "New Registered User",
+            "email": "unique_new_user@automind.ai",
+            "password": "ValidPassword123",
+            "confirm_password": "ValidPassword123"
+        }
+    )
+    assert response.status_code == 201
+    data = response.json()
+    assert data["success"] is True
+    assert "access_token" in data
+    assert data["user"]["email"] == "unique_new_user@automind.ai"
+    assert data["user"]["full_name"] == "New Registered User"
+
+def test_register_duplicate_email(client):
+    response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "full_name": "Duplicate User",
+            "email": "test@automind.ai",
+            "password": "ValidPassword123",
+            "confirm_password": "ValidPassword123"
+        }
+    )
+    assert response.status_code == 400
+    assert "already exists" in response.json()["detail"]
+
+def test_register_case_insensitive_duplicate_email(client):
+    response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "full_name": "Duplicate Upper User",
+            "email": "TEST@AUTOMIND.AI",
+            "password": "ValidPassword123",
+            "confirm_password": "ValidPassword123"
+        }
+    )
+    assert response.status_code == 400
+    assert "already exists" in response.json()["detail"]
+
+def test_register_password_mismatch(client):
+    response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "full_name": "Mismatch User",
+            "email": "mismatch@automind.ai",
+            "password": "ValidPassword123",
+            "confirm_password": "DifferentPassword123"
+        }
+    )
+    assert response.status_code == 400
+    assert "Passwords do not match" in response.json()["detail"]
+
+def test_register_short_password_validation(client):
+    response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "full_name": "Short Password User",
+            "email": "short@automind.ai",
+            "password": "short",
+            "confirm_password": "short"
+        }
+    )
+    assert response.status_code == 422
+    assert "at least 8 characters" in response.json()["detail"]
+
+

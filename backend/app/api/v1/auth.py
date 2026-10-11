@@ -1,6 +1,8 @@
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from app.db.session import get_db
 from app.schemas.user import (
     UserCreate, UserLogin, UserResponse, Token, 
@@ -9,6 +11,8 @@ from app.schemas.user import (
 from app.repositories.user_repo import UserRepository
 from app.core.security import verify_password, get_password_hash, create_access_token, decode_access_token
 from app.models.user import User
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
@@ -76,16 +80,42 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
     if user_in.confirm_password and user_in.password != user_in.confirm_password:
         raise HTTPException(status_code=400, detail="Passwords do not match.")
 
+    normalized_email = user_in.email.strip().lower()
+    full_name = user_in.full_name.strip()
+
     repo = UserRepository(db)
-    existing = repo.get_by_email(user_in.email)
+    existing = repo.get_by_email(normalized_email)
     if existing:
         raise HTTPException(status_code=400, detail="An account with this email address already exists.")
 
-    user = repo.create(
-        full_name=user_in.full_name,
-        email=user_in.email,
-        password=user_in.password
-    )
+    try:
+        user = repo.create(
+            full_name=full_name,
+            email=normalized_email,
+            password=user_in.password
+        )
+    except IntegrityError as ie:
+        db.rollback()
+        logger.warning(f"Registration integrity conflict for '{normalized_email}': {ie}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="An account with this email address already exists."
+        )
+    except SQLAlchemyError as se:
+        db.rollback()
+        logger.error(f"Database error during registration for '{normalized_email}': {se}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database service temporarily unavailable. Please try again in a few moments."
+        )
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Unexpected error during registration for '{normalized_email}': {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to complete registration. Please try again."
+        )
+
     access_token = create_access_token(user.id)
     user_resp = UserResponse.model_validate(user)
 
@@ -101,7 +131,8 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
 def login(credentials: UserLogin, db: Session = Depends(get_db)):
     """Authenticate registered user credentials. No hardcoded or auto-seeded accounts."""
     repo = UserRepository(db)
-    user = repo.get_by_email(credentials.email)
+    normalized_email = credentials.email.strip().lower()
+    user = repo.get_by_email(normalized_email)
     
     if not user or not verify_password(credentials.password, user.hashed_password):
         raise HTTPException(

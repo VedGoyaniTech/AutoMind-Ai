@@ -29,36 +29,8 @@ async def lifespan(app: FastAPI):
     try:
         # Create any newly defined tables safely (e.g. intelligence cache & snapshots)
         Base.metadata.create_all(bind=engine)
+        # Schema verification completed
         logger.info("Database schema verified and synced successfully.")
-
-        # Ensure demo user exists for Instant Demo Mode and testing
-        from app.db.session import SessionLocal
-        from app.models.user import User, UserPreference
-        from app.core.security import get_password_hash
-        
-        db = SessionLocal()
-        try:
-            demo_user = db.query(User).filter(User.email == "demo@automind.ai").first()
-            if not demo_user:
-                demo_user = User(
-                    full_name="Alex Vance",
-                    email="demo@automind.ai",
-                    hashed_password=get_password_hash("password123"),
-                    is_admin=True
-                )
-                demo_user.preference = UserPreference(
-                    answer_detail="Balanced",
-                    units="Metric",
-                    currency="INR"
-                )
-                db.add(demo_user)
-                db.commit()
-                logger.info("Default demo account (demo@automind.ai) verified and seeded successfully.")
-        except Exception as seed_err:
-            db.rollback()
-            logger.warning(f"Demo user check notice: {seed_err}")
-        finally:
-            db.close()
     except Exception as e:
         logger.warning(f"Database schema initialization warning: {e}")
     yield

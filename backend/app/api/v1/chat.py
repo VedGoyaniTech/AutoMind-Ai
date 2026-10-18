@@ -361,6 +361,13 @@ async def chat_stream(
 
             from app.services.vehicle_media import get_vehicle_gallery_for_query
             gallery_data = get_vehicle_gallery_for_query(msg_text) or get_vehicle_gallery_for_query(accumulated_text[:200])
+            if not gallery_data and pipeline_result.get("candidates"):
+                for cand in pipeline_result["candidates"]:
+                    cand_name = getattr(getattr(cand, "model", None), "name", None) or getattr(cand, "variant_name", None)
+                    if cand_name:
+                        gallery_data = get_vehicle_gallery_for_query(cand_name)
+                        if gallery_data:
+                            break
             if gallery_data:
                 yield format_event("gallery", gallery_data)
 

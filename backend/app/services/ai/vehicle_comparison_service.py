@@ -808,11 +808,36 @@ class VehicleComparisonService:
         """
     )
 
+    def _is_powertrain_only_comparison(self, query_lower: str) -> bool:
+        """
+        Detects if the query is a comparison of powertrain technologies (e.g. EV vs Hybrid, Petrol vs Diesel)
+        without any specific vehicle model names.
+        """
+        for alias in MODEL_ALIASES.keys():
+            if alias in {"ev", "hybrid", "4x4", "suv", "sedan", "hatchback", "car", "gadi", "gaadi"}:
+                continue
+            if re.search(r'\b' + re.escape(alias) + r'\b', query_lower):
+                return False
+
+        has_ev = bool(re.search(r'\b(?:ev|electric|electric\s+vehicle)\b', query_lower))
+        has_hybrid = bool(re.search(r'\b(?:hybrid|strong\s+hybrid|mild\s+hybrid|phev|bev)\b', query_lower))
+        has_petrol = bool(re.search(r'\b(?:petrol)\b', query_lower))
+        has_diesel = bool(re.search(r'\b(?:diesel)\b', query_lower))
+        has_cng = bool(re.search(r'\b(?:cng)\b', query_lower))
+        has_transmission = bool(re.search(r'\b(?:amt|cvt|dct|dsg|automatic|manual|torque\s+converter)\b', query_lower))
+
+        matches = sum([has_ev, has_hybrid, has_petrol, has_diesel, has_cng, has_transmission])
+        return matches >= 2
+
     def detect_comparison_intent(self, query: str) -> bool:
         """Detect comparison intent across English, Hindi, Hinglish, and Gujarati."""
         if not query or not query.strip():
             return False
         q_lower = query.lower().strip()
+
+        # Powertrain-only comparisons (EV vs Hybrid, Petrol vs Diesel, Automatic vs Manual) must be handled by dedicated powertrain generator
+        if self._is_powertrain_only_comparison(q_lower):
+            return False
 
         # Direct regex search for comparison markers
         if self.COMPARISON_INTENT_PATTERN.search(q_lower):
@@ -853,6 +878,9 @@ class VehicleComparisonService:
             return None, None
 
         q = query.strip()
+        if self._is_powertrain_only_comparison(q.lower()):
+            return None, None
+
         # First clean off outer leading fillers
         cleaned_lead = self.PREFIX_FILLERS.sub("", q).strip()
 

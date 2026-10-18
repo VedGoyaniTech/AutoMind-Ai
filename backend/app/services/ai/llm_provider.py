@@ -1834,19 +1834,124 @@ class GroundedLLMProvider(BaseLLMProvider):
             out.append(f"\n---\n{refs}")
         return "\n".join(out)
 
+    def _is_powertrain_concept_comparison(self, p_lower: str) -> bool:
+        """Detects if query compares fuel or powertrain technologies (e.g. EV vs Hybrid, Petrol vs Diesel) without two specific car models."""
+        specific_car_count = sum(1 for m in [
+            "nexon", "xuv400", "curvv", "creta", "zs ev", "punch", "tiago", "windsor",
+            "seltos", "thar", "jimny", "xuv700", "safari", "harrier", "dzire", "swift",
+            "bmw", "mercedes", "audi", "fortuner", "endeavour", "innova", "brezza",
+            "fronx", "scorpio", "baleno", "city", "verna", "elevate", "kushaq", "taigun"
+        ] if re.search(r'\b' + re.escape(m) + r'\b', p_lower))
+        if specific_car_count >= 2:
+            return False
+
+        has_ev = bool(re.search(r'\b(?:ev|electric|electric\s+vehicle)\b', p_lower))
+        has_hybrid = bool(re.search(r'\b(?:hybrid|strong\s+hybrid|mild\s+hybrid|phev|bev)\b', p_lower))
+        has_petrol = bool(re.search(r'\b(?:petrol)\b', p_lower))
+        has_diesel = bool(re.search(r'\b(?:diesel)\b', p_lower))
+        has_cng = bool(re.search(r'\b(?:cng)\b', p_lower))
+
+        has_comp_marker = any(w in p_lower for w in [
+            "vs", "versus", "v/s", "aur", "and", "ane", "ya", "or",
+            "antar", "farak", "farq", "difference", "kya antar", "kya farak", "kya difference",
+            "better", "tulna", "sarxamni", "taphawat", "mein se konsi", "me se konsi", "me konsi"
+        ]) or any(w in p_lower for w in ["अंतर", "तुलना", "તફાવત", "સરખામણી"])
+
+        # EV vs Hybrid
+        if (has_ev and has_hybrid) and has_comp_marker:
+            return True
+
+        # Any 2 powertrain fuels
+        fuels = [has_ev, has_hybrid, has_petrol, has_diesel, has_cng]
+        if sum(fuels) >= 2 and has_comp_marker:
+            return True
+
+        fuel_pairs = [
+            "ev vs diesel", "diesel vs ev", "ev vs petrol", "petrol vs ev",
+            "cng vs petrol", "petrol vs cng", "diesel vs petrol", "petrol vs diesel",
+            "hybrid vs ev", "ev vs hybrid", "ev aur hybrid", "hybrid aur ev",
+            "electric vs hybrid", "hybrid vs electric", "electric aur hybrid"
+        ]
+        if any(fp in p_lower for fp in fuel_pairs):
+            return True
+
+        if any(w in p_lower for w in ["running cost", "tco", "per km cost", "cost per km", "savings per km", "kharcha per km"]) and sum(fuels) >= 1:
+            return True
+
+        return False
+
+    def _generate_ev_vs_hybrid_comparison_response(self, prompt: str, web_results: List[Dict[str, str]]) -> str:
+        """Generates comprehensive architectural, efficiency, and ownership comparison between Pure EV and Hybrid vehicles."""
+        out = []
+        out.append("## ⚡ EV (Electric Vehicle) vs Hybrid Car — Complete Architectural, Mileage & Practicality Comparison\n")
+        out.append("EV aur Hybrid dono hi modern, fuel-efficient aur eco-friendly automotive technologies hain, lekin inke kaam karne ka mechanism, charging requirements aur running cost me fundamental antar (differences) hain:\n")
+
+        out.append("### 🧠 1. Core Technology & Working Mechanism")
+        out.append("1. **Electric Vehicle (EV / BEV - Battery Electric Vehicle):**")
+        out.append("   - **Architecture:** Pure 100% Electric. Isme koi petrol ya diesel engine nahi hota. Ek high-capacity Lithium-ion battery pack (30 kWh – 80 kWh) electric traction motor ko direct power supply karta hai.")
+        out.append("   - **Refueling / Charging:** **Isme external charging mandatory (zaroori) hoti hai**. AC Home Wallbox charger ya commercial DC Fast Charger se plug-in karke charge kiya jata hai.")
+        out.append("   - **Emissions:** **Zero Direct Tailpipe Emissions** (Puri tarah green on-road driving).")
+        out.append("2. **Hybrid Car (Strong Hybrid / HEV - Hybrid Electric Vehicle):**")
+        out.append("   - **Architecture:** Dual Powertrain. Isme ek highly efficient Petrol Engine (Atkinson cycle) ke saath ek electric motor aur self-charging battery pack (0.8 kWh – 2 kWh) seamlessly milkar kaam karte hain.")
+        out.append("   - **Refueling / Charging:** **Isme external plug-in charging ki bilkul zaroorat nahi hoti (No external plug required!)**. Gaadi petrol pump par 2 minute me refuel hoti hai, aur braking/coasting ke waqt Regenerative Braking se battery apne aap charge ho jati hai.")
+        out.append("   - **Emissions & Economy:** Bumper-to-bumper city traffic me engine band rehta hai aur gaadi pure EV mode me chalti hai, jisse petrol par **24 – 28 km/l** ka extraordinary mileage milta hai.\n")
+
+        out.append("### 📊 2. Head-to-Head Comparison Matrix")
+        out.append("| Comparison Parameter | **⚡ Pure Electric Vehicle (EV / BEV)** | **🔋 Strong Hybrid Car (HEV)** |")
+        out.append("| :--- | :--- | :--- |")
+        out.append("| **Powertrain Setup** | Electric Motor + Large Battery (30–80 kWh) | Petrol Engine + Electric Motor + Battery (0.8–2 kWh) |")
+        out.append("| **Primary Energy Source** | Sirf Electricity (Home / Commercial DC Charger) | Sirf Petrol (Regular Fuel Pump Refueling) |")
+        out.append("| **External Plug-in Charging** | **Mandatory (Ghar par ya fast charger par plug lagana hoga)** | **Not Required (Bina kisi charging socket ke self-charging)** |")
+        out.append("| **Typical Driving Range** | 300 – 500 km per full charge | **800 – 1,000 km per single petrol tank** |")
+        out.append("| **Range Anxiety on Highway** | Long trips par charging station map plan karna padta hai | **Zero Range Anxiety (Desh ke kisi bhi petrol pump par chalti hai)** |")
+        out.append("| **Real-World Running Cost** | **₹0.95 – ₹1.25 per KM (Lowest Ever)** | ₹3.60 – ₹4.20 per KM |")
+        out.append("| **Real-World Fuel Mileage** | N/A (~120–140 Wh/km energy consumption) | **24.0 – 28.0 km/l** (City traffic me highest mileage) |")
+        out.append("| **Periodic Maintenance** | **Sabse Kam** (No engine oil, spark plugs, clutch, gearbox wear) | Standard Petrol Engine Servicing (Engine Oil, Filters + Hybrid Check) |")
+        out.append("| **Brake Pad Longevity** | 80,000+ km (Regenerative braking saves brake pads) | 70,000+ km (Motor regen assists deceleration) |")
+        out.append("| **Battery Pack Warranty** | **8 Years / 1,60,000 KM** (Standard across Tata, MG, BYD) | **8 Years / 1,60,000 KM** (Toyota/Maruti standard) |")
+        out.append("| **Road Tax (RTO) in India** | **0% – 5% Concessional RTO** in UP, Delhi, Gujarat, etc. | Standard Petrol RTO Tax Slabs (9%–14%) |")
+        out.append("| **Driving Dynamics** | **Instant 100% Torque & Pin-drop Silence** | Ultra-smooth automated switching between EV & Petrol mode |\n")
+
+        out.append("### 🚗 3. Popular Verified Models in Indian Market (Dataset References)")
+        out.append("| Vehicle Category | Verified Models in India | Real-World Range / Mileage |")
+        out.append("| :--- | :--- | :--- |")
+        out.append("| **Pure Electric (EVs)** | **Tata Nexon EV, MG ZS EV, Tata Punch EV, Mahindra XUV400, Tata Curvv EV, BYD Atto 3** | 300 – 460 km Real Range |")
+        out.append("| **Strong Hybrids** | **Toyota Urban Cruiser Hyryder, Maruti Suzuki Grand Vitara, Honda City e:HEV, Toyota Innova Hycross** | 24.0 – 27.97 km/l Mileage |\n")
+
+        out.append("### 🏆 4. AutoMind Final Recommendation — Aapko Kaunsi Leni Chahiye?")
+        out.append("1. ⚡ **EV (Electric Vehicle) Chunein Agar:**")
+        out.append("   - Aapke paas ghar ya office parking me **dedicated charging socket / 15A switch** lagane ki suvidha hai.")
+        out.append("   - Aapki daily city running **30 se 100 km** hai aur aap monthly fuel kharche ko 80% tak kam karke ₹1/km me chalna chahte hain.")
+        out.append("   - Aap instant acceleration punch, zero engine vibration aur maximum green environmental benefits chahte hain.")
+        out.append("2. 🔋 **Hybrid Car Chunein Agar:**")
+        out.append("   - Aapke apartment ya society me personal EV charging socket lagana possible nahi hai.")
+        out.append("   - Aap frequently lambi intercity highway trips (500+ km) bina charging station khoje ya raste me ruke direct non-stop karna chahte hain.")
+        out.append("   - Aap petrol car ki poori convenience ke saath **25+ kmpl ka blockbuster fuel average** chahte hain.")
+
+        refs = self._format_references_section(web_results)
+        if refs:
+            out.append(f"\n---\n{refs}")
+        return "\n".join(out)
+
+    def _generate_powertrain_concept_comparison_response(self, prompt: str, web_results: List[Dict[str, str]]) -> str:
+        """Routes powertrain technology comparisons to appropriate specialized reports."""
+        p_lower = prompt.lower()
+        has_ev = bool(re.search(r'\b(?:ev|electric|electric\s+vehicle)\b', p_lower))
+        has_hybrid = bool(re.search(r'\b(?:hybrid|strong\s+hybrid|mild\s+hybrid|phev|bev)\b', p_lower))
+
+        if has_ev and has_hybrid:
+            return self._generate_ev_vs_hybrid_comparison_response(prompt, web_results)
+
+        return self._generate_fuel_cost_comparison_response(prompt, web_results)
+
     def _generate_versus_comparison_response(self, prompt: str, web_results: List[Dict[str, str]]) -> str:
         """Generates a rich, factual head-to-head comparison table between two specific vehicle models."""
         p_lower = prompt.lower()
         out = []
 
-        # 1. Check for Fuel / Energy / TCO Cost Comparison (ONLY when comparing fuels, NOT specific vehicle models)
-        fuel_pairs = ["ev vs diesel", "diesel vs ev", "ev vs petrol", "petrol vs ev", "cng vs petrol", "petrol vs cng", "diesel vs petrol", "petrol vs diesel", "hybrid vs ev", "ev vs hybrid"]
-        is_fuel_vs_fuel = any(fp in p_lower for fp in fuel_pairs)
-        has_tco_keyword = any(w in p_lower for w in ["running cost", "tco", "per km cost", "cost per km", "savings per km", "kharcha per km"])
-        is_model_vs_model = any(m in p_lower for m in ["nexon", "xuv400", "curvv", "creta", "zs ev", "punch ev", "tiago ev", "windsor", "seltos", "thar", "jimny", "xuv700", "safari", "harrier", "dzire", "swift"])
-
-        if (is_fuel_vs_fuel or has_tco_keyword) and not is_model_vs_model:
-            return self._generate_fuel_cost_comparison_response(prompt, web_results)
+        # 1. Check for Fuel / Energy / Powertrain Technology Comparison (EV vs Hybrid, Petrol vs Diesel, etc.)
+        if self._is_powertrain_concept_comparison(p_lower):
+            return self._generate_powertrain_concept_comparison_response(prompt, web_results)
 
         # 2. Check for Transmission Comparison
         if any(w in p_lower for w in ["amt vs cvt", "cvt vs dct", "dct vs torque", "automatic vs manual", "manual vs automatic", "dsg vs dct", "amt", "torque converter"]):

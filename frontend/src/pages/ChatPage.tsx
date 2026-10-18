@@ -253,16 +253,34 @@ export const ChatPage: React.FC = () => {
                 } else if (data.event_type === 'error') {
                   console.error('[ChatSSE Error Event]', data.message);
                   const errorMsg = data.message || 'An error occurred while generating the response. Please try again.';
-                  const assistantMsg: ChatMessage = {
-                    id: Date.now(),
-                    conversation_id: activeConvId || undefined,
-                    role: 'assistant',
-                    content: `⚠️ ${errorMsg}`,
-                    metadata: {},
-                  };
-                  setMessages((prev) => [...prev, assistantMsg]);
-                  setStreamingText('');
-                  finalStreamText = '';
+                  if (finalStreamText && finalStreamText.trim().length > 50) {
+                    // Response was already successfully streamed to user — preserve it
+                    const assistantMsg: ChatMessage = {
+                      id: Date.now(),
+                      conversation_id: activeConvId || undefined,
+                      role: 'assistant',
+                      content: finalStreamText.trim(),
+                      metadata: {
+                        sources: finalSources,
+                        cars: finalCars,
+                        gallery: finalGallery || undefined,
+                        pricing_quote: finalPricingQuote || undefined
+                      },
+                    };
+                    setMessages((prev) => [...prev, assistantMsg]);
+                    setStreamingText('');
+                  } else {
+                    const assistantMsg: ChatMessage = {
+                      id: Date.now(),
+                      conversation_id: activeConvId || undefined,
+                      role: 'assistant',
+                      content: `⚠️ ${errorMsg}`,
+                      metadata: {},
+                    };
+                    setMessages((prev) => [...prev, assistantMsg]);
+                    setStreamingText('');
+                    finalStreamText = '';
+                  }
                 } else if (data.event_type === 'complete') {
                   finalMessageId = data.message_id;
                   const contentToSave = finalStreamText.trim() || data.content;

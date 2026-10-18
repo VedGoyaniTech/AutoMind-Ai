@@ -329,75 +329,93 @@ async def chat_stream(
 
             # Save assistant message into DB (metadata kept for history)
             sources_data = [s.model_dump() for s in sources]
-            top_variant_ids = [d["car_variant_id"] for d in docs[:5] if "car_variant_id" in d]
-            car_variants = gen_car_repo.get_variants_by_ids(top_variant_ids)
             cars_data = []
-            for v in car_variants:
-                try:
-                    m_name = v.car_model.manufacturer.name if (v.car_model and getattr(v.car_model, 'manufacturer', None)) else "Automotive Manufacturer"
-                    model_n = v.car_model.name if v.car_model else "Vehicle Model"
-                    body_t = v.car_model.body_type if v.car_model else "SUV"
-                    cars_data.append(CarVariantSummary(
-                        id=v.id,
-                        manufacturer_name=m_name,
-                        model_name=model_n,
-                        variant_name=v.variant_name or "Standard Variant",
-                        model_year=v.model_year or 2024,
-                        body_type=body_t,
-                        fuel_type=v.fuel_type or "Petrol",
-                        transmission=v.transmission or "Manual",
-                        ex_showroom_price=v.ex_showroom_price or "Market Pricing",
-                        estimated_on_road_price=v.estimated_on_road_price or "Market Pricing",
-                        currency=v.currency or "INR",
-                        combined_mileage=v.combined_mileage or "15.0 kmpl",
-                        electric_range=v.electric_range,
-                        seating_capacity=v.seating_capacity or 5,
-                        airbags=v.airbags or 6,
-                        safety_rating=v.safety_rating or "5-Star NCAP",
-                        image_url=v.image_url
-                    ).model_dump())
-                except Exception as card_err:
-                    logger.warning(f"[ChatAPI] Skipping car card due to missing DB field: {card_err}")
-
-            from app.services.vehicle_media import get_vehicle_gallery_for_query
-            gallery_data = get_vehicle_gallery_for_query(msg_text) or get_vehicle_gallery_for_query(accumulated_text[:200])
-            if not gallery_data and pipeline_result.get("candidates"):
-                for cand in pipeline_result["candidates"]:
-                    cand_name = getattr(getattr(cand, "model", None), "name", None) or getattr(cand, "variant_name", None)
-                    if cand_name:
-                        gallery_data = get_vehicle_gallery_for_query(cand_name)
-                        if gallery_data:
-                            break
-            if gallery_data:
-                yield format_event("gallery", gallery_data)
-
-            # Check for Pricing / EMI Quote Intent & Dispatch Pricing Event
+            gallery_data = None
             pricing_quote_dict = None
-            if any(w in msg_text.lower() for w in ["on-road", "on road", "price", "rto", "tax", "emi", "down payment", "kitna", "keemat", "કિંમત"]):
-                try:
-                    from app.services.agentic.tools.pricing_quote import execute_pricing_quote
-                    from app.services.pricing.city_mapping import extract_city_from_text
-                    
-                    detected_city, detected_state = extract_city_from_text(msg_text)
-                    pq_res = execute_pricing_quote(
-                        db=gen_db,
-                        city=detected_city or "Ahmedabad",
-                        state_code=detected_state,
-                        model=msg_text,
-                        fuel_type="petrol"
-                    )
-                    if pq_res.success and pq_res.data:
-                        pricing_quote_dict = pq_res.data
-                        yield format_event("pricing_quote", pricing_quote_dict)
-                except Exception as p_err:
-                    logger.warning(f"[ChatAPI] Pricing tool notice: {p_err}")
+
+            try:
+                top_variant_ids = [d["car_variant_id"] for d in docs[:5] if "car_variant_id" in d]
+                car_variants = gen_car_repo.get_variants_by_ids(top_variant_ids)
+                
+                def safe_numeric(val, default=None):
+                    if val is None:
+                        return default
+                    try:
+                        if isinstance(val, (int, float)):
+                            return float(val)
+                        cleaned = re.sub(r'[^\d.]', '', str(val))
+                        return float(cleaned) if cleaned else default
+                    except Exception:
+                        return default
+
+                for v in car_variants:
+                    try:
+                        m_name = v.car_model.manufacturer.name if (v.car_model and getattr(v.car_model, 'manufacturer', None)) else "Automotive Manufacturer"
+                        model_n = v.car_model.name if v.car_model else "Vehicle Model"
+                        body_t = v.car_model.body_type if v.car_model else "SUV"
+                        cars_data.append(CarVariantSummary(
+                            id=v.id,
+                            manufacturer_name=m_name,
+                            model_name=model_n,
+                            variant_name=v.variant_name or "Standard Variant",
+                            model_year=v.model_year or 2024,
+                            body_type=body_t,
+                            fuel_type=v.fuel_type or "Petrol",
+                            transmission=v.transmission or "Manual",
+                            ex_showroom_price=safe_numeric(v.ex_showroom_price, 0.0),
+                            estimated_on_road_price=safe_numeric(v.estimated_on_road_price, 0.0),
+                            currency=v.currency or "INR",
+                            combined_mileage=safe_numeric(v.combined_mileage, None),
+                            electric_range=safe_numeric(v.electric_range, None),
+                            seating_capacity=v.seating_capacity or 5,
+                            airbags=v.airbags or 6,
+                            safety_rating=safe_numeric(v.safety_rating, None),
+                            image_url=v.image_url
+                        ).model_dump())
+                    except Exception as card_err:
+                        logger.warning(f"[ChatAPI] Skipping car card due to missing DB field: {card_err}")
+
+                from app.services.vehicle_media import get_vehicle_gallery_for_query
+                gallery_data = get_vehicle_gallery_for_query(msg_text) or get_vehicle_gallery_for_query(accumulated_text[:200])
+                if not gallery_data and car_variants:
+                    for v in car_variants:
+                        cand_name = getattr(getattr(v, 'car_model', None), 'name', None) or getattr(v, 'variant_name', None)
+                        if cand_name:
+                            gallery_data = get_vehicle_gallery_for_query(cand_name)
+                            if gallery_data:
+                                break
+                if gallery_data:
+                    yield format_event("gallery", gallery_data)
+
+                # Check for Pricing / EMI Quote Intent & Dispatch Pricing Event
+                if any(w in msg_text.lower() for w in ["on-road", "on road", "price", "rto", "tax", "emi", "down payment", "kitna", "keemat", "કિંમત"]):
+                    try:
+                        from app.services.agentic.tools.pricing_quote import execute_pricing_quote
+                        from app.services.pricing.city_mapping import extract_city_from_text
+                        
+                        detected_city, detected_state = extract_city_from_text(msg_text)
+                        pq_res = execute_pricing_quote(
+                            db=gen_db,
+                            city=detected_city or "Ahmedabad",
+                            state_code=detected_state,
+                            model=msg_text,
+                            fuel_type="petrol"
+                        )
+                        if pq_res.success and pq_res.data:
+                            pricing_quote_dict = pq_res.data
+                            yield format_event("pricing_quote", pricing_quote_dict)
+                    except Exception as p_err:
+                        logger.warning(f"[ChatAPI] Pricing tool notice: {p_err}")
+
+            except Exception as meta_err:
+                logger.warning(f"[ChatAPI] Non-critical metadata assembly notice: {meta_err}")
 
             meta = {
                 "sources": sources_data,
                 "cars": cars_data,
                 "gallery": gallery_data,
                 "pricing_quote": pricing_quote_dict,
-                "parsed_constraints": query_analysis["parsed_constraints"]
+                "parsed_constraints": query_analysis.get("parsed_constraints")
             }
             try:
                 saved_msg = gen_chat_repo.add_message(
@@ -419,10 +437,17 @@ async def chat_stream(
 
         except Exception as err:
             logger.exception(f"[CHAT GENERATION ERROR] request_id={req_id} conv_id={conv_id} provider=NvidiaNIM/GroundedLLM: {err}")
-            yield format_event("error", {
-                "message": "An error occurred while generating the response. Please try again.",
-                "request_id": req_id
-            })
+            if accumulated_text and len(accumulated_text.strip()) > 50:
+                logger.info(f"[ChatAPI] Emitting complete event since response ({len(accumulated_text)} chars) was already generated.")
+                yield format_event("complete", {
+                    "message": "Response generation complete.",
+                    "message_id": None
+                })
+            else:
+                yield format_event("error", {
+                    "message": "An error occurred while generating the response. Please try again.",
+                    "request_id": req_id
+                })
         finally:
             gen_db.close()
 

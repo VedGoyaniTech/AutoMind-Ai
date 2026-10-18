@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Car, Mail, Lock, User as UserIcon, ShieldCheck, Check, AlertCircle, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import { Car, Mail, Lock, User as UserIcon, ShieldCheck, Check, AlertCircle, Eye, EyeOff, CheckCircle2, Sparkles } from 'lucide-react';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { useAuth } from '../context/AuthContext';
+import { User } from '../types/user';
 
 export const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
-  const { registerAccount, isAuthenticated } = useAuth();
+  const { registerAccount, login, isAuthenticated } = useAuth();
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -19,6 +20,26 @@ export const RegisterPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+
+  const handleInstantDemo = () => {
+    setIsLoading(true);
+    setError('');
+    const instantDemoUser: User = {
+      id: (Date.now() % 10000) + 100,
+      full_name: fullName.trim() || 'Alex Vance',
+      email: email.trim() || 'demo@automind.ai',
+      is_admin: true,
+      preference: {
+        id: 1,
+        answer_detail: 'Balanced',
+        units: 'Metric',
+        currency: 'INR'
+      },
+      created_at: new Date().toISOString()
+    };
+    login('demo-instant-access-token', instantDemoUser);
+    navigate('/app');
+  };
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -78,7 +99,7 @@ export const RegisterPage: React.FC = () => {
     } catch (err: any) {
       console.error('Registration error:', err);
       if (err.code === 'ERR_NETWORK' || !err.response) {
-        setError('Cannot connect to backend server at http://localhost:8000. Please ensure the FastAPI backend is running.');
+        setError('Cannot connect to backend server. Please verify the backend is running, or continue directly with Instant Demo Session.');
       } else {
         const detail = err.response?.data?.detail;
         if (typeof detail === 'string') {
@@ -160,7 +181,7 @@ export const RegisterPage: React.FC = () => {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="p-3.5 rounded-xl text-xs font-medium space-y-2"
+                className="p-3.5 rounded-xl text-xs font-medium space-y-2.5"
                 style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B' }}
               >
                 <div className="flex items-center gap-2 font-bold" style={{ color: '#DC2626' }}>
@@ -168,6 +189,17 @@ export const RegisterPage: React.FC = () => {
                   <span>Registration Notice</span>
                 </div>
                 <p>{error}</p>
+                {error.includes('Cannot connect') && (
+                  <button
+                    type="button"
+                    onClick={handleInstantDemo}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-90 mt-1"
+                    style={{ background: '#722F37' }}
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Continue with Instant Demo Access
+                  </button>
+                )}
               </motion.div>
             )}
 
@@ -259,6 +291,30 @@ export const RegisterPage: React.FC = () => {
               {isLoading ? 'Creating Account...' : 'Create Account'}
             </Button>
           </form>
+
+          {/* Divider */}
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-[#B7A89A]/40" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="px-2 font-medium" style={{ background: '#E8DCC6', color: '#857A70' }}>Or</span>
+            </div>
+          </div>
+
+          {/* Instant Demo Access Button */}
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="w-full border-[#B7A89A] hover:bg-[#DFD2BA] transition-all flex items-center justify-center gap-2"
+            style={{ color: '#1A1614' }}
+            onClick={handleInstantDemo}
+            disabled={isLoading}
+          >
+            <Sparkles className="w-4 h-4 text-amber-600" />
+            Continue with Instant Demo
+          </Button>
 
           <div className="text-center text-xs" style={{ color: '#5C524A' }}>
             Already have an account?{' '}

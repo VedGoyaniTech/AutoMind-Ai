@@ -51,7 +51,7 @@ export const LoginPage: React.FC = () => {
     } catch (err: any) {
       console.error('Login error:', err);
       if (err.code === 'ERR_NETWORK' || !err.response) {
-        setError('Cannot connect to backend server at http://localhost:8000. Please ensure the FastAPI backend is running.');
+        setError('Cannot connect to backend server. Please ensure the FastAPI backend is running, or click "Continue with Instant Demo" below.');
       } else {
         const detail = err.response?.data?.detail;
         if (typeof detail === 'string') {

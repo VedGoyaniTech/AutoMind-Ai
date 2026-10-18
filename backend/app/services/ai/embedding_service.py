@@ -46,14 +46,21 @@ class EmbeddingService:
                 logger.warning(f"Error during GPU encoding ({e}). Using CPU encoding.")
                 pass
 
-        # Fallback hashing vectorizer if model is loading
+        # Deterministic hashing vectorizer (independent of Python process hash randomization)
+        import hashlib
         embeddings = []
         for text in texts:
             vec = np.zeros(self._fallback_dim, dtype=np.float32)
-            words = text.lower().split()
+            words = text.lower().replace("-", " ").replace("/", " ").split()
             for w in words:
-                idx = abs(hash(w)) % self._fallback_dim
-                vec[idx] += 1.0
+                if len(w) < 2:
+                    continue
+                # Deterministic bucket using SHA-256
+                digest = hashlib.sha256(w.encode("utf-8")).digest()
+                idx = int.from_bytes(digest[:4], byteorder="big") % self._fallback_dim
+                # Secondary sign hash for signed random projection
+                sign = 1.0 if (digest[4] % 2 == 0) else -1.0
+                vec[idx] += sign * (2.0 if len(w) > 3 else 1.0)
             norm = np.linalg.norm(vec)
             if norm > 0:
                 vec /= norm

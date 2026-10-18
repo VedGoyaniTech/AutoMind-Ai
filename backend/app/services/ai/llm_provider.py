@@ -648,13 +648,17 @@ class GroundedLLMProvider(BaseLLMProvider):
 
     def _is_conceptual_query(self, prompt: str) -> bool:
         p = prompt.lower()
-        # If user is asking for specific car recommendation / budget, it is NOT conceptual
-        if any(w in p for w in ["under", "lakh", "crore", "budget", "top 3", "options", "which car", "which suv", "recommend", "best car for", "buy"]):
+        # If user is asking for specific car recommendation, price, mileage, specs, or a specific car, it is NOT conceptual
+        if any(w in p for w in ["price", "cost", "mileage", "kmpl", "range", "specs", "specifications", "under", "lakh", "crore", "budget", "top 3", "options", "which car", "which suv", "recommend", "best car for", "buy"]):
+            return False
+        if self._extract_query_model_term(prompt) is not None:
             return False
         concept_triggers = [
-            "what is", "explain", "how does", "difference between", "technology", "working of",
-            "adas", "dct", "torque converter", "lfp vs nmc", "regenerative braking", "mpfi",
-            "battery warranty", "battery life", "suspension", "abs vs ebd"
+            "what is adas", "what is dct", "what is torque converter", "what is lfp",
+            "explain adas", "explain dct", "how does adas", "how does regenerative braking",
+            "difference between dct and", "difference between lfp and", "technology of",
+            "working of adas", "working of dct", "lfp vs nmc", "regenerative braking working",
+            "abs vs ebd"
         ]
         has_trigger = any(t in p for t in concept_triggers)
         has_two_cars = sum(1 for m in self.KNOWN_BRANDS_AND_MODELS if m in p) >= 2
@@ -2083,7 +2087,9 @@ class GroundedLLMProvider(BaseLLMProvider):
         is_luxury_query = any(w in p_lower for w in ["luxury", "luxry", "luxurious", "premium", "exotic", "supercar", "expensive", "sports car"])
         has_budget_or_rec = any(b in p_lower for b in ["budget", "under", "below", "lakh", "rupaye", "rupees", "rs.", "inr", "crore", "cr", "kaun", "konsi", "kon si", "purchase", "kharid", "buy", "suggest", "chahiye", "chahie", "compare", "vs"]) or any(ch.isdigit() for ch in prompt)
         
-        if self._is_new_car_launch_query(prompt) or target_year:
+        model_term_early = self._extract_query_model_term(prompt)
+        is_generic_launch_list = any(w in p_lower for w in ["launches", "all cars", "car list", "launche hui", "launched in", "naya launch", "upcoming list", "ki list", "ka list"])
+        if (self._is_new_car_launch_query(prompt) or target_year) and (not model_term_early or is_generic_launch_list or (target_year and "detail" in p_lower)):
             return self._generate_dynamic_car_launches_response(prompt, target_year, is_luxury_query, candidates, web_results)
 
         if is_luxury_query and not has_budget_or_rec and not candidates:
@@ -2125,9 +2131,13 @@ class GroundedLLMProvider(BaseLLMProvider):
             clean_term = self.TYPO_CORRECTIONS.get(model_term.lower(), model_term)
             check_keyword = "nano" if "nano" in clean_term.lower() else clean_term.lower()
             matched = [c for c in candidates if check_keyword in c["name"].lower()]
-            # For brand-only queries (e.g. just "BMW", "Ferrari"), always show the full KB lineup
-            # not just 1 DB variant — route to web response for full model table
-            is_brand_only = len([w for w in p_lower.split() if w not in self.GENERIC_STOP_WORDS and len(w) >= 3]) <= 2
+            # For true brand-only queries (e.g. user just asks "BMW", "Ferrari", "Audi"), show full brand lineup
+            MAJOR_BRANDS = {
+                "bmw", "ferrari", "audi", "mercedes", "tata", "mahindra", "toyota", "hyundai", "kia",
+                "honda", "volkswagen", "skoda", "porsche", "bugatti", "lamborghini", "rolls-royce",
+                "bentley", "lexus", "byd", "jeep", "nissan", "renault", "mg", "citroen", "volvo"
+            }
+            is_brand_only = clean_term.lower() in MAJOR_BRANDS and not any(m in p_lower for m in self.KNOWN_BRANDS_AND_MODELS if m not in MAJOR_BRANDS)
             if matched and not is_brand_only:
                 return self._generate_single_model_response(prompt, clean_term, matched, web_results)
             return self._generate_single_model_web_response(prompt, clean_term, web_results)
@@ -2247,8 +2257,8 @@ class GroundedLLMProvider(BaseLLMProvider):
             brand_or_model=detected_brand or detected_model
         )
 
-        # If query specifically for year 2000 or historical era returned few results, fetch all for that year
-        if target_year and len(local_cars) == 0:
+        # If query specifically for historical era returned few results, fetch all for that year ONLY if no specific brand was asked
+        if target_year and len(local_cars) == 0 and not (detected_brand or detected_model):
             local_cars = query_historical_cars(year=target_year)
 
         matched_candidates = []
@@ -2842,10 +2852,15 @@ class GroundedLLMProvider(BaseLLMProvider):
             "supercar": "supercar", "super car": "supercar",
             "sports car": "supercar",
         }
+        # Only redirect to category response if user did NOT ask about a specific brand or model
+        # (e.g. "show EV list" vs "MG Windsor EV" or "Tata Harrier SUV")
+        specific_brands_models = [bm for bm in self.KNOWN_BRANDS_AND_MODELS if bm not in ["ev", "suv", "sedan", "hatchback", "luxury"]]
+        has_specific_car = any(re.search(r'\b' + re.escape(bm) + r'\b', p_lower) for bm in specific_brands_models)
+        
         has_budget_or_rec = any(b in p_lower for b in ["budget", "under", "below", "lakh", "rupaye", "rupees", "rs.", "inr", "crore", "cr", "kaun", "konsi", "kon si", "purchase", "kharid", "buy", "suggest", "chahiye", "chahie"]) or any(ch.isdigit() for ch in prompt)
-        if not has_budget_or_rec:
+        if not has_specific_car and not has_budget_or_rec:
             for kw, cat_key in CATEGORY_KEYWORDS.items():
-                if kw in p_lower or kw == key_term:
+                if kw == key_term or p_lower.strip() == kw:
                     return self._generate_category_response(cat_key, prompt, web_results)
 
         # ── Specific model abbreviation corrections ───────────────────────────
@@ -3323,6 +3338,10 @@ class ConfigurableAPIProvider(BaseLLMProvider):
                 "max_tokens": 800
             }
 
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.api_key}"
+            }
             req = urllib.request.Request(
                 f"{self.api_base.rstrip('/')}/chat/completions",
                 data=json.dumps(payload).encode("utf-8"),

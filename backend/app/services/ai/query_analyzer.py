@@ -13,7 +13,7 @@ class QueryAnalyzer:
         "Lexus", "Jaguar", "Land Rover", "Volvo", "BYD", "Nissan", "Renault", "Tesla"
     ]
     
-    BODY_TYPES = ["SUV", "Sedan", "Hatchback", "MUV", "Coupe", "EV", "Cross-over"]
+    BODY_TYPES = ["SUV", "Sedan", "Hatchback", "MUV", "MPV", "Coupe", "Crossover"]
     FUEL_TYPES = ["Petrol", "Diesel", "EV", "Electric", "Hybrid", "CNG"]
     INDIC_DIGITS = {
         '૦': '0', '૧': '1', '૨': '2', '૩': '3', '૪': '4', '૫': '5', '૬': '6', '૭': '7', '૮': '8', '૯': '9',
@@ -212,10 +212,42 @@ class QueryAnalyzer:
         elif is_launch:
             intent_type = "car_launches"
 
+        # 14. Model extraction for targeted SQL catalog retrieval
+        KNOWN_MODELS = [
+            "city", "amaze", "elevate", "zr-v", "civic", "cr-v",
+            "hector", "windsor", "comet", "zs ev", "astor", "gloster", "cyberster",
+            "virtus", "taigun", "tiguan", "tayron", "polo", "vento",
+            "slavia", "kushaq", "kodiaq", "kylaq", "superb", "octavia",
+            "creta", "venue", "verna", "tucson", "exter", "i20", "alcazar", "ioniq",
+            "nexon", "punch", "curvv", "harrier", "safari", "tiago", "tigor", "sierra", "nano",
+            "seltos", "sonet", "carens", "carnival", "ev6", "ev9",
+            "fortuner", "innova", "hycross", "hyryder", "glanza", "hilux", "camry", "vellfire",
+            "thar", "xuv700", "xuv400", "xuv300", "xuv 3xo", "scorpio", "bolero", "marazzo",
+            "swift", "dzire", "baleno", "brezza", "fronx", "jimny", "grand vitara", "ertiga", "xl6", "invicto", "alto", "wagon r", "celerio",
+            "compass", "meridian", "wrangler", "grand cherokee",
+            "magnite", "x-trail", "kiger", "triber", "kwid", "duster",
+            "q3", "q5", "q7", "q8", "a4", "a6", "sq8", "rs q8",
+            "x1", "x3", "x5", "x7", "m3", "m5", "3 series", "5 series", "7 series", "i4", "ix",
+            "c-class", "e-class", "s-class", "gla", "glc", "gle", "gls", "amg", "eqe", "eqs",
+            "c3", "basalt", "aircross", "atto 3", "seal"
+        ]
+        detected_model: Optional[str] = None
+        for m in KNOWN_MODELS:
+            if re.search(r'\b' + re.escape(m) + r'\b', lower):
+                detected_model = m
+                break
+
+        clean_search_query: Optional[str] = None
+        if detected_model:
+            clean_search_query = detected_model
+        elif not (price_max or price_min or detected_body_type or detected_fuel or detected_manufacturer):
+            # Only use prompt if no structural filters were identified
+            clean_search_query = prompt
+
         filter_schema = CarSearchFilter(
-            query=prompt,
+            query=clean_search_query,
             manufacturer=detected_manufacturer,
-            body_type=detected_body_type,
+            body_type=None if detected_model else detected_body_type,
             fuel_type=detected_fuel,
             price_max=price_max,
             price_min=price_min,

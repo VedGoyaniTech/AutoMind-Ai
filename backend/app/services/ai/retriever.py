@@ -119,17 +119,18 @@ class HybridRetriever:
         rrf_scores: Dict[str, float] = {}
         doc_map: Dict[str, Dict[str, Any]] = {}
 
-        # A. Prioritize dataset store matched docs
-        for rank, ddoc in enumerate(dataset_docs):
-            key = f"ds_{ddoc['car_variant_id']}"
-            rrf_scores[key] = 10.0 + (1.0 / (rank + 1))
-            doc_map[key] = ddoc
-
-        # B. Exact SQL candidate matches
+        # A. Exact SQL candidate matches (Highest priority ground truth)
         for rank, variant in enumerate(sql_candidates):
             key = f"veh_{variant.id}"
-            rrf_scores[key] = rrf_scores.get(key, 0.0) + (1.0 / (60 + rank + 1)) * 1.5
+            rrf_scores[key] = 20.0 + (1.0 / (rank + 1)) * 2.0
             doc_map[key] = self._variant_to_doc_dict(variant)
+
+        # B. Dataset store matched docs (broad category / year research)
+        if not filter_schema.query:
+            for rank, ddoc in enumerate(dataset_docs):
+                key = f"ds_{ddoc['car_variant_id']}"
+                rrf_scores[key] = 10.0 + (1.0 / (rank + 1))
+                doc_map[key] = ddoc
 
         # C. Semantic documents (both vehicle records and knowledge chunks)
         for rank, sdoc in enumerate(semantic_docs):

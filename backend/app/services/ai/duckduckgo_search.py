@@ -32,9 +32,23 @@ TRUSTED_AUTOMOTIVE_DOMAINS = [
     "marutisuzuki.com",
     "toyotabharat.com",
     "kia.com",
+    "hondacarindia.com",
+    "mgmotor.co.in",
+    "volkswagen.co.in",
     "skoda-auto.co.in",
+    "audi.in",
     "bmw.in",
-    "mercedes-benz.co.in"
+    "mercedes-benz.co.in",
+    "jeep-india.com",
+    "nissan.in",
+    "renault.co.in",
+    "volvocars.com",
+    "lexusindia.co.in",
+    "byd.com",
+    "citroen.in",
+    "porsche.com",
+    "ferrari.com",
+    "lamborghini.com"
 ]
 
 # In-memory research cache for sub-second retrieval of verified queries

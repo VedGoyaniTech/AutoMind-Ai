@@ -7,6 +7,7 @@ from typing import Dict, Any, List, Optional
 from app.services.agentic.schemas import (
     AgentPlan, PlannedStep, AgentIntent, ExtractedEntities
 )
+from app.services.vehicle_media import has_explicit_image_intent
 
 class AgentPlanner:
     """
@@ -202,8 +203,8 @@ class AgentPlanner:
         elif has_price:
             return AgentIntent.ON_ROAD_PRICE
 
-        # 5. Gallery
-        if any(w in p_lower for w in ["photo", "image", "gallery", "pic", "look", "exterior", "interior"]):
+        # 5. Gallery (strictly when user explicitly asks for photos/images)
+        if has_explicit_image_intent(p_lower):
             return AgentIntent.GALLERY_REQUEST
 
         # 6. Specific vehicle details

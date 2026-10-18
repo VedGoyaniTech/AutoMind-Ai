@@ -375,17 +375,19 @@ async def chat_stream(
                     except Exception as card_err:
                         logger.warning(f"[ChatAPI] Skipping car card due to missing DB field: {card_err}")
 
-                from app.services.vehicle_media import get_vehicle_gallery_for_query
-                gallery_data = get_vehicle_gallery_for_query(msg_text) or get_vehicle_gallery_for_query(accumulated_text[:200])
-                if not gallery_data and car_variants:
-                    for v in car_variants:
-                        cand_name = getattr(getattr(v, 'car_model', None), 'name', None) or getattr(v, 'variant_name', None)
-                        if cand_name:
-                            gallery_data = get_vehicle_gallery_for_query(cand_name)
-                            if gallery_data:
-                                break
-                if gallery_data:
-                    yield format_event("gallery", gallery_data)
+                from app.services.vehicle_media import get_vehicle_gallery_for_query, has_explicit_image_intent
+                # STRICT DIRECTIVE: NEVER display vehicle images/galleries unless user explicitly asks for photos/images
+                if has_explicit_image_intent(msg_text):
+                    gallery_data = get_vehicle_gallery_for_query(msg_text)
+                    if not gallery_data and car_variants:
+                        for v in car_variants:
+                            cand_name = getattr(getattr(v, 'car_model', None), 'name', None) or getattr(v, 'variant_name', None)
+                            if cand_name:
+                                gallery_data = get_vehicle_gallery_for_query(cand_name)
+                                if gallery_data:
+                                    break
+                    if gallery_data:
+                        yield format_event("gallery", gallery_data)
 
                 # Check for Pricing / EMI Quote Intent & Dispatch Pricing Event
                 if any(w in msg_text.lower() for w in ["on-road", "on road", "price", "rto", "tax", "emi", "down payment", "kitna", "keemat", "કિંમત"]):

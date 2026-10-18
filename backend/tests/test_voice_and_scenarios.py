@@ -147,3 +147,30 @@ def test_scenario_tata_sierra_gujarati_and_hinglish():
     resp_rr = llm.generate("Rolls Royce models", "")
     assert "Rolls-Royce" in resp_rr
 
+
+def test_has_explicit_image_intent_gating():
+    """Verify that images are ONLY shown when explicitly requested, never during conceptual/regular queries."""
+    from app.services.vehicle_media import has_explicit_image_intent
+
+    # Negative cases: User did NOT ask for photos/images -> Must return False
+    assert not has_explicit_image_intent("EV (Electric Vehicle) aur Hybrid car me kya antar hota hai?")
+    assert not has_explicit_image_intent("What is the price of Creta?")
+    assert not has_explicit_image_intent("Thar ka mileage kitna hai?")
+    assert not has_explicit_image_intent("Under 10 lakh best SUV batao")
+    assert not has_explicit_image_intent("Compare Tata Nexon vs Maruti Brezza")
+    assert not has_explicit_image_intent("Mera naam Rahul hai")
+    assert not has_explicit_image_intent("Tell me about Tata Sierra")
+    assert not has_explicit_image_intent("I am looking for a reliable diesel car")
+    assert not has_explicit_image_intent("What are the safety features of Scorpio-N?")
+
+    # Positive cases: User explicitly asks for images/photos -> Must return True
+    assert has_explicit_image_intent("Thar ki photo dikhao")
+    assert has_explicit_image_intent("Show photos of Curvv")
+    assert has_explicit_image_intent("Tata Nexon images")
+    assert has_explicit_image_intent("Creta pictures please")
+    assert has_explicit_image_intent("Mahindra Thar gallery")
+    assert has_explicit_image_intent("Curvv kaisa dikhta hai?")
+    assert has_explicit_image_intent("Scorpio-N kaisi dikhti hai")
+    assert has_explicit_image_intent("ટાટા પંચ ની તસવીર બતાવો")
+    assert has_explicit_image_intent("Creta ni photo aapo")
+

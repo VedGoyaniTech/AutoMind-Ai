@@ -632,7 +632,25 @@ def _fetch_wikipedia_car_image(search_term: str) -> Optional[Dict[str, str]]:
     except Exception as e:
         logger.debug(f"[VehicleMedia] Dynamic Wikipedia image lookup notice: {e}")
 
-    return None
+IMAGE_INTENT_PATTERN = re.compile(
+    r'\b(photo|photos|image|images|pic|pics|picture|pictures|gallery|galleries|photu|fotho|foto|tasveer|tasveere|tasveerein|tasvir|chhavi|wallpaper|wallpapers|chitra)\b|'
+    r'\b(look\s+like|looks\s+like|how\s+does\s+it\s+look|appearance|exterior\s+view|interior\s+view|cabin\s+view)\b|'
+    r'\b(kais[aei]\s+dikh(ta|ti|te)|kais[aei]\s+lag(ta|ti|te)|photo\s*dikha|pic\s*dikha|image\s*dikha|gallery\s*dikha|tasveer\s*dikha)\b|'
+    r'(ફોટો|ફોટા|તસવીર|તસવીરો|ચિત્ર|કેવી\s*દેખાય|કેવો\s*દેખાય|કેવું\s*દેખાય)',
+    re.IGNORECASE
+)
+
+
+def has_explicit_image_intent(query: Optional[str]) -> bool:
+    """
+    Returns True if and only if the user query explicitly requests visual images,
+    photos, pictures, galleries, or vehicle appearance.
+    Ensures that general questions (specs, price, comparisons, concepts) NEVER
+    trigger vehicle image cards.
+    """
+    if not query or not query.strip():
+        return False
+    return bool(IMAGE_INTENT_PATTERN.search(query.strip()))
 
 
 def get_vehicle_gallery_for_query(prompt: str) -> Optional[Dict[str, Any]]:
@@ -679,7 +697,11 @@ def get_vehicle_gallery_for_query(prompt: str) -> Optional[Dict[str, Any]]:
 
     # Dynamic Lookup for ANY other car in the database
     # Extract likely vehicle tokens from prompt
-    clean_p = re.sub(r'\b(?:what|is|the|price|of|in|car|suv|sedan|details|features|specs|mileage|on-road|ex-showroom|batao|kya|hai|che|chhe)\b', '', p_lower)
+    clean_p = re.sub(
+        r'\b(?:what|is|the|price|of|in|car|suv|sedan|details|features|specs|mileage|on-road|ex-showroom|batao|kya|hai|che|chhe|photo|photos|image|images|pic|pics|picture|pictures|gallery|tasveer|dikhao|show|me|please|aapo)\b',
+        '',
+        p_lower
+    )
     clean_p = clean_p.strip()
     if len(clean_p) >= 3:
         # Check cache

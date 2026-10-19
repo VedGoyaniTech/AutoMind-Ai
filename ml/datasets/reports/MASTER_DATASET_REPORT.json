@@ -1,0 +1,19 @@
+{
+  "total_generated": 10387,
+  "total_unique_saved": 8434,
+  "duplicates_removed": 1953,
+  "corrupt_or_short_removed": 0,
+  "category_distribution": {
+    "specifications": 1486,
+    "pricing": 1486,
+    "multilingual_specs": 1486,
+    "mileage": 987,
+    "multilingual_mileage": 977,
+    "official_variants": 1281,
+    "ev_specifications": 360,
+    "multilingual_ev": 359,
+    "comparison": 5,
+    "multilingual_comparison": 5,
+    "conceptual": 2
+  }
+}

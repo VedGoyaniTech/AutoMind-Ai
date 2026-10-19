@@ -1084,7 +1084,7 @@ class VehicleComparisonService:
         )
 
     def _render_not_found_message(self, valid_res: Optional[VehicleResolution], invalid_res: VehicleResolution) -> str:
-        """Inform user about missing model without inventing specs."""
+        """Inform user about missing model without inventing specs, providing explicit reason and needed data."""
         inv_name = invalid_res.cleaned_input or invalid_res.raw_input
         valid_part = ""
         if valid_res and valid_res.status == ResolutionStatus.EXACT_MODEL:
@@ -1093,6 +1093,12 @@ class VehicleComparisonService:
         return (
             f"### ⚠️ Vehicle Not Found in Dataset\n\n"
             f"{valid_part}**\"{inv_name}\"** hamare verified automotive dataset me available nahi hai.\n\n"
+            f"**📌 Reason (Karan):**\n"
+            f"- Is model/variant ka verified record, specifications ya pricing hamare automotive catalog me mapped nahi hai.\n\n"
+            f"**🛠️ Required Data (Iski jankari ke liye kya jarurat hai):**\n"
+            f"- **Exact Car Model / Variant:** Is car ka official brand name aur model/trim.\n"
+            f"- **Specification Sheet:** Engine displacement (cc), power (bhp/PS), mileage (kmpl ya EV range km), aur ex-showroom price.\n"
+            f"- Ye details hamare dataset me add hone ke baad AutoMind AI turant authentic comparison deliver karega.\n\n"
             f"AutoMind AI kisi bhi car ke false ya fabricated specifications generate nahi karta. "
             f"Kripya valid car brand aur model name provide karein (jaise: *Tata Nexon vs Hyundai Creta* ya *Toyota Fortuner vs Ford Endeavour*) "
             f"taaki hum exact, factual comparison provide kar sakein."

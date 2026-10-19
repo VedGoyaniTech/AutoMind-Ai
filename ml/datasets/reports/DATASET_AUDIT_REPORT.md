@@ -1,15 +1,15 @@
 # 📊 AutoMind AI — Comprehensive Training Dataset Audit Report
 
-**Audit Date:** 2026-10-18 08:42:31 UTC  
-**Audited Files:** 30  
-**Total JSONL Lines:** 3733 (across all version splits)  
-**Duplicate Content Hash Groups:** 588  
+**Audit Date:** 2026-10-19 04:40:16 UTC  
+**Audited Files:** 34  
+**Total JSONL Lines:** 20601 (across all version splits)  
+**Duplicate Content Hash Groups:** 9022  
 
 ---
 
 ## 🚨 Key Audit Findings & Governance Decisions
 
-1. **Line Count != Unique Verified Automotive Knowledge:** There are **3733 total lines** across tracked JSONL files. These are predominantly version iterations (`train.jsonl`, `train_v2.jsonl`, `train_v3.jsonl`, `train_v4.jsonl`, `master_v2`, `master_v3`, `master_v4`). They do **not** represent 3733 unique verified automotive facts.
+1. **Line Count != Unique Verified Automotive Knowledge:** There are **20601 total lines** across tracked JSONL files. These are predominantly version iterations (`train.jsonl`, `train_v2.jsonl`, `train_v3.jsonl`, `train_v4.jsonl`, `master_v2`, `master_v3`, `master_v4`). They do **not** represent 20601 unique verified automotive facts.
 2. **Domain Contamination in `master_v4_combined_dataset.jsonl`:** Discovered non-automotive questions including locomotive engineering (e.g. WAG-9 / WAP-7 electric railway locomotives) and unrelated corporate finance questions. **Action:** Quarantined. Forbidden from fine-tuning.
 3. **TweetEval Benchmark Exclusion:** TweetEval files in `backend/data/tweet_eval/` cover emotion, irony, emoji, and stance detection (e.g. political figures, climate). They are standard NLP benchmarks and are **strictly excluded** from automotive model training.
 4. **Held-Out Test Leakage Prevention:** `ml/datasets/test/test.jsonl` and `test_eval.jsonl` are frozen evaluation sets. Training export pipelines strictly reject records designated as `test` or `evaluation`.
@@ -29,6 +29,10 @@
 | `data/fixtures/training/multilingual_automotive_fixture.jsonl` | 2 | 2 | 0 | 0.0% | **fixture_only** |
 | `data/fixtures/training/safety_prompt_injection_fixture.jsonl` | 2 | 2 | 0 | 0.0% | **fixture_only** |
 | `data/fixtures/training/vehicle_entity_resolution_fixture.jsonl` | 3 | 3 | 0 | 0.0% | **fixture_only** |
+| `ml/datasets/automind_car_master_dataset.jsonl` | 8434 | 8434 | 0 | 0.0% | **legacy_experiment_archive** |
+| `ml/datasets/automind_test.jsonl` | 844 | 844 | 0 | 0.0% | **legacy_experiment_archive** |
+| `ml/datasets/automind_train.jsonl` | 6747 | 6747 | 0 | 0.0% | **legacy_experiment_archive** |
+| `ml/datasets/automind_val.jsonl` | 843 | 843 | 0 | 0.0% | **legacy_experiment_archive** |
 | `ml/datasets/cleaned/master_cleaned_catalog.jsonl` | 268 | 268 | 4 | 0.0% | **quarantine_candidate** |
 | `ml/datasets/combined_cleaned_dataset.jsonl` | 307 | 307 | 4 | 0.0% | **quarantine_candidate** |
 | `ml/datasets/darkB_electric_vehicles_qa_dataset.jsonl` | 278 | 278 | 3 | 0.0% | **quarantine_candidate** |

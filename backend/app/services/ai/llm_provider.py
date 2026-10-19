@@ -75,6 +75,14 @@ CORE MANDATE & QUALITY CONTROL:
    - Support any brand and model (budget, family, luxury, exotic, EV, hybrid, vintage, commercial).
    - Preserve user's language (English, Hindi, Hinglish, Gujarati).
    - Never invent source URLs or cite internal mock IDs.
+
+9. UNANSWERED / MISSING DATA & REASON MANDATE:
+   - If any car model, variant, technical specification (mileage, battery kWh, power, top speed), or price cannot be found or verified in the provided evidence or knowledge base, NEVER hallucinate, guess, or provide vague filler text.
+   - You MUST explicitly explain:
+     1. ⚠️ What specific vehicle detail is unverified or missing in the dataset.
+     2. 📌 The exact REASON why it could not be answered (e.g. model not in local dataset, missing crash test report, or ambiguous trim).
+     3. 🛠️ What exact DATA is needed (e.g. manufacturer name, model year, trim name, engine specification sheet) so the user knows what needs to be added to the dataset.
+   - Preserve the user's language (Hindi, Hinglish, Gujarati, or English).
 """
 
 
@@ -3048,13 +3056,19 @@ class GroundedLLMProvider(BaseLLMProvider):
                         out.append(f"- {s}")
                     out.append("")
             else:
-                out.append(f"{pretty_name} is a vehicle queried from AutoMind's research index. Detailed pricing and specifications are available at authorized dealerships.\n")
-
-            out.append("### 💡 How to Research Further\n")
-            out.append(f"- Visit an authorized {pretty_name} dealer for current ex-showroom pricing")
-            out.append(f"- Check CarWale or CarDekho for user reviews and waiting periods")
-            out.append(f"- Ask AutoMind: *\"Compare {pretty_name} with similar cars\"*")
-            out.append("")
+                out.append(f"AutoMind AI ko **{pretty_name}** ke liye verified specifications ya pricing record hamare current master dataset me nahi mila.\n")
+                out.append("### 📌 Missing Data Reason (Karan):")
+                out.append(f"- **Vehicle Query:** `{pretty_name}`")
+                out.append(f"- **Status:** Is car ka authentic spec-sheet (Engine displacement cc, Max power bhp, Mileage kmpl ya On-road price) hamare local dataset me mapped nahi hai.\n")
+                out.append("### 🛠️ Required Data (Iski jankari ke liye kya jarurat hai):")
+                out.append(f"1. **Exact Variant / Trim:** (e.g. *'{pretty_name} VXi / SX / Luxury'*).")
+                out.append(f"2. **Model Year:** (e.g. 2024 Facelift ya 2025 Model).")
+                out.append(f"3. **Dataset Entry:** Is car ka official technical spec-sheet ya catalogue row `ml/datasets/automind_car_master_dataset.json` me add karne ki jarurat hai.\n")
+                out.append("### 💡 How to Research Further\n")
+                out.append(f"- Visit an authorized {pretty_name} dealer for current ex-showroom pricing")
+                out.append(f"- Check CarWale or CarDekho for user reviews and waiting periods")
+                out.append(f"- Ask AutoMind: *\"Compare {pretty_name} with similar cars\"*")
+                out.append("")
 
         refs = self._format_references_section(web_results)
         if refs:
@@ -3379,7 +3393,14 @@ class ConfigurableAPIProvider(BaseLLMProvider):
         "8. GENERAL RULES:\n"
         "- Support any brand and model (budget, family, luxury, exotic, EV, hybrid, vintage, commercial).\n"
         "- Preserve user's language (English, Hindi, Hinglish, Gujarati) and units.\n"
-        "- Use clean Markdown with bold headers, emojis, and comparison tables."
+        "- Use clean Markdown with bold headers, emojis, and comparison tables.\n\n"
+        "9. UNANSWERED / MISSING DATA & REASON MANDATE:\n"
+        "- If any car model, variant, technical specification (mileage, battery kWh, power, top speed), or price cannot be found or verified in the provided evidence or knowledge base, NEVER hallucinate, guess, or provide vague filler text.\n"
+        "- You MUST explicitly explain:\n"
+        "  1. ⚠️ What specific vehicle detail is unverified or missing in the dataset.\n"
+        "  2. 📌 The exact REASON why it could not be answered (e.g. model not in local dataset, missing crash test report, or ambiguous trim).\n"
+        "  3. 🛠️ What exact DATA is needed (e.g. manufacturer name, model year, trim name, engine specification sheet) so the user knows what needs to be added to the dataset.\n"
+        "- Preserve the user's language (Hindi, Hinglish, Gujarati, or English)."
     )
 
     def __init__(self):

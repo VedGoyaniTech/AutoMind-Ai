@@ -431,8 +431,16 @@ def query_historical_cars(
                 continue
 
         # Status filter (launched, upcoming, facelift)
-        if status_filter and car.get("status", "launched").lower() != status_filter:
-            continue
+        if status_filter:
+            car_status = car.get("status", "launched").lower()
+            if status_filter == "launched":
+                if car_status not in ["launched", "facelift"]:
+                    continue
+            elif status_filter == "upcoming":
+                if car_status != "upcoming":
+                    continue
+            elif car_status != status_filter:
+                continue
 
         # Fuel filter
         if fuel_type and car.get("fuel_type", "").lower() != fuel_type.lower():
@@ -923,13 +931,88 @@ RECENT_CAR_CATALOG: List[Dict[str, Any]] = [
         "category": "ev",
         "segment": "Electric Midsize SUV",
         "fuel_type": "electric",
-        "engine": "45 kWh Battery Pack (138 HP | 450 km Estimated Range)",
-        "price_era": "₹18.00 – ₹24.00 Lakh (Est.)",
-        "ex_showroom_price": 1950000.0,
-        "status": "upcoming",
+        "engine": "45 kWh Battery Pack (138 HP | 450 km ARAI Range)",
+        "price_era": "₹17.99 – ₹24.50 Lakh",
+        "ex_showroom_price": 1799000.0,
+        "status": "launched",
         "is_luxury": False,
         "is_vintage_classic": False,
-        "description": "All-electric version of Hyundai Creta featuring closed-off aero grille, steering-column gear selector, and V2L."
+        "description": "Launched January 2025 at Bharat Mobility Global Expo featuring 45 kWh battery, closed-off aero grille, steering-column gear selector, and V2L."
+    },
+    {
+        "name": "Tata Curvv EV",
+        "brand": "Tata Motors",
+        "launch_year": 2025,
+        "category": "ev",
+        "segment": "Electric Coupe SUV",
+        "fuel_type": "electric",
+        "engine": "55 kWh acti.ev Architecture (167 HP | 585 km Range)",
+        "price_era": "₹17.49 – ₹21.99 Lakh",
+        "ex_showroom_price": 1749000.0,
+        "status": "launched",
+        "is_luxury": False,
+        "is_vintage_classic": False,
+        "description": "Mass-market electric Coupe SUV with flush door handles, 12.3-inch touchscreen, and 5-Star Bharat NCAP safety rating."
+    },
+    {
+        "name": "MG Windsor EV",
+        "brand": "MG",
+        "launch_year": 2025,
+        "category": "ev",
+        "segment": "Electric Crossover Utility Vehicle",
+        "fuel_type": "electric",
+        "engine": "38 kWh Prismatic Cell Battery (136 HP | 332 km Range)",
+        "price_era": "₹13.50 – ₹15.50 Lakh (or ₹9.99 Lakh + BaaS)",
+        "ex_showroom_price": 1350000.0,
+        "status": "launched",
+        "is_luxury": False,
+        "is_vintage_classic": False,
+        "description": "Best-selling electric crossover in India featuring 135-degree Aero Lounge rear seats, 15.6-inch Grandview touchscreen, and BaaS battery subscription."
+    },
+    {
+        "name": "Tata Punch EV",
+        "brand": "Tata Motors",
+        "launch_year": 2025,
+        "category": "ev",
+        "segment": "Electric Micro SUV",
+        "fuel_type": "electric",
+        "engine": "35 kWh Battery (122 HP | 421 km Range)",
+        "price_era": "₹10.99 – ₹15.49 Lakh",
+        "ex_showroom_price": 1099000.0,
+        "status": "launched",
+        "is_luxury": False,
+        "is_vintage_classic": False,
+        "description": "Pure electric SUV built on Tata's acti.ev platform with 360-degree camera, ventilated front seats, and 5-Star Bharat NCAP rating."
+    },
+    {
+        "name": "Mahindra XUV400 EL Pro",
+        "brand": "Mahindra",
+        "launch_year": 2025,
+        "category": "ev",
+        "segment": "Electric Compact SUV",
+        "fuel_type": "electric",
+        "engine": "39.4 kWh Battery (150 HP | 456 km Range)",
+        "price_era": "₹15.49 – ₹17.69 Lakh",
+        "ex_showroom_price": 1549000.0,
+        "status": "launched",
+        "is_luxury": False,
+        "is_vintage_classic": False,
+        "description": "Updated electric SUV featuring dual 10.25-inch infotainment & cluster screens, wireless charger, and AdrenoX connected car tech."
+    },
+    {
+        "name": "BYD Seal EV",
+        "brand": "BYD",
+        "launch_year": 2025,
+        "category": "ev",
+        "segment": "Electric Luxury Sports Sedan",
+        "fuel_type": "electric",
+        "engine": "82.5 kWh Blade Battery (530 HP AWD | 650 km Range)",
+        "price_era": "₹41.00 – ₹53.00 Lakh",
+        "ex_showroom_price": 4100000.0,
+        "status": "launched",
+        "is_luxury": True,
+        "is_vintage_classic": False,
+        "description": "High-performance sports EV with Cell-to-Body blade battery, 0-100 km/h in 3.8s, and 5-Star Euro NCAP rating."
     },
     {
         "name": "Maruti Suzuki e-Vitara",

@@ -2288,6 +2288,32 @@ class GroundedLLMProvider(BaseLLMProvider):
         """Fully Grounded Year-Wise Vehicle Research Synthesizer — combines local catalog & cited DuckDuckGo evidence."""
         p_lower = prompt.lower()
         all_years = self._extract_all_target_years(prompt)
+        # Extract requested launch status (launched vs upcoming)
+        is_upcoming_query = any(w in p_lower for w in [
+            "upcoming", "aane wali", "aane waali", "aage aane wali", "future", "bhavishya",
+            "આવનારી", "ક્યારે આવશે", "coming soon", "expected", "bhavishya me", "launch hone wali",
+            "hone wali"
+        ])
+        is_launched_query = any(w in p_lower for w in [
+            "launch ho gyi", "launch ho chuki", "launch ho chuki he", "launch ho chuki hai",
+            "launch hui", "launched", "lounch", "lunched", "lunch ho", "lunch car", "release ho chuki",
+            "released", "market me aa gayi", "market me aa chuki", "aa chuki", "available",
+            "bik rahi", "bikti", "विक्री", "લોન્ચ થઈ", "लॉन्च हुई", "लॉन्च हो चुकी", "हो चुकी",
+            "aa gayi", "already launched", "on sale", "bik rahi hai", "bik rahi he"
+        ])
+
+        req_status = None
+        if is_launched_query and not is_upcoming_query:
+            req_status = "launched"
+        elif is_upcoming_query and not is_launched_query:
+            req_status = "upcoming"
+        elif target_year and target_year <= 2024:
+            req_status = "launched"
+
+        # Check for top N constraint in prompt (e.g. "top 5")
+        limit_match = re.search(r'\btop\s*(\d+)\b', p_lower)
+        item_limit = int(limit_match.group(1)) if limit_match else None
+
         if len(all_years) > 1:
             from app.services.pricing.historical_cars import query_historical_cars
             out = []
@@ -2295,7 +2321,7 @@ class GroundedLLMProvider(BaseLLMProvider):
             out.append("Aapke anurodh ke mutabiq AutoMind AI catalog se car launches list prastut hai:\n")
             for yr in all_years:
                 out.append(f"### 📅 {yr} India Car Launches\n")
-                yr_cars = query_historical_cars(year=yr)
+                yr_cars = query_historical_cars(year=yr, status=req_status)
                 if yr_cars:
                     out.append("| Car Model | Brand | Segment | Fuel Type | Price Era (Ex-Showroom) | Status |")
                     out.append("|---|---|---|---|---|---|")
@@ -2329,7 +2355,7 @@ class GroundedLLMProvider(BaseLLMProvider):
         # ── 1. Specific Model Detail Query Handler (e.g. "2024 Creta details", "2024 Thar details") ──
         if "detail" in p_lower or (detected_model and ("2024" in p_lower or "2023" in p_lower or "2025" in p_lower)):
             from app.services.pricing.historical_cars import query_historical_cars
-            hist_matches = query_historical_cars(year=target_year, brand_or_model=detected_model or detected_brand)
+            hist_matches = query_historical_cars(year=target_year, brand_or_model=detected_model or detected_brand, status=req_status)
             if hist_matches:
                 car = hist_matches[0]
                 m_name = car["name"]
@@ -2367,15 +2393,21 @@ class GroundedLLMProvider(BaseLLMProvider):
             year=target_year,
             is_luxury=True if (is_luxury and not target_cat) else None,
             category=target_cat,
+            status=req_status,
             brand_or_model=detected_brand or detected_model
         )
 
-        # If query specifically for historical era returned few results, fetch all for that year ONLY if no specific brand was asked
-        if target_year and len(local_cars) == 0 and not (detected_brand or detected_model):
-            local_cars = query_historical_cars(year=target_year)
+        # If query specifically for historical era returned few results, fetch all for that year ONLY if no specific brand or category was asked
+        if target_year and len(local_cars) == 0 and not (detected_brand or detected_model) and not target_cat:
+            local_cars = query_historical_cars(year=target_year, status=req_status)
 
         matched_candidates = []
         for hc in local_cars:
+            car_st = hc.get("status", "launched").lower()
+            if req_status == "launched" and car_st == "upcoming":
+                continue
+            if req_status == "upcoming" and car_st != "upcoming":
+                continue
             matched_candidates.append({
                 "car_name": hc["name"],
                 "brand": hc["brand"],
@@ -2389,8 +2421,12 @@ class GroundedLLMProvider(BaseLLMProvider):
                 "source_url": "https://www.autocarindia.com"
             })
 
+        # Apply top N limit if requested
+        if item_limit and len(matched_candidates) > item_limit:
+            matched_candidates = matched_candidates[:item_limit]
+
         # ── 3. Fallback Step 2: DuckDuckGo Web Research if local records are sparse ──
-        if len(matched_candidates) < 2:
+        if len(matched_candidates) < 2 and not (req_status == "launched" and target_year and target_year > 2025):
             try:
                 from app.services.ai.duckduckgo_search import duckduckgo_search_service
                 web_hits = duckduckgo_search_service.targeted_automotive_search(
@@ -2404,9 +2440,17 @@ class GroundedLLMProvider(BaseLLMProvider):
             except Exception as ddg_err:
                 logger.debug(f"[DDG Fallback] notice: {ddg_err}")
 
-        # ── 4. Fallback Step 3: Honest "Information not confirmed" if no evidence exists ──
+        # ── 4. Fallback Step 3: Honest "Information not confirmed" / future notice if no evidence exists ──
         if not matched_candidates:
             out = []
+            if req_status == "launched" and target_year and target_year > 2025:
+                out.append(f"## {target_year} में अभी तक कोई कार लॉन्च नहीं हुई है\n")
+                out.append(f"AutoMind AI रिकॉर्ड्स के अनुसार वर्ष **{target_year}** भविष्य का वर्ष है, इसलिए इस वर्ष के लिए अभी तक कोई वाहन **लॉन्च (Launched)** नहीं हुआ है।\n")
+                out.append("### 💡 आप देख सकते हैं:")
+                out.append(f"- **{target_year} में आने वाली कारें (Upcoming Cars)**")
+                out.append("- **2024–2025 में हाल ही में लॉन्च हुई कारें**\n")
+                return "\n".join(out)
+
             out.append("## Information not confirmed\n")
             out.append(f"AutoMind AI could not find enough reliable India-market sources for this exact **{target_year or ''}** query.\n")
             out.append("### 💡 Try refining:")
@@ -2420,8 +2464,16 @@ class GroundedLLMProvider(BaseLLMProvider):
         year_label = f"{target_year} " if target_year else ""
         cat_label = "EVs" if is_ev else ("SUVs" if is_suv else ("Sedans" if is_sedan else ("Hatchbacks" if is_hatch else ("Luxury Cars" if is_luxury else (f"{detected_brand.title()} Cars" if detected_brand else "Cars")))))
 
+        all_are_upcoming = all(c.get("status", "").lower() == "upcoming" for c in matched_candidates)
+        all_are_launched = all(c.get("status", "").lower() in ["launched", "facelift"] for c in matched_candidates)
+
         out = []
-        out.append(f"## {year_label}में भारत में लॉन्च हुई {cat_label}\n")
+        if req_status == "upcoming" or (all_are_upcoming and req_status != "launched"):
+            out.append(f"## {year_label}में भारत में आने वाली (Upcoming) {cat_label}\n")
+        elif req_status == "launched" or all_are_launched:
+            out.append(f"## {year_label}में भारत में लॉन्च हुई {cat_label}\n")
+        else:
+            out.append(f"## {year_label}में भारत की {cat_label} (Launched & Upcoming)\n")
 
         # Table Header
         out.append("| Car | Brand | Status | India Launch / Announcement | Fuel | Starting Price* |")

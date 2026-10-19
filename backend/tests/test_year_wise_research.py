@@ -158,3 +158,24 @@ def test_20_pricing_and_emi_flows_intact():
     quote = engine.generate_quote(req)
     assert quote.priceBreakdown.onRoadPrice > 1150000.0
     assert len(quote.emiOptions) == 3
+
+# 21. User specific prompt: 2025 launched top 5 EVs strictly contains Launched and NO Upcoming
+def test_21_user_query_launched_evs_top_5_strict_no_upcoming(llm):
+    resp = llm.generate("2025 saal launch ho gyi car top 5 Electric Vehicles (EVs) ki list do.", "")
+    assert "2025 में भारत में लॉन्च हुई EVs" in resp
+    assert "Hyundai Creta EV" in resp
+    assert "Tata Curvv EV" in resp
+    assert "MG Windsor EV" in resp
+    # Every row in table must not be Upcoming
+    lines = [line.strip() for line in resp.split("\n") if line.strip().startswith("| **")]
+    assert len(lines) == 5
+    for l in lines:
+        assert "| Upcoming |" not in l
+        assert "| Launched |" in l
+
+# 22. Future year launch query returns honest response
+def test_22_future_year_launched_cars_honest_response(llm):
+    resp = llm.generate("2026 mein launch ho chuki car ki list do", "")
+    assert "2026 में अभी तक कोई कार लॉन्च नहीं हुई है" in resp
+    assert "Upcoming Cars" in resp
+
